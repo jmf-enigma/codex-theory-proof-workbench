@@ -182,7 +182,7 @@ python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 
 ## License
 
-No license has been selected yet. Until a license is added, all rights are reserved by the repository owner.
+This project is released under the MIT License. See [LICENSE](LICENSE).
 
 ---
 
@@ -370,4 +370,4 @@ python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 
 ## 许可证
 
-当前还没有选择开源许可证。在添加 license 之前，所有权利由仓库 owner 保留。
+本项目采用 MIT License 开源。详情见 [LICENSE](LICENSE)。
