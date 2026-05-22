@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+proof_projects/
+proof_ledgers/
+tool_checks/tmp/

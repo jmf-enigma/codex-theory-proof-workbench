@@ -1,0 +1,185 @@
+---
+name: theory-proof-workbench
+description: "Use for hard theoretical proofs, proof debugging, failed proof recovery, and judgment-guided proof projects in OR/MS, mechanism design, econ theory, learning theory, bandits, online learning, optimization, games, regret, IC/IR, and lower bounds."
+---
+
+# Theory Proof Workbench
+
+Use this skill when a proof is nontrivial, has failed before, or belongs to OR/MS, mechanism design, economic theory, learning theory, bandits, online learning, optimization, games, or lower bounds.
+
+This is a proof-control workflow, not a theorem encyclopedia. The goal is to stop restarting from scratch and force proof attempts through classification, assumption audit, counterexample search, lemma decomposition, verification gates, and persistent failure notes.
+
+For proof exposition, rewriting, polishing, or LaTeXing a proof whose core argument already exists, use `math-proof-writing` instead. Use this workbench only when the proof itself is missing, blocked, or suspect.
+
+If the request mixes proof discovery with proof writing, run the proof task router from `research-tools` before starting a proof project.
+
+## Judgment First
+
+The scripts create memory and guardrails; they do not decide the mathematics. Before each new route, decide:
+
+- whether the last result made the claim more plausible, less plausible, refuted, or unchanged;
+- whether the next step should prove, falsify, retrieve a known theorem, tool-check a lemma, or repair the statement;
+- whether the route has a proof kernel: the smallest lemma, certificate, or counterexample barrier that would decide the route;
+- whether small cases suggest a formula, invariant, construction, normal form, or tight example worth testing;
+- whether the next move reduces the proof state, rather than only rewriting the same missing lemma;
+- whether a proposed assumption repair changes the economic, OR/MS, or learning-theory meaning enough to ask the user;
+- whether the obstruction needs the user's domain intuition before spending another heavy search cycle;
+- whether to stop with `still open` rather than produce a polished but unsupported proof.
+
+## Use Gate
+
+Do not blindly escalate to the full workbench. Pick the lightest useful mode.
+
+- **Direct mode**: if a named theorem, certificate, or short contradiction solves the claim, prove directly and run verification gates.
+- **Micro pattern check**: if the route is not obvious but the proof is still small, look for one nearby theorem family, playbook pattern, prior ledger, or paper trick before inventing a new central lemma. Stop once it changes the next proof move or clearly does not apply.
+- **Light idea mode**: if the route is unclear but no project is needed, run `plan_idea.py` and use only the relevant central-object candidates.
+- **Project mode**: start a proof project only for hard, repeated, multi-lemma, tool-assisted, or literature-dependent proofs.
+- **Recovery mode**: if the same proof has failed before, read the existing ledger or create one before trying another route.
+
+Use references and tools only when they change the next proof move. Do not load every playbook, scan papers, or start a project just because the topic is theoretical.
+
+## Project Start
+
+For a hard or previously failed proof, start a proof project only when light modes are insufficient:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/start_proof.py --title "SHORT PROOF NAME" --claim "CLAIM"
+```
+
+This creates `TRIAGE.md`, `WORKSTREAMS.md`, `IDEA_MAP.md`, `ATTACK_MATRIX.md`, `LEMMA_QUEUE.md`, `PATTERN_SCAN.md`, `TOOL_PLAN.md`, `LEDGER.md`, `ESCALATION.md`, `counterexamples.md`, `strategy.md`, `state.md`, `tool_checks/`, `trick_cards/`, and supporting folders. Use `ATTACK_MATRIX.md` to force one proof route and one falsification route before drafting a final proof.
+
+When returning to an existing proof project, diagnose the next move first:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/proof_doctor.py path/to/proof_project
+```
+
+For a lightweight idea pass without creating a project, run:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/plan_idea.py "CLAIM"
+```
+
+If small cases give a numeric sequence and the route needs a guessed formula, potential, threshold, or coefficient pattern, mine the sequence before promoting the guess:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
+```
+
+## Core Loop
+
+1. Restate the claim with variables, domains, quantifiers, and all assumptions.
+Do not silently change the theorem statement, assumptions, or conclusion. If the proof needs a different statement, mark it as theorem repair or ask the user when the modeling meaning changes.
+2. Run the pre-solve gate: decide whether the claim has an obvious direct theorem, certificate, or one-page proof. If yes, prove it and still pass verification gates. If no, do a micro pattern check or use the light idea pass. Retrieve nearby proof patterns from prior papers, local drafts, ledgers, or literature only when the central object or central lemma is unclear.
+3. Classify the proof target using [references/proof-router.md](references/proof-router.md) and the state machine in [references/proof-state-machine.md](references/proof-state-machine.md).
+For hard, research-level, or twice-failed proofs, also apply [references/research-backed-proof-loop.md](references/research-backed-proof-loop.md): prior-result audit, Draft-Sketch-Prove, premise retrieval, tool-guided repair, and progress-budget stop rules.
+When the proof idea is unclear, optionally apply [references/proof-idea-generator.md](references/proof-idea-generator.md) before the route portfolio. This is not mandatory for routine proofs; use it to find the failure world, central object, proof kernel, pattern guess, central lemma, and verification hook.
+For unfamiliar theorem families, literature-dependent proofs, or user-requested outside learning, apply [references/external-proof-pattern-scan.md](references/external-proof-pattern-scan.md): extract proof architectures from papers, formalization projects, and proof-agent skills before inventing another route.
+When the route needs computation, CAS, SMT, optimization solvers, or Lean, apply [references/tool-assisted-proof-patterns.md](references/tool-assisted-proof-patterns.md) before running broad tool queries.
+If a route fails twice or the same obstruction repeats, use [references/proof-escalation-protocol.md](references/proof-escalation-protocol.md) before another prose proof attempt.
+4. For hard proof projects, use `WORKSTREAMS.md` to define approved goals and active workstream cards. Before heavy execution, each card should inspect how nearby papers, appendices, prior ledgers, theorem families, or analogous models solve similar problems, unless there is a written skip reason. Keep this local-first and bounded: one to three strong sources or patterns are enough before trying the next proof move. Use actual parallel agents only when the user explicitly asks for delegation.
+5. Choose proof routes with [references/strategy-scheduler.md](references/strategy-scheduler.md); run at least two plausible routes for hard or previously failed proofs.
+6. Before proving, try to break the claim: edge cases, missing compactness/convexity/continuity, finite counterexamples, numerical examples, and relaxed assumptions.
+7. If the route is still unclear, run the optional idea pass: failure world -> small-case pattern guess -> central object -> proof kernel -> central lemma -> verification hook. Use `pattern_miner.py` only when the small cases produce a useful exact sequence.
+8. Build a lemma graph: label each needed lemma as known, checkable by tools, missing, or likely false. For repeated attempts, record the attempt fingerprint in `WORKSTREAMS.md` before trying a variant.
+9. Work one proof move at a time when a kernel is fragile: name the current subgoal, propose one move, predict the new subgoal, check it by theorem match, algebra, toy case, tool, or reviewer pass, then keep, repair, or discard it based on proof-state delta.
+10. Read only the relevant branch playbook. If unsure, run:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/select_playbook.py "CLAIM OR TOPIC"
+```
+
+Branch playbooks:
+
+- Optimization and OR/MS: [references/optimization-or-playbook.md](references/optimization-or-playbook.md).
+- Dynamic programming and MDPs: [references/dp-proof-playbook.md](references/dp-proof-playbook.md).
+- Mechanism design: [references/mechanism-design-playbook.md](references/mechanism-design-playbook.md).
+- Games and matching: [references/games-matching-playbook.md](references/games-matching-playbook.md).
+- Learning theory: [references/learning-theory-playbook.md](references/learning-theory-playbook.md).
+- Bandits and online learning: [references/bandits-oco-playbook.md](references/bandits-oco-playbook.md).
+- Lower bounds: [references/lower-bounds-playbook.md](references/lower-bounds-playbook.md).
+11. If stuck, name the obstruction using [references/obstruction-taxonomy.md](references/obstruction-taxonomy.md) before changing routes. If the block is about model meaning, promising structure, or domain taste, surface a short steering question to the user. If the obstruction repeats, escalate through counterexample search, tools, retrieval, local formalization, or theorem repair with [references/proof-escalation-protocol.md](references/proof-escalation-protocol.md).
+12. Apply the proof-status and review gates in [references/verification-gate.md](references/verification-gate.md).
+13. Use `math-tools` for local checks: Wolfram for algebra/conditions, Python/CVXPy/OR-Tools/Z3 for finite or numeric checks, Sage for discrete structures, Lean for local formalizable lemmas. For proof-critical checks, first decide the expected artifact: counterexample, condition, exact identity, KKT/dual certificate, SMT model/unsat result, or Lean lemma.
+14. Write the proof in layers: intuition, formal lemma statements, proof of each lemma, final assembly.
+
+## Failure Recovery
+
+If a proof attempt stalls, do not start over. Create or update a proof ledger. The ledger must record:
+
+- the exact claim and assumptions,
+- failed proof routes and where they broke,
+- failed proof states that remained unchanged after a move,
+- named obstruction types,
+- attempted counterexamples,
+- proved lemmas,
+- missing lemmas,
+- the next most plausible theorem pattern.
+
+When the user asks again about the same proof, read the ledger first and continue from it.
+
+If two routes fail, or if the ledger shows the same obstruction twice, stop trying the same proof style. Open [references/proof-escalation-protocol.md](references/proof-escalation-protocol.md), then run the next bounded external method: finite counterexample search, symbolic simplification, LP/SMT certificate, literature/premise retrieval, local Lean formalization, or theorem repair.
+
+For repeated attempts, check the attempt fingerprint index in `WORKSTREAMS.md` before proposing another route or construction. Do not retry the same signature unless there is a new assumption, central object, invariant, certificate, verified trick, counterexample repair, or theorem repair that directly addresses the previous failed witness.
+
+For a hard proof where direct mode and the light idea pass are insufficient, start a project:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/start_proof.py --title "SHORT PROOF NAME" --claim "CLAIM"
+```
+
+For an existing proof project, use the proof doctor before trying another proof route:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/proof_doctor.py path/to/proof_project
+```
+
+If a new attempt may repeat an old route or construction and the match is ambiguous, compare it against recorded fingerprints:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/check_attempt.py path/to/proof_project --route-family "ROUTE" --central-object "OBJECT" --target-lemma "LEMMA" --failure-witness "WITNESS"
+```
+
+To create a standalone ledger, run:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/new_ledger.py "SHORT PROOF NAME" --claim "CLAIM"
+```
+
+Before presenting a final proof from a ledger, audit missing gates:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py path/to/LEDGER.md
+```
+
+When a missing lemma becomes reusable, promote it to a lemma card:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/new_lemma_card.py "LEMMA NAME" --statement "STATEMENT"
+```
+
+When a paper trick becomes reusable outside a project, save it as a standalone trick card:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/new_trick_card.py "TRICK NAME" --source "PAPER/APPENDIX/LEMMA" --shape "PROBLEM SHAPE" --obstruction "OBSTRUCTION SOLVED"
+```
+
+Prefer saving into a proof project:
+
+```bash
+codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/new_trick_card.py "TRICK NAME" --project path/to/proof_project --source "PAPER/APPENDIX/LEMMA" --shape "PROBLEM SHAPE" --obstruction "OBSTRUCTION SOLVED"
+```
+
+Keep trick cards local to the proof project first. Standalone cards are for cross-project tricks only. Promote a trick to a global reference only after it has helped on a real proof or clearly identified a false route.
+
+## Output Contract
+
+For hard proofs, keep the visible answer compact. Use the ledger and gates internally, but report only what the user needs to trust the result:
+
+- claim status and verification status,
+- essential assumptions,
+- proof pattern and final proof, or the exact obstruction if still open,
+- missing lemma, counterexample, tool artifact, external pattern, or workstream result only when it materially changes the conclusion,
+- next bounded move if the proof is still blocked.
+
+Do not present a polished proof if the key lemma is only guessed. Mark it as a missing lemma.

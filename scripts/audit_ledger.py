@@ -1,0 +1,82 @@
+import argparse
+import json
+import re
+from pathlib import Path
+
+
+REQUIRED_HEADINGS = [
+    "Claim",
+    "Status",
+    "Verification Status",
+    "Proof State",
+    "Pattern Classification",
+    "Pre-Solve Gate",
+    "Strategy Portfolio",
+    "Assumption Audit",
+    "Counterexample Search",
+    "Verification Gates",
+    "Lemma Graph",
+    "Failed Routes",
+    "Failure Escalation",
+    "Tool Checks",
+    "Current Obstruction",
+    "Next Move",
+]
+
+PLACEHOLDER_PATTERNS = [
+    r"Name the exact missing lemma",
+    r"The next proof pattern",
+    r"Candidate patterns:[ \t]*\n[ \t]*(?:\n|Selected playbooks:)",
+    r"Selected playbooks:[ \t]*\n[ \t]*(?:\n|## )",
+    r"status:[ \t]*$",
+    r"obstruction type:[ \t]*$",
+    r"Pre-solve gate:[ \t]*$",
+    r"Statement gate:[ \t]*$",
+    r"Assumption gate:[ \t]*$",
+    r"Negation gate:[ \t]*$",
+    r"Toy-model gate:[ \t]*$",
+    r"Pattern gate:[ \t]*$",
+    r"Lemma gate:[ \t]*$",
+    r"Proof-state gate:[ \t]*$",
+    r"Quantifier gate:[ \t]*$",
+    r"Boundary gate:[ \t]*$",
+    r"Assembly gate:[ \t]*$",
+    r"Review gate:[ \t]*$",
+    r"Progress gate:[ \t]*$",
+]
+
+
+def section_body(text: str, heading: str) -> str | None:
+    pattern = rf"^## {re.escape(heading)}\n(?P<body>.*?)(?=^## |\Z)"
+    match = re.search(pattern, text, flags=re.M | re.S)
+    return match.group("body").strip() if match else None
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Audit a theory proof ledger for missing gates.")
+    parser.add_argument("ledger", help="Path to LEDGER.md or proof ledger")
+    args = parser.parse_args()
+
+    path = Path(args.ledger)
+    text = path.read_text(encoding="utf-8")
+
+    missing_headings = [h for h in REQUIRED_HEADINGS if section_body(text, h) is None]
+    empty_sections = [h for h in REQUIRED_HEADINGS if section_body(text, h) == ""]
+    placeholders = []
+    for pat in PLACEHOLDER_PATTERNS:
+        if re.search(pat, text, flags=re.M):
+            placeholders.append(pat)
+
+    result = {
+        "ledger": str(path),
+        "missing_headings": missing_headings,
+        "empty_sections": empty_sections,
+        "placeholder_count": len(placeholders),
+        "placeholders": placeholders,
+        "ready_for_final_proof": not missing_headings and not empty_sections and not placeholders,
+    }
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
