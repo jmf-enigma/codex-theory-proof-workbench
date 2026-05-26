@@ -240,6 +240,40 @@ def attempt_fingerprint_summary(project: Path) -> dict:
     }
 
 
+def progress_evidence_summary(project: Path) -> dict:
+    chunks = []
+    for name in ["LEDGER.md", "IDEA_MAP.md", "WORKSTREAMS.md", "ATTACK_MATRIX.md"]:
+        path = project / name
+        if path.exists():
+            chunks.append(path.read_text(encoding="utf-8"))
+    text = "\n".join(chunks)
+    unchanged = len(re.findall(r"proof-state delta:[^\S\r\n]*(unchanged|larger)", text, flags=re.I))
+    unchanged += len(re.findall(r"\|[^|\n]*\|[^|\n]*\|[^|\n]*\|[^|\n]*\|[^|\n]*\|\s*(unchanged|larger)\s*\|", text, flags=re.I))
+    smaller = len(re.findall(r"proof-state delta:[^\S\r\n]*smaller", text, flags=re.I))
+    smaller += len(re.findall(r"\|[^|\n]*\|[^|\n]*\|[^|\n]*\|[^|\n]*\|[^|\n]*\|\s*smaller\s*\|", text, flags=re.I))
+    blocked = len(
+        re.findall(
+            r"^(?:[-*]\s*)?(blocked retry|forbidden retry|block-repeat):\s*\S+",
+            text,
+            flags=re.I | re.M,
+        )
+    )
+    evidence = len(
+        re.findall(
+            r"\b(tool certificate|counterexample|missing assumption|verified trick|theorem repair|retrieved theorem|formalization|new evidence expected)\b",
+            text,
+            flags=re.I,
+        )
+    )
+    return {
+        "unchanged_or_larger_moves": unchanged,
+        "smaller_moves": smaller,
+        "blocked_retries": blocked,
+        "evidence_markers": evidence,
+        "no_progress_threshold_met": unchanged >= 2 or blocked >= 1,
+    }
+
+
 def external_pattern_queries(claim: str, selected: list[tuple[str, int]]) -> list[str]:
     queries = []
     for name, _ in selected[:2]:
@@ -305,6 +339,7 @@ def diagnose(project: Path) -> dict:
     idea_map = idea_map_need(project, state, selected, text)
     pattern_scan = pattern_scan_need(project, state, selected, text)
     fingerprints = attempt_fingerprint_summary(project)
+    progress = progress_evidence_summary(project)
 
     actions = []
     if not (project / "ATTACK_MATRIX.md").exists():
@@ -317,6 +352,8 @@ def diagnose(project: Path) -> dict:
         actions.append("Fill the Attempt Fingerprint Index in WORKSTREAMS.md before trying another similar route or construction.")
     elif state in {"S3-route-portfolio", "S4-lemma-graph", "S9-stuck"} and fingerprints["has_real_entries"]:
         actions.append(f"Compare the next attempt against {fingerprints['count']} recorded attempt fingerprint(s) before proceeding.")
+    if progress["no_progress_threshold_met"]:
+        actions.append("No-progress threshold met: do not retry prose. Switch to counterexample search, tools, retrieval, local formalization, theorem repair, or user steering.")
     actions.extend(STATE_ACTIONS.get(state, STATE_ACTIONS["S9-stuck"]))
     if idea_map["needed"] and state in {"S1-classify", "S2-stress-test", "S2b-idea-map", "S3-route-portfolio", "S9-stuck"}:
         actions.append("Use IDEA_MAP.md as an optional idea pass: failure world, pattern guess, central object, proof kernel, central lemma, verification hook.")
@@ -365,6 +402,7 @@ def diagnose(project: Path) -> dict:
             ],
         },
         "attempt_fingerprints": fingerprints,
+        "progress_evidence": progress,
         "audit": audit,
     }
 
@@ -399,6 +437,11 @@ def print_human(result: dict) -> None:
         print("attempt fingerprints:")
         print(f"- count: {fingerprints['count']}")
         print(f"- blocked retries: {fingerprints['blocked_retry_count']}")
+    progress = result["progress_evidence"]
+    print("progress evidence:")
+    print(f"- unchanged_or_larger_moves: {progress['unchanged_or_larger_moves']}")
+    print(f"- smaller_moves: {progress['smaller_moves']}")
+    print(f"- blocked_retries: {progress['blocked_retries']}")
     print(f"ready_for_final_proof: {result['audit']['ready_for_final_proof']}")
 
 

@@ -47,6 +47,16 @@ For a hard proof, optionally fill these before the final proof route:
 
 If no central object appears, do not write a final proof. Switch to counterexample search, retrieval, or theorem repair.
 
+## Divergence Before Convergence
+
+When the same theorem has failed before, first make the search wider in a controlled way, then narrow it. Produce three short candidates with different central objects:
+
+- failure-world candidate: start from the negation and find the object that rules it out;
+- certificate candidate: search for a KKT, dual, Bellman, envelope, cyclic-monotonicity, concentration, KL, potential, or coupling certificate;
+- outside-pattern candidate: mine a nearby theorem, paper appendix, prior ledger, formal-library lemma, or small-case pattern for proof architecture.
+
+Score each candidate by failure-world control, assumptions used, verification hook, and route novelty. Continue only with the best candidate. If all three reduce to the same missing lemma, record that lemma as the bottleneck and escalate rather than writing another proof sketch.
+
 ## Proof Kernel
 
 Before drafting a long proof, compress the route into one proof kernel: the smallest lemma, certificate, or counterexample barrier that would decide the route.
@@ -103,6 +113,8 @@ Common algebra normal forms:
 Check the move quickly on the smallest toy instance or with Wolfram/SymPy/Python before building a long proof. If the normal form does not control the failure world, discard it and record the obstruction fingerprint.
 
 A pattern guess is not a lemma. Promote it only after one of these happens: it survives holdout toy cases, it has a proof kernel, it matches a known theorem pattern, or it yields a certificate that can be checked independently.
+
+The best clever move usually explains the tight case. Prefer a construction that makes equality, indifference, binding constraints, worst-case histories, least favorable instances, or zero-slack conditions visible. If a construction cannot say why the known hard example is hard, treat it as decorative.
 
 ## Pre-Solve Gate
 

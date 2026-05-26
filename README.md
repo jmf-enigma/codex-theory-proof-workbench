@@ -26,6 +26,8 @@ The workbench encourages Codex to:
 - **Falsification first**: search small, finite, boundary, and relaxed-assumption cases before committing to a proof route.
 - **Lemma graphing**: split the theorem into named lemmas with statuses such as `known`, `proved`, `tool-checked`, `missing`, or `false`.
 - **No-repeat memory**: fingerprint repeated constructions, failed routes, missing assumptions, and unchanged proof states.
+- **Progress contract**: require a retry to bring new evidence rather than a rewritten version of the same missing lemma.
+- **Divergence before convergence**: compare proof, falsification, and orthogonal evidence routes before committing to a long proof.
 - **Construction search**: use small cases, exact pattern mining, tight examples, and algebraic normal forms to guess useful objects.
 - **Tool-assisted proof control**: translate Wolfram, Python, CVXPy, Z3, OR-Tools, Sage, or Lean output into lemmas, certificates, counterexamples, or theorem repairs.
 - **Escalation**: when a proof stalls, move to counterexample search, symbolic checks, LP/SMT certificates, premise retrieval, local formalization, or theorem repair.
@@ -97,10 +99,11 @@ The core loop is:
 3. Check for a direct theorem, certificate, contradiction, or known decomposition.
 4. Try to break the claim using small, finite, boundary, and relaxed-assumption cases.
 5. Choose a proof route and compress it into a proof kernel.
-6. Build a lemma graph and solve fragile lemmas one at a time.
-7. Use tools only when their output becomes a checkable lemma, certificate, counterexample, or repair.
-8. Record failed routes and unchanged proof states.
-9. Apply verification gates before writing the final proof.
+6. For hard or previously failed proofs, compare genuinely different proof, falsification, and evidence routes.
+7. Build a lemma graph and solve fragile lemmas one at a time.
+8. Use tools only when their output becomes a checkable lemma, certificate, counterexample, or repair.
+9. Record failed routes, blocked retries, and unchanged proof states.
+10. Apply verification gates before writing the final proof.
 
 ## Project Workspace
 
@@ -171,13 +174,13 @@ codex-math-python ~/.codex/skills/.system/skill-creator/scripts/quick_validate.p
 Compile scripts:
 
 ```bash
-PYTHONPYCACHEPREFIX=/tmp/codex-pycache python3 -m py_compile scripts/*.py
+PYTHONPYCACHEPREFIX=/tmp/codex-pycache codex-math-python -m py_compile scripts/*.py
 ```
 
 Run a smoke test:
 
 ```bash
-python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
+codex-math-python scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 
 ## License
@@ -214,6 +217,8 @@ This project is released under the MIT License. See [LICENSE](LICENSE).
 - **先反驳再证明**：先搜索 small、finite、boundary 和 relaxed-assumption cases，再投入主要证明路线。
 - **Lemma graph**：把 theorem 拆成带状态的 lemmas，例如 `known`、`proved`、`tool-checked`、`missing` 或 `false`。
 - **防重复记忆**：记录重复构造、失败路线、missing assumptions 和 unchanged proof states 的 fingerprints。
+- **进步契约**：要求每次 retry 带来新证据，而不是把同一个 missing lemma 换一种说法。
+- **先发散再收敛**：在长证明前比较证明路线、反驳路线和独立证据路线。
 - **构造搜索**：用 small cases、exact pattern mining、tight examples 和 algebraic normal forms 来猜有用的对象。
 - **工具辅助证明控制**：把 Wolfram、Python、CVXPy、Z3、OR-Tools、Sage 或 Lean 的输出转化成 lemmas、certificates、counterexamples 或 theorem repairs。
 - **失败升级**：证明卡住时，切换到 counterexample search、symbolic checks、LP/SMT certificates、premise retrieval、local formalization 或 theorem repair。
@@ -285,10 +290,11 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 3. 先检查是否存在直接 theorem、certificate、contradiction 或 known decomposition。
 4. 在 small、finite、boundary 和 relaxed-assumption cases 中尝试反驳命题。
 5. 选择一条 proof route，并压缩成 proof kernel。
-6. 构建 lemma graph，一次解决一个脆弱 lemma。
-7. 只有当工具输出能转化为可检查 lemma、certificate、counterexample 或 repair 时，才把它纳入证明。
-8. 记录失败路线和没有推进的 proof states。
-9. 写最终证明前通过 verification gates。
+6. 对困难或曾经失败的证明，先比较真正不同的证明路线、反驳路线和独立证据路线。
+7. 构建 lemma graph，一次解决一个脆弱 lemma。
+8. 只有当工具输出能转化为可检查 lemma、certificate、counterexample 或 repair 时，才把它纳入证明。
+9. 记录失败路线、blocked retries 和没有推进的 proof states。
+10. 写最终证明前通过 verification gates。
 
 ## 项目工作区
 
@@ -359,13 +365,13 @@ codex-math-python ~/.codex/skills/.system/skill-creator/scripts/quick_validate.p
 编译脚本：
 
 ```bash
-PYTHONPYCACHEPREFIX=/tmp/codex-pycache python3 -m py_compile scripts/*.py
+PYTHONPYCACHEPREFIX=/tmp/codex-pycache codex-math-python -m py_compile scripts/*.py
 ```
 
 运行 smoke test：
 
 ```bash
-python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
+codex-math-python scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 
 ## 许可证

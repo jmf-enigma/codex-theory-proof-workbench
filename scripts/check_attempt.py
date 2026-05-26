@@ -39,6 +39,12 @@ def parse_index(text: str) -> list[dict[str, str]]:
         cells = [cell.strip() for cell in line.strip("|").split("|")]
         if len(cells) < 10:
             continue
+        if len(cells) >= 11:
+            new_evidence_expected = cells[9]
+            retry_allowed_only_if = cells[10]
+        else:
+            new_evidence_expected = ""
+            retry_allowed_only_if = cells[9]
         entry = {
             "id": cells[0],
             "status": cells[1],
@@ -49,7 +55,8 @@ def parse_index(text: str) -> list[dict[str, str]]:
             "invariant_certificate": cells[6],
             "failure_witness": cells[7],
             "missing_assumption": cells[8],
-            "retry_allowed_only_if": cells[9],
+            "new_evidence_expected": new_evidence_expected,
+            "retry_allowed_only_if": retry_allowed_only_if,
         }
         if sum(bool(entry[field]) for field in FIELDS) >= 3:
             entries.append(entry)
@@ -120,6 +127,7 @@ def main() -> int:
                     "status": entry["status"],
                     "score": score,
                     "matched_fields": hits,
+                    "new_evidence_expected": entry.get("new_evidence_expected", ""),
                     "retry_allowed_only_if": entry["retry_allowed_only_if"],
                 }
             )
@@ -144,6 +152,8 @@ def main() -> int:
             print("matches:")
             for item in matches[:5]:
                 print(f"- {item['id']} score={item['score']} fields={','.join(item['matched_fields'])}")
+                if item["new_evidence_expected"]:
+                    print(f"  new_evidence_expected: {item['new_evidence_expected']}")
                 if item["retry_allowed_only_if"]:
                     print(f"  retry_allowed_only_if: {item['retry_allowed_only_if']}")
         if args.new_delta:

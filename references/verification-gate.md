@@ -29,6 +29,7 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 11. Assembly gate: verify the proved lemmas imply exactly the user claim, not a nearby weaker/stronger statement.
 12. Review gate: run an adversarial pass that tries to break the proof before writing the final answer.
 13. Progress gate: if the same obstruction survives two cycles, stop polishing and either isolate the missing lemma, weaken the theorem, or return `still open`.
+14. Novelty gate: for a repeated proof, state what changed since the last failed attempt. Acceptable changes are a new central object, theorem family, certificate, counterexample, missing assumption, verified trick, tool artifact, or theorem repair.
 
 ## Adversarial Review Checklist
 
@@ -41,6 +42,7 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 - Did any limit exchange require domination, uniform convergence, tightness, or monotone convergence?
 - Did any optimization proof confuse necessary FOC/KKT conditions with sufficiency?
 - Did any proof of uniqueness rely only on weak concavity or weak monotonicity?
+- Did the proof retry the same missing lemma with only different notation or a stronger unsupported claim?
 
 ## Missing Lemma Search
 
@@ -52,6 +54,7 @@ When a proof is stuck on a lemma:
 4. Check whether strengthening assumptions makes the lemma true.
 5. Try to refute the lemma with finite or numerical counterexamples.
 6. If the lemma is true only with extra conditions, state a conditional theorem.
+7. If two attacks on the lemma fail, try the negation, a finite search, a retrieved theorem pattern, or a weaker repaired lemma before another prose attempt.
 
 ## Final Answer Gate
 
@@ -63,4 +66,5 @@ For a hard proof, the final answer should include:
 - lemma graph with statuses,
 - counterexample searches attempted,
 - proof or exact obstruction,
+- novelty since the last failed route, if applicable,
 - confidence level and what would raise it.

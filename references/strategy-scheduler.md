@@ -34,6 +34,22 @@ Run at least two routes for a hard proof unless one route cleanly proves or refu
 - Progress estimate: after each route, mark whether the remaining obstacle is smaller, unchanged, or bigger; stop or switch after two unchanged/bigger cycles.
 - Recombine only after local checks: a final proof is allowed only when each sketch lemma has a status and the assembly matches the original quantifiers.
 
+## Novelty And Evidence
+
+For a hard or previously failed proof, a new route must change at least one real axis:
+
+- theorem family or proof architecture;
+- central object such as a dual, Bellman gap, envelope, potential, coupling, hard instance, certificate, or good event;
+- failure world or boundary case being controlled;
+- evidence source, such as a tool certificate, finite counterexample search, retrieved theorem, or local formalization;
+- statement repair or newly identified missing assumption.
+
+Do not treat these as new routes: same missing lemma with stronger wording, same construction under different notation, same algebra after adding a cosmetic case split, or a proof sketch whose only new ingredient is hope.
+
+A route has made progress only if it proves/refutes a kernel, shrinks the missing lemma, exposes a missing assumption, imports a checked theorem pattern, or produces a checkable artifact. If none of those happen, record the failed state and switch route.
+
+For difficult proofs, use a three-lane first pass unless direct mode succeeds: proof route, falsification route, and orthogonal evidence route. The third lane can be small-case pattern mining, symbolic simplification, LP/SMT/CVX certificate search, Lean for a local lemma, or a one-to-three-source pattern scan.
+
 ## Switch Rules
 
 - FOC fails or boundary matters: switch to KKT/subgradient/complementary slackness.

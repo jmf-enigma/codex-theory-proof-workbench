@@ -55,6 +55,12 @@ Workstreams are goal-based. Start from the approved research question and goals,
 - workstream card: branch is hard, repeated, multi-lemma, tool-assisted, literature-dependent, or expensive enough to need state.
 - full project: several workstream cards, repeated obstruction, or user-facing research output is needed.
 
+## Progress Contract
+
+Before any repeated or expensive attempt, state the expected new evidence. Acceptable evidence is a proved/refuted kernel, counterexample, missing assumption, checked certificate, different central object, retrieved theorem pattern, verified trick, or theorem repair.
+
+Changing notation, adding cosmetic cases, or restating the same missing lemma is not progress. If no genuine delta exists, block the retry and record why.
+
 ## Approved Research Question
 
 - question:
@@ -77,9 +83,9 @@ No active workstream is required until a branch needs durable state. For a small
 
 Use this table before any repeated proof route, construction, counterexample search, or tool-backed lemma attempt. The point is to identify the same failed idea under different notation.
 
-| id | status | route family | central object | target lemma | parameterization | invariant/certificate | failure witness | missing assumption | retry allowed only if |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| A1 |  |  |  |  |  |  |  |  |  |
+| id | status | route family | central object | target lemma | parameterization | invariant/certificate | failure witness | missing assumption | new evidence expected | retry allowed only if |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A1 |  |  |  |  |  |  |  |  |  |  |
 
 For constructive attempts, put the construction family in `route family`. A policy, mechanism, coupling, hard instance, potential, certificate, payment, dual, or counterexample with the same central object, parameterization, invariant/certificate, and failure witness is the same attempt unless the retry condition is genuinely new.
 
@@ -91,7 +97,7 @@ Before a new attempt, compare it with the index.
 - same parameterization plus same invariant or certificate: likely repeat.
 - same failure witness or missing assumption: likely repeat.
 - same target lemma with no new proof ingredient: likely repeat.
-- retry only if there is a new assumption, central object, invariant, certificate, verified trick, counterexample repair, or theorem repair.
+- retry only if there is a new assumption, central object, invariant, certificate, verified trick, counterexample repair, theorem repair, or imported theorem pattern.
 
 If no genuine delta exists, block the attempt and update `LEDGER.md` with the blocked retry.
 
@@ -121,6 +127,8 @@ Copy this block only when a branch is hard, repeated, multi-lemma, tool-assisted
 - input context:
 - output artifact: pattern card / tool certificate / proof attempt / reviewer report / steering answer
 - report path:
+- route novelty: new central object / theorem family / certificate / failure world / evidence source / theorem repair
+- expected new evidence:
 
 #### Look At How Others Do It Gate
 
@@ -196,6 +204,16 @@ This page is optional. Fill it only when the proof route is unclear, the theorem
 - smallest bad example:
 - boundary or degenerate case:
 
+## Divergence Before Convergence
+
+For hard or previously failed proofs, fill three short candidates before choosing a long route. They must differ by central object, certificate, failure world, or evidence source.
+
+| lane | candidate route | central object | evidence or check | why not a repeat |
+| --- | --- | --- | --- | --- |
+| proof |  |  |  |  |
+| falsification |  |  |  |  |
+| orthogonal evidence | small cases / tool / paper pattern / local formalization |  |  |  |
+
 ## Central Object Candidates
 
 | object | failure it controls | assumptions that support it | verification hook |
@@ -238,6 +256,7 @@ Pick one kernel before writing a long proof. A kernel is the smallest lemma, cer
 - theorem implication: how the kernel plus routine steps gives the claim:
 - evidence type: direct proof / known theorem / tool certificate / finite falsification / local formalization:
 - failure shape: what counterexample or missing assumption would make the kernel false:
+- expected new evidence:
 - next action: prove / refute / retrieve / tool-check / repair:
 
 ## One-Step Proof Move Queue
@@ -277,6 +296,8 @@ Record only tricks that change the next proof move.
 
 - selected idea:
 - rejected ideas and why:
+- route novelty:
+- expected new evidence:
 - next proof route:
 """
 

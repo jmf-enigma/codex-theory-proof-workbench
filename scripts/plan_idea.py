@@ -28,6 +28,11 @@ def main() -> int:
     print("- Light idea mode only when the direct route is unclear.")
     print("- Full project mode only for hard, repeated, multi-lemma, tool-assisted, or literature-dependent proofs.")
 
+    print("\nProgress contract")
+    print("- A retry is useful only if it brings new evidence: proved/refuted kernel, counterexample, missing assumption, checked certificate, different central object, retrieved theorem pattern, verified trick, or theorem repair.")
+    print("- Changing notation, adding cosmetic cases, or restating a stronger missing lemma is not progress.")
+    print("- Before a second attempt on the same obstruction, name the route family, central object, target kernel, failure witness, and expected new evidence.")
+
     print("Direct-solve check")
     print("- State the theorem fence: no silent change to assumptions, quantifiers, domains, or conclusion.")
     print("- Is there a named theorem whose assumptions exactly match?")
@@ -55,6 +60,13 @@ def main() -> int:
     print("- State how that kernel implies the theorem with only routine assembly left.")
     print("- Choose one evidence type: direct proof, known theorem, tool certificate, finite falsification, or local formalization.")
     print("- Name the failure shape: the counterexample or missing assumption that would make the kernel false.")
+
+    print("\nDivergence before convergence")
+    print("- For hard or previously failed proofs, compare three lanes before writing a long proof.")
+    print("- Lane 1: proof route from a central object or theorem family.")
+    print("- Lane 2: falsification route from the smallest failure world or boundary case.")
+    print("- Lane 3: orthogonal evidence route from small cases, symbolic/tool checks, local formalization, or a nearby paper pattern.")
+    print("- Continue with the lane that best controls the failure world and has a verification hook.")
 
     print("\nOne-step proof move")
     print("- For a fragile kernel, try one move at a time: current subgoal, proposed move, expected new subgoal, check result.")

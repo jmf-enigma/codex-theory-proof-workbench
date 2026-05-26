@@ -8,6 +8,7 @@ Escalate when any of these occurs:
 
 - the same obstruction survives two proof cycles;
 - two distinct proof routes fail without shrinking the missing lemma;
+- a proposed retry has no new central object, certificate, counterexample, theorem pattern, missing assumption, or theorem repair;
 - a tool check, toy model, or boundary case contradicts a proof step;
 - the current proof needs an unstated assumption;
 - the user has asked the same theorem before and it remained unresolved.
@@ -58,6 +59,7 @@ For each escalation, record:
 - failed route:
 - obstruction:
 - smaller lemma or negation:
+- why the next route is genuinely new:
 - external method used:
 - result:
 - theorem repair, if any:

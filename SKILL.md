@@ -26,6 +26,21 @@ The scripts create memory and guardrails; they do not decide the mathematics. Be
 - whether the obstruction needs the user's domain intuition before spending another heavy search cycle;
 - whether to stop with `still open` rather than produce a polished but unsupported proof.
 
+## Progress Contract
+
+For a hard or previously failed proof, do not count a rewrite as progress. A new attempt is useful only if it adds one of these:
+
+- a proved or refuted kernel lemma;
+- a counterexample, boundary case, or missing assumption;
+- a checked certificate, algebra identity, finite model, optimization/SMT result, or local formalization;
+- a different central object, invariant, potential, hard instance, dual, envelope, coupling, or Bellman gap;
+- a retrieved theorem pattern or paper trick with assumptions and a verification hook;
+- a theorem repair that changes the exact statement honestly.
+
+Before retrying the same obstruction, name the attempt signature: route family, central object, target kernel, failure witness, and expected new evidence. Changing notation, adding cosmetic cases, or restating a stronger missing lemma is not progress.
+
+For hard proofs, use divergence before convergence unless a direct theorem already solves the claim: try one proof route, one falsification route, and one orthogonal idea source such as small-case pattern mining, a tool certificate, or a nearby paper pattern. Then choose the route with the strongest failure-world control and verification hook.
+
 ## Use Gate
 
 Do not blindly escalate to the full workbench. Pick the lightest useful mode.
@@ -78,11 +93,11 @@ For unfamiliar theorem families, literature-dependent proofs, or user-requested 
 When the route needs computation, CAS, SMT, optimization solvers, or Lean, apply [references/tool-assisted-proof-patterns.md](references/tool-assisted-proof-patterns.md) before running broad tool queries.
 If a route fails twice or the same obstruction repeats, use [references/proof-escalation-protocol.md](references/proof-escalation-protocol.md) before another prose proof attempt.
 4. For hard proof projects, use `WORKSTREAMS.md` to define approved goals and active workstream cards. Before heavy execution, each card should inspect how nearby papers, appendices, prior ledgers, theorem families, or analogous models solve similar problems, unless there is a written skip reason. Keep this local-first and bounded: one to three strong sources or patterns are enough before trying the next proof move. Use actual parallel agents only when the user explicitly asks for delegation.
-5. Choose proof routes with [references/strategy-scheduler.md](references/strategy-scheduler.md); run at least two plausible routes for hard or previously failed proofs.
+5. Choose proof routes with [references/strategy-scheduler.md](references/strategy-scheduler.md); run at least two genuinely different routes for hard or previously failed proofs. Different means a different central object, theorem family, certificate type, failure world, or evidence source.
 6. Before proving, try to break the claim: edge cases, missing compactness/convexity/continuity, finite counterexamples, numerical examples, and relaxed assumptions.
 7. If the route is still unclear, run the optional idea pass: failure world -> small-case pattern guess -> central object -> proof kernel -> central lemma -> verification hook. Use `pattern_miner.py` only when the small cases produce a useful exact sequence.
-8. Build a lemma graph: label each needed lemma as known, checkable by tools, missing, or likely false. For repeated attempts, record the attempt fingerprint in `WORKSTREAMS.md` before trying a variant.
-9. Work one proof move at a time when a kernel is fragile: name the current subgoal, propose one move, predict the new subgoal, check it by theorem match, algebra, toy case, tool, or reviewer pass, then keep, repair, or discard it based on proof-state delta.
+8. Build a lemma graph: label each needed lemma as known, checkable by tools, missing, or likely false. For repeated attempts, record the attempt fingerprint and expected new evidence in `WORKSTREAMS.md` before trying a variant.
+9. Work one proof move at a time when a kernel is fragile: name the current subgoal, propose one move, predict the new subgoal, check it by theorem match, algebra, toy case, tool, or reviewer pass, then keep, repair, or discard it based on proof-state delta. If two moves leave the same obstruction unchanged, stop proving in prose and switch to retrieval, tools, counterexample search, theorem repair, or user steering.
 10. Read only the relevant branch playbook. If unsure, run:
 
 ```bash
@@ -110,6 +125,7 @@ If a proof attempt stalls, do not start over. Create or update a proof ledger. T
 - the exact claim and assumptions,
 - failed proof routes and where they broke,
 - failed proof states that remained unchanged after a move,
+- blocked retries and why they had no new evidence,
 - named obstruction types,
 - attempted counterexamples,
 - proved lemmas,
@@ -120,7 +136,7 @@ When the user asks again about the same proof, read the ledger first and continu
 
 If two routes fail, or if the ledger shows the same obstruction twice, stop trying the same proof style. Open [references/proof-escalation-protocol.md](references/proof-escalation-protocol.md), then run the next bounded external method: finite counterexample search, symbolic simplification, LP/SMT certificate, literature/premise retrieval, local Lean formalization, or theorem repair.
 
-For repeated attempts, check the attempt fingerprint index in `WORKSTREAMS.md` before proposing another route or construction. Do not retry the same signature unless there is a new assumption, central object, invariant, certificate, verified trick, counterexample repair, or theorem repair that directly addresses the previous failed witness.
+For repeated attempts, check the attempt fingerprint index in `WORKSTREAMS.md` before proposing another route or construction. Do not retry the same signature unless there is a new assumption, central object, invariant, certificate, verified trick, counterexample repair, theorem repair, or external theorem pattern that directly addresses the previous failed witness.
 
 For a hard proof where direct mode and the light idea pass are insufficient, start a project:
 
@@ -180,6 +196,7 @@ For hard proofs, keep the visible answer compact. Use the ledger and gates inter
 - essential assumptions,
 - proof pattern and final proof, or the exact obstruction if still open,
 - missing lemma, counterexample, tool artifact, external pattern, or workstream result only when it materially changes the conclusion,
+- what genuinely changed since the last failed attempt, when the proof has been tried before,
 - next bounded move if the proof is still blocked.
 
 Do not present a polished proof if the key lemma is only guessed. Mark it as a missing lemma.
