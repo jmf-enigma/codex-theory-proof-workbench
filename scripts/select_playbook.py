@@ -5,9 +5,9 @@ import re
 
 PLAYBOOKS = {
     "dp-proof-playbook.md": [
-        "dynamic programming", "dp", "bellman", "mdp", "markov decision",
+        "dynamic programming", "dynamic program", "dp", "bellman", "mdp", "markov decision",
         "value function", "policy iteration", "value iteration", "optimal policy",
-        "threshold policy", "monotone policy", "index policy", "indexability",
+        "optimal stopping", "threshold policy", "threshold structure", "monotone policy", "index policy", "indexability",
         "average cost", "discounted", "finite horizon", "infinite horizon",
         "post-decision", "queue", "inventory", "stochastic control",
         "bellman equation", "bellman inequality", "q-value", "q function",

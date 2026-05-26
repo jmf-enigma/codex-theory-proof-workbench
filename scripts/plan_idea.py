@@ -68,6 +68,13 @@ def main() -> int:
     print("- Lane 3: orthogonal evidence route from small cases, symbolic/tool checks, local formalization, or a nearby paper pattern.")
     print("- Continue with the lane that best controls the failure world and has a verification hook.")
 
+    print("\nBottleneck surgery")
+    print("- If the same missing lemma survives, shrink it to the smallest local lemma.")
+    print("- Flip it to the negation or tight/equality case.")
+    print("- Try one alternate representation: dual, slack, Bellman gap, envelope, deviation graph, coupling, KL bridge, potential, or telescope.")
+    print("- Choose the highest decision-value move: proof/refutation, counterexample, missing assumption, certificate, retrieval, or theorem repair.")
+    print("- Stop after one decisive artifact or two failed local moves.")
+
     print("\nOne-step proof move")
     print("- For a fragile kernel, try one move at a time: current subgoal, proposed move, expected new subgoal, check result.")
     print("- Keep the move only if the proof state becomes smaller or reveals a concrete theorem repair.")

@@ -50,6 +50,20 @@ A route has made progress only if it proves/refutes a kernel, shrinks the missin
 
 For difficult proofs, use a three-lane first pass unless direct mode succeeds: proof route, falsification route, and orthogonal evidence route. The third lane can be small-case pattern mining, symbolic simplification, LP/SMT/CVX certificate search, Lean for a local lemma, or a one-to-three-source pattern scan.
 
+## Decision Value Ranking
+
+When several next moves are possible, choose the one with the highest decision value. A high-value move can end or sharply reroute the search:
+
+- prove or refute the current kernel;
+- produce a counterexample, boundary case, or missing assumption;
+- produce a checkable certificate, exact identity, LP/SMT/CVX witness, or local formalization;
+- retrieve a theorem pattern whose assumptions can be matched immediately;
+- replace an opaque algebra step with a dual, envelope, Bellman, KL, coupling, potential, or telescope representation.
+
+Low-value moves include polishing exposition, adding an unmotivated case split, strengthening the same missing lemma, or trying another route whose failure witness is unchanged.
+
+If all candidate moves have low decision value, stop and ask whether the theorem statement, modeling assumptions, or intended conclusion should change.
+
 ## Switch Rules
 
 - FOC fails or boundary matters: switch to KKT/subgradient/complementary slackness.

@@ -41,6 +41,8 @@ Before retrying the same obstruction, name the attempt signature: route family, 
 
 For hard proofs, use divergence before convergence unless a direct theorem already solves the claim: try one proof route, one falsification route, and one orthogonal idea source such as small-case pattern mining, a tool certificate, or a nearby paper pattern. Then choose the route with the strongest failure-world control and verification hook.
 
+When a route stalls, optimize for decision value, not activity. The next move should decide a kernel, refute a small claim, expose a missing assumption, import a usable theorem pattern, or produce a checkable certificate. If it cannot do one of these, do not spend a long prose attempt on it.
+
 ## Use Gate
 
 Do not blindly escalate to the full workbench. Pick the lightest useful mode.
@@ -95,7 +97,7 @@ If a route fails twice or the same obstruction repeats, use [references/proof-es
 4. For hard proof projects, use `WORKSTREAMS.md` to define approved goals and active workstream cards. Before heavy execution, each card should inspect how nearby papers, appendices, prior ledgers, theorem families, or analogous models solve similar problems, unless there is a written skip reason. Keep this local-first and bounded: one to three strong sources or patterns are enough before trying the next proof move. Use actual parallel agents only when the user explicitly asks for delegation.
 5. Choose proof routes with [references/strategy-scheduler.md](references/strategy-scheduler.md); run at least two genuinely different routes for hard or previously failed proofs. Different means a different central object, theorem family, certificate type, failure world, or evidence source.
 6. Before proving, try to break the claim: edge cases, missing compactness/convexity/continuity, finite counterexamples, numerical examples, and relaxed assumptions.
-7. If the route is still unclear, run the optional idea pass: failure world -> small-case pattern guess -> central object -> proof kernel -> central lemma -> verification hook. Use `pattern_miner.py` only when the small cases produce a useful exact sequence.
+7. If the route is still unclear, run the optional idea pass: failure world -> small-case pattern guess -> central object -> proof kernel -> central lemma -> verification hook. Use `pattern_miner.py` only when the small cases produce a useful exact sequence. If the same obstruction remains, do bottleneck surgery: shrink to the smallest local lemma, flip to the negation, try a certificate or alternate representation, then retrieve or repair before drafting again.
 8. Build a lemma graph: label each needed lemma as known, checkable by tools, missing, or likely false. For repeated attempts, record the attempt fingerprint and expected new evidence in `WORKSTREAMS.md` before trying a variant.
 9. Work one proof move at a time when a kernel is fragile: name the current subgoal, propose one move, predict the new subgoal, check it by theorem match, algebra, toy case, tool, or reviewer pass, then keep, repair, or discard it based on proof-state delta. If two moves leave the same obstruction unchanged, stop proving in prose and switch to retrieval, tools, counterexample search, theorem repair, or user steering.
 10. Read only the relevant branch playbook. If unsure, run:

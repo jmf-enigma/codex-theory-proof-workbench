@@ -28,6 +28,7 @@ The workbench encourages Codex to:
 - **No-repeat memory**: fingerprint repeated constructions, failed routes, missing assumptions, and unchanged proof states.
 - **Progress contract**: require a retry to bring new evidence rather than a rewritten version of the same missing lemma.
 - **Divergence before convergence**: compare proof, falsification, and orthogonal evidence routes before committing to a long proof.
+- **Bottleneck surgery**: shrink a stuck proof to the smallest local lemma, flip it, change representation, then certify, refute, retrieve, or repair.
 - **Construction search**: use small cases, exact pattern mining, tight examples, and algebraic normal forms to guess useful objects.
 - **Tool-assisted proof control**: translate Wolfram, Python, CVXPy, Z3, OR-Tools, Sage, or Lean output into lemmas, certificates, counterexamples, or theorem repairs.
 - **Escalation**: when a proof stalls, move to counterexample search, symbolic checks, LP/SMT certificates, premise retrieval, local formalization, or theorem repair.
@@ -100,10 +101,11 @@ The core loop is:
 4. Try to break the claim using small, finite, boundary, and relaxed-assumption cases.
 5. Choose a proof route and compress it into a proof kernel.
 6. For hard or previously failed proofs, compare genuinely different proof, falsification, and evidence routes.
-7. Build a lemma graph and solve fragile lemmas one at a time.
-8. Use tools only when their output becomes a checkable lemma, certificate, counterexample, or repair.
-9. Record failed routes, blocked retries, and unchanged proof states.
-10. Apply verification gates before writing the final proof.
+7. If one lemma remains stuck, perform bottleneck surgery before another long proof attempt.
+8. Build a lemma graph and solve fragile lemmas one at a time.
+9. Use tools only when their output becomes a checkable lemma, certificate, counterexample, or repair.
+10. Record failed routes, blocked retries, and unchanged proof states.
+11. Apply verification gates before writing the final proof.
 
 ## Project Workspace
 
@@ -219,6 +221,7 @@ This project is released under the MIT License. See [LICENSE](LICENSE).
 - **防重复记忆**：记录重复构造、失败路线、missing assumptions 和 unchanged proof states 的 fingerprints。
 - **进步契约**：要求每次 retry 带来新证据，而不是把同一个 missing lemma 换一种说法。
 - **先发散再收敛**：在长证明前比较证明路线、反驳路线和独立证据路线。
+- **瓶颈手术**：把卡住的证明缩到最小 local lemma，翻成反命题或 tight case，换表示，再认证、反驳、检索或修复。
 - **构造搜索**：用 small cases、exact pattern mining、tight examples 和 algebraic normal forms 来猜有用的对象。
 - **工具辅助证明控制**：把 Wolfram、Python、CVXPy、Z3、OR-Tools、Sage 或 Lean 的输出转化成 lemmas、certificates、counterexamples 或 theorem repairs。
 - **失败升级**：证明卡住时，切换到 counterexample search、symbolic checks、LP/SMT certificates、premise retrieval、local formalization 或 theorem repair。
@@ -291,10 +294,11 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 4. 在 small、finite、boundary 和 relaxed-assumption cases 中尝试反驳命题。
 5. 选择一条 proof route，并压缩成 proof kernel。
 6. 对困难或曾经失败的证明，先比较真正不同的证明路线、反驳路线和独立证据路线。
-7. 构建 lemma graph，一次解决一个脆弱 lemma。
-8. 只有当工具输出能转化为可检查 lemma、certificate、counterexample 或 repair 时，才把它纳入证明。
-9. 记录失败路线、blocked retries 和没有推进的 proof states。
-10. 写最终证明前通过 verification gates。
+7. 如果一个 lemma 持续卡住，先做 bottleneck surgery，再尝试长证明。
+8. 构建 lemma graph，一次解决一个脆弱 lemma。
+9. 只有当工具输出能转化为可检查 lemma、certificate、counterexample 或 repair 时，才把它纳入证明。
+10. 记录失败路线、blocked retries 和没有推进的 proof states。
+11. 写最终证明前通过 verification gates。
 
 ## 项目工作区
 

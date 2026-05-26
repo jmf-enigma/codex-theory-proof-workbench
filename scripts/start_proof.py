@@ -61,6 +61,8 @@ Before any repeated or expensive attempt, state the expected new evidence. Accep
 
 Changing notation, adding cosmetic cases, or restating the same missing lemma is not progress. If no genuine delta exists, block the retry and record why.
 
+Prefer high decision value moves: kernel proof/refutation, counterexample, missing assumption, certificate, retrieved theorem, representation change, or theorem repair.
+
 ## Approved Research Question
 
 - question:
@@ -114,6 +116,18 @@ Keep entries short. Use this when a proof move leaves the same subgoal unchanged
 | id | subgoal | attempted move | why it failed | needed new ingredient | next allowed action |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  |  |  |  |  |
+
+## Bottleneck Surgery
+
+Use this when the same missing lemma or algebraic obstacle survives.
+
+- smallest local lemma:
+- negation or tight/equality case:
+- alternate representation to try: dual / slack / Bellman gap / envelope / deviation graph / coupling / KL bridge / potential / telescope
+- highest decision-value move:
+- expected artifact: proof / counterexample / missing assumption / certificate / theorem pattern / repaired theorem
+- result:
+- next action:
 
 ## Workstream Card Template
 
@@ -258,6 +272,17 @@ Pick one kernel before writing a long proof. A kernel is the smallest lemma, cer
 - failure shape: what counterexample or missing assumption would make the kernel false:
 - expected new evidence:
 - next action: prove / refute / retrieve / tool-check / repair:
+
+## Bottleneck Surgery
+
+Use this if the kernel stays unresolved after one serious move.
+
+- smallest local lemma:
+- negation or tight/equality case:
+- alternate representation: dual / slack / Bellman gap / envelope / deviation graph / coupling / KL bridge / potential / telescope:
+- decision-value ranking: kernel proof/refutation / counterexample / missing assumption / certificate / retrieval / theorem repair:
+- expected artifact:
+- result:
 
 ## One-Step Proof Move Queue
 

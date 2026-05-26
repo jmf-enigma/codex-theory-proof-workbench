@@ -29,11 +29,12 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 7. Draft: write a rough proof in 5-10 steps. Each step must name its intended theorem family, such as convex duality, envelope, single crossing, martingale concentration, elliptical potential, or information lower bound.
 8. Sketch: convert the draft into a lemma graph. Each lemma gets inputs, output, likely proof route, tool check, and failure mode.
 9. Prove locally: solve the smallest unresolved lemma first. Work one move at a time when fragile: proposed move, expected new subgoal, check, proof-state delta. Use Wolfram/SymPy for algebra, Python/Z3/CVXPy/Sage for finite or optimization checks, and Lean for local formalizable lemmas.
-10. Repair: if a lemma fails, determine whether the issue is false claim, missing assumption, quantifier mismatch, boundary case, or proof technique mismatch.
-11. Recombine: assemble only after all essential lemmas have statuses. Verify exact variables, quantifiers, constants, events, and assumptions.
-12. Review: adversarially attack the proof. Try to break the weakest lemma and the final assembly.
-13. Human steering checkpoint: if the obstruction is mathematical taste, model choice, definition choice, or a missing heuristic rather than a narrow check, ask the user for domain intuition before spending another heavy cycle.
-14. Escalate: if two consecutive cycles make no progress, use `proof-escalation-protocol.md` to choose counterexample search, tool certification, retrieval, local formalization, theorem repair, or stop/report.
+10. Bottleneck surgery: if the same lemma remains unresolved, shrink it, flip to the negation, change representation, then certify/falsify/retrieve/repair before another prose proof.
+11. Repair: if a lemma fails, determine whether the issue is false claim, missing assumption, quantifier mismatch, boundary case, or proof technique mismatch.
+12. Recombine: assemble only after all essential lemmas have statuses. Verify exact variables, quantifiers, constants, events, and assumptions.
+13. Review: adversarially attack the proof. Try to break the weakest lemma and the final assembly.
+14. Human steering checkpoint: if the obstruction is mathematical taste, model choice, definition choice, or a missing heuristic rather than a narrow check, ask the user for domain intuition before spending another heavy cycle.
+15. Escalate: if two consecutive cycles make no progress, use `proof-escalation-protocol.md` to choose counterexample search, tool certification, retrieval, local formalization, theorem repair, or stop/report.
 
 ## Stop Budgets
 

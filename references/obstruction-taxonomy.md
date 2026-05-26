@@ -16,6 +16,8 @@ Use this when a proof is stuck. Name the obstruction before trying another route
 - Missing summation lemma: regret proof has correct instantaneous bound but cannot sum. Next move: apply peeling, elliptical potential, harmonic/log sum, or Cauchy-Schwarz.
 - Lower-bound construction too easy: instances are too separated or not both feasible. Next move: make instances closer and compute KL explicitly.
 - Overfit pattern guess: formula, potential, active set, or construction fits the first toy cases but fails a holdout case or lacks a certificate. Next move: keep the failed guess as evidence, change the normal form, or search for the missing condition.
+- Opaque algebra: the route depends on a manipulation with no visible sign, telescope, dual, or equality case. Next move: change representation before continuing: gap form, add-subtract benchmark, conjugate/dual, Bellman residual, envelope term, KL/TV bridge, or potential.
+- Low decision value: the next proposed move would not prove/refute a kernel, expose an assumption, retrieve a theorem, or produce a certificate. Next move: choose a higher-value move or stop for theorem repair/user steering.
 - Unchanged proof state: a proof move only renames the same subgoal, missing lemma, or algebraic obstacle. Next move: record the failed state, retrieve a premise/paper pattern, tool-check the local claim, or try theorem repair.
 - Repeated construction: the same central object, parameterization, invariant, or failure witness has appeared under new notation. Next move: update the attempt fingerprint in `WORKSTREAMS.md`; retry only with a new assumption, invariant, certificate, verified trick, or theorem repair.
 - Repeated route without delta: the same theorem family attacks the same missing lemma with no new proof ingredient. Next move: block the retry in `LEDGER.md`, then switch route, retrieve a pattern, tool-check the obstruction, or repair the theorem.
@@ -25,9 +27,10 @@ Use this when a proof is stuck. Name the obstruction before trying another route
 1. Name the obstruction in the ledger.
 2. Write the smallest version where the obstruction appears.
 3. Check whether this is a repeated route or construction by comparing against `WORKSTREAMS.md`.
-4. Try to refute that small version.
-5. If true, promote it to a named lemma and prove it separately.
-6. If false, repair the theorem statement before continuing.
+4. Rank the next move by decision value: kernel proof/refutation, counterexample, certificate, retrieval, representation change, or theorem repair.
+5. Try to refute that small version.
+6. If true, promote it to a named lemma and prove it separately.
+7. If false, repair the theorem statement before continuing.
 
 ## Red Flags
 

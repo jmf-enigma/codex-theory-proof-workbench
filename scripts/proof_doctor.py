@@ -81,6 +81,7 @@ STATE_ACTIONS = {
     "S4-lemma-graph": [
         "Before attacking the same missing lemma again, write the route family, central object, failure witness, and new delta in WORKSTREAMS.md.",
         "Turn every nontrivial step into a named lemma with status known/proved/tool-checked/missing/false.",
+        "For the hardest unresolved lemma, run bottleneck surgery: shrink, flip, change representation, then certify/falsify/retrieve/repair.",
         "For the hardest fragile lemma, use one-step moves: current subgoal, proposed move, expected new subgoal, check result, proof-state delta.",
         "Promote the single hardest missing step to its own lemma card.",
     ],
@@ -103,6 +104,7 @@ STATE_ACTIONS = {
         "Name the exact obstruction in LEDGER.md.",
         "Check the Attempt Fingerprint Index in WORKSTREAMS.md; run check_attempt.py only if several fingerprints or an ambiguous match make this hard.",
         "Shrink the obstruction to one proof kernel before trying another long proof route.",
+        "Rank next moves by decision value: kernel proof/refutation, counterexample, missing assumption, certificate, retrieval, representation change, or theorem repair.",
         "If a proposed move leaves the proof state unchanged, add a Failed-State Notebook entry in WORKSTREAMS.md before retrying.",
         "If no construction is visible, mine small cases for a pattern; use pattern_miner.py for exact sequences and test one holdout case before promoting the guess.",
         "Before repeating proof search, inspect one to three nearby papers, appendices, prior ledgers, theorem families, or analogous models for this obstruction.",

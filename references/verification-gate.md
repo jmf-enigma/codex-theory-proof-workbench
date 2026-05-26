@@ -30,6 +30,7 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 12. Review gate: run an adversarial pass that tries to break the proof before writing the final answer.
 13. Progress gate: if the same obstruction survives two cycles, stop polishing and either isolate the missing lemma, weaken the theorem, or return `still open`.
 14. Novelty gate: for a repeated proof, state what changed since the last failed attempt. Acceptable changes are a new central object, theorem family, certificate, counterexample, missing assumption, verified trick, tool artifact, or theorem repair.
+15. Decision-value gate: before another long proof attempt, state the artifact it is expected to produce. If there is no expected artifact, choose counterexample search, retrieval, local formalization, theorem repair, or stop.
 
 ## Adversarial Review Checklist
 
@@ -43,6 +44,7 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 - Did any optimization proof confuse necessary FOC/KKT conditions with sufficiency?
 - Did any proof of uniqueness rely only on weak concavity or weak monotonicity?
 - Did the proof retry the same missing lemma with only different notation or a stronger unsupported claim?
+- Did the hardest algebra step have a sign, equality case, certificate, or alternate representation?
 
 ## Missing Lemma Search
 

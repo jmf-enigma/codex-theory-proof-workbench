@@ -70,6 +70,18 @@ A usable kernel has four parts:
 
 If no kernel can be stated, keep searching for the central object or try to falsify the claim. If two kernels fail without shrinking the obstruction, switch route or repair the theorem.
 
+## Bottleneck Surgery
+
+Use this when the proof keeps circling one missing lemma. The goal is to change the local problem, not to make the prose longer.
+
+1. Shrink: state the smallest local lemma where the obstruction first appears.
+2. Flip: write the negation or equality/tight case of that lemma.
+3. Change representation: try one alternate object such as a dual, slack, Bellman gap, envelope term, deviation graph, coupling, KL bridge, potential, or telescope.
+4. Certify or falsify: search for a finite witness, algebra identity, LP/SMT/CVX certificate, known theorem, or local formalization.
+5. Repair: if the surgery reveals an extra condition or weaker conclusion, state the repaired theorem before continuing.
+
+Stop surgery after one decisive artifact or two failed local moves. Then either switch route or mark the theorem `lemma-conditional` or `still open`.
+
 ## One-Step Proof Move Queue
 
 Use this when the kernel is fragile or the route keeps circling the same missing lemma. A move is useful only if it changes the proof state.
