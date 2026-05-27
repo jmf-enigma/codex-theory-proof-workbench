@@ -63,6 +63,34 @@ Restart Codex or refresh skill discovery if needed. The skill name is:
 theory-proof-workbench
 ```
 
+## Optional Wolfram Engine Setup
+
+This skill can use Wolfram through the local `wmath`/`codex-wmath` wrapper when the companion `math-tools` skill is installed. Wolfram is optional, but it is useful for symbolic algebra, inequality checks, condition discovery, quantifier elimination, FOCs/KKT algebra, Bellman/Q-value differences, envelope derivatives, and small counterexample searches.
+
+`codex-wmath` is a local command wrapper around the Wolfram Language kernel. On this machine, `wmath` delegates to `codex-wmath`; `codex-wmath` calls `WolframKernel` directly when available and falls back to `wolframscript` if needed. It also uses a timeout guard and a temporary lock so multiple Codex calls do not compete for the same local kernel.
+
+Install the backend from Wolfram's official pages:
+
+- [Wolfram Engine](https://www.wolfram.com/engine/) and [Wolfram Engine FAQ](https://www.wolfram.com/engine/faq/).
+- [Install WolframScript](https://reference.wolfram.com/language/workflow/InstallWolframScript.html.en), if your setup needs the command-line script interface.
+- Wolfram support note on selecting a kernel path for `wolframscript`: [How do I specify which kernel wolframscript should use?](https://support.wolfram.com/47243/).
+
+After installing and activating Wolfram Engine, verify:
+
+```bash
+wolframscript -code '2+2'
+codex-wmath '2+2'
+wmath '2+2'
+```
+
+For proof work, prefer queries that produce checkable artifacts:
+
+```bash
+codex-wmath 'ExportString[With[{s = FullSimplify[x^2 >= 0, Element[x, Reals]]}, <|"verified" -> TrueQ[s], "result" -> ToString[s, InputForm]|>], "RawJSON"]'
+```
+
+Treat Wolfram output as evidence, not as the final proof. A useful result should become a named lemma, condition, counterexample, certificate, or theorem repair in the proof ledger.
+
 ## Quick Start
 
 For a lightweight idea pass:
@@ -125,7 +153,7 @@ The core loop is:
 
 Tools do not replace proof. They are useful only when their outputs can be translated into mathematical artifacts.
 
-- Wolfram or SymPy can support algebra, inequalities, assumptions, and symbolic conditions.
+- Wolfram via `codex-wmath`/`wmath`, or SymPy, can support algebra, inequalities, assumptions, and symbolic conditions.
 - Python, CVXPy, Z3, OR-Tools, or Sage can support finite examples, LP/MIP certificates, graph checks, and exact computations.
 - Lean/mathlib can check stable local lemmas once the statement is precise.
 - Simulations can falsify or sanity-check, but they do not prove universal claims.
@@ -256,6 +284,34 @@ git clone https://github.com/jmf-enigma/codex-theory-proof-workbench.git ~/.code
 theory-proof-workbench
 ```
 
+## 可选的 Wolfram Engine 设置
+
+如果同时安装了 `math-tools` skill，这个 workbench 可以通过本地 `wmath`/`codex-wmath` wrapper 调用 Wolfram。Wolfram 不是必须的，但它很适合做 symbolic algebra、inequality checks、condition discovery、quantifier elimination、FOC/KKT algebra、Bellman/Q-value difference、envelope derivatives 和小型 counterexample search。
+
+`codex-wmath` 是本地 Wolfram Language kernel wrapper。在这台机器上，`wmath` 会委托给 `codex-wmath`；`codex-wmath` 会优先直接调用 `WolframKernel`，必要时退回 `wolframscript`。它还带 timeout guard 和临时锁，避免多个 Codex 调用抢同一个本地 kernel。
+
+后端从 Wolfram 官方页面安装：
+
+- [Wolfram Engine](https://www.wolfram.com/engine/) 和 [Wolfram Engine FAQ](https://www.wolfram.com/engine/faq/)。
+- 如果需要命令行脚本接口，参考 [Install WolframScript](https://reference.wolfram.com/language/workflow/InstallWolframScript.html.en)。
+- 如果 `wolframscript` 找不到 kernel，参考 Wolfram support 的 kernel path 说明：[How do I specify which kernel wolframscript should use?](https://support.wolfram.com/47243/)。
+
+安装并激活 Wolfram Engine 后，验证：
+
+```bash
+wolframscript -code '2+2'
+codex-wmath '2+2'
+wmath '2+2'
+```
+
+证明任务里优先让 Wolfram 输出可检查 artifact：
+
+```bash
+codex-wmath 'ExportString[With[{s = FullSimplify[x^2 >= 0, Element[x, Reals]]}, <|"verified" -> TrueQ[s], "result" -> ToString[s, InputForm]|>], "RawJSON"]'
+```
+
+不要把 Wolfram 输出直接当作最终证明。真正有用的输出应该被翻译成 proof ledger 里的 lemma、condition、counterexample、certificate 或 theorem repair。
+
 ## 快速开始
 
 轻量寻找证明思路：
@@ -318,7 +374,7 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 
 工具不能替代证明。只有当工具输出能转化为数学 artifact 时，它才真正有用。
 
-- Wolfram 或 SymPy 可用于代数、inequalities、assumptions 和 symbolic conditions。
+- 通过 `codex-wmath`/`wmath` 调用的 Wolfram，或 SymPy，可用于代数、inequalities、assumptions 和 symbolic conditions。
 - Python、CVXPy、Z3、OR-Tools 或 Sage 可用于 finite examples、LP/MIP certificates、graph checks 和 exact computations。
 - Lean/mathlib 适合在 statement 已经稳定后检查 local lemmas。
 - Simulation 只能用于 falsification 或 sanity check，不能证明 universal claims。
