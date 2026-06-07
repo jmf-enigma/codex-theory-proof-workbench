@@ -1155,6 +1155,13 @@ def triage_text(title: str, claim: str, selected: list[tuple[str, int]]) -> str:
 
 {chr(10).join(f"- {name} (score {value})" for name, value in selected)}
 
+## Mode Decision
+
+- mode: direct / micro-check / light-idea / project / recovery
+- why this mode is enough:
+- next artifact expected:
+- stop or escalation trigger:
+
 ## Immediate Tasks
 
 1. Fill exact variables, domains, quantifiers, and assumptions in `claim.md`.

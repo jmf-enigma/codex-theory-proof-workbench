@@ -69,6 +69,19 @@ Do not blindly escalate to the full workbench. Pick the lightest useful mode.
 
 Use references and tools only when they change the next proof move. Do not load every playbook, scan papers, or start a project just because the topic is theoretical.
 
+## Execution Spine
+
+Use this order unless the theorem is already solved or refuted:
+
+1. Exact statement and statement-fidelity check.
+2. Direct-solve or micro pattern check.
+3. Falsification and boundary stress test.
+4. Idea/kernel discovery only if the route is unclear.
+5. Small route portfolio for hard or failed proofs.
+6. Blueprint lemma graph and ready-leaf local proof.
+7. Route decision after repeated local failure.
+8. Assembly, adversarial review, and final proof status.
+
 ## Project Start
 
 For a hard or previously failed proof, start a proof project only when light modes are insufficient:
@@ -148,7 +161,7 @@ If a proof attempt stalls, do not start over. Create or update a proof ledger. T
 - attempted counterexamples,
 - proved lemmas,
 - missing lemmas,
-- the next most plausible theorem pattern.
+- the next most plausible theorem pattern,
 - compact repair state for the current bottleneck: statement, retrieved premise/pattern, previous attempt signature, previous feedback, and next legal edit.
 
 When the user asks again about the same proof, read the ledger first and continue from it.

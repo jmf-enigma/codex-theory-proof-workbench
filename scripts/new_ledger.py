@@ -27,6 +27,13 @@ Candidate patterns:
 
 Selected playbooks:
 
+## Mode Decision
+
+- mode: direct / micro-check / light-idea / project / recovery
+- why this mode is enough:
+- next artifact expected:
+- stop or escalation trigger:
+
 ## Pre-Solve Gate
 
 - Direct theorem/certificate available:
@@ -38,9 +45,13 @@ Selected playbooks:
 
 - Route A:
   - reason selected:
+  - route novelty:
+  - expected artifact:
   - status:
 - Route B:
   - reason selected:
+  - route novelty:
+  - expected artifact:
   - status:
 
 ## Assumption Audit
@@ -73,9 +84,11 @@ Selected playbooks:
 
 ## Lemma Graph
 
-- Lemma A:
-  - statement:
-  - status: missing
+Use statement deps for mathematical meaning and proof deps for facts/tools/helper lemmas used to prove the node.
+
+| node id | type | status | statement / role | statement deps | proof deps | used by assembly | expected artifact | gap grade | failure diagnosis |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| N1 | lemma | missing |  |  |  | yes / no / unknown | proof / tool check / counterexample / theorem pattern | good / bad / unknown |  |
 
 ## Failed Routes
 
@@ -83,11 +96,16 @@ Selected playbooks:
   - idea:
   - where it broke:
   - obstruction type:
+  - proof-state delta:
+  - attempt fingerprint:
+  - new evidence expected before retry:
   - what it taught:
 
 ## Failure Escalation
 
 - trigger:
+- route decision: continue / repair / re-decompose / retrieve / tool-falsify / stop-report
+- proof-state delta and failure diversity:
 - external method used:
 - result:
 - theorem repair, if any:
@@ -97,6 +115,7 @@ Selected playbooks:
 - Wolfram/SymPy:
 - Python/CVXPy/Z3/OR-Tools/Sage:
 - Lean:
+- expected artifact before next tool call:
 
 ## Current Obstruction
 
@@ -104,7 +123,9 @@ Name the exact missing lemma or condition.
 
 ## Next Move
 
-The next proof pattern or counterexample search to try.
+- next bounded move:
+- expected artifact:
+- retry allowed only if:
 """
 
 

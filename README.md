@@ -133,23 +133,24 @@ The core loop is:
 2. Preserve the theorem statement. If the proof needs a changed statement, mark it as theorem repair.
 3. Check for a direct theorem, certificate, contradiction, or known decomposition.
 4. Audit whether the statement matches the intended theorem when the claim comes from a model, paper, or informal derivation.
-5. Try to break the claim using small, finite, boundary, and relaxed-assumption cases.
-6. If the theorem needs an unknown construction, threshold, potential, hard instance, or answer, discover and self-check that object before proving.
-7. Choose a proof route and compress it into a proof kernel.
-8. For hard or previously failed proofs, compare genuinely different proof, falsification, and evidence routes.
-9. If one lemma remains stuck, perform bottleneck surgery and gap grading before another long proof attempt.
-10. Build a lemma graph with statement dependencies, proof dependencies, and downstream use.
-11. Solve ready leaves on the current theorem path before orphan side lemmas.
-12. After repeated local failures, run a route decision: continue, repair, re-decompose, retrieve, tool-check, or stop.
-13. Use tools only when their output becomes a checkable lemma, certificate, counterexample, or repair.
-14. Record failed routes, blocked retries, compact repair states, route decisions, and unchanged proof states.
-15. Apply verification gates before writing the final proof.
+5. Choose the lightest mode that can work: direct, micro-check, light-idea, project, or recovery.
+6. Try to break the claim using small, finite, boundary, and relaxed-assumption cases.
+7. If the theorem needs an unknown construction, threshold, potential, hard instance, or answer, discover and self-check that object before proving.
+8. Choose a proof route and compress it into a proof kernel.
+9. For hard or previously failed proofs, compare genuinely different proof, falsification, and evidence routes.
+10. If one lemma remains stuck, perform bottleneck surgery and gap grading before another long proof attempt.
+11. Build a lemma graph with statement dependencies, proof dependencies, and downstream use.
+12. Solve ready leaves on the current theorem path before orphan side lemmas.
+13. After repeated local failures, run a route decision: continue, repair, re-decompose, retrieve, tool-check, or stop.
+14. Use tools only when their output becomes a checkable lemma, certificate, counterexample, or repair.
+15. Record failed routes, blocked retries, compact repair states, route decisions, and unchanged proof states.
+16. Apply verification gates before writing the final proof.
 
 ## Project Workspace
 
 `start_proof.py` creates a structured proof workspace:
 
-- `TRIAGE.md`: immediate next steps and proof-mode rules.
+- `TRIAGE.md`: mode decision, immediate next steps, and proof-mode rules.
 - `WORKSTREAMS.md`: bounded workstream cards, no-repeat attempt fingerprints, and route decision checks.
 - `IDEA_MAP.md`: central objects, proof kernels, construction search, gap grading, route candidates, and one-step proof moves.
 - `ATTACK_MATRIX.md`: proof routes and falsification routes.
@@ -360,22 +361,23 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 1. 用精确的 variables、domains、quantifiers 和 assumptions 重述 claim。
 2. 保持原 theorem statement 不变；如果证明必须改命题，要明确标为 theorem repair。
 3. 先检查是否存在直接 theorem、certificate、contradiction 或 known decomposition。
-4. 在 small、finite、boundary 和 relaxed-assumption cases 中尝试反驳命题。
-5. 选择一条 proof route，并压缩成 proof kernel。
-6. 对困难或曾经失败的证明，先比较真正不同的证明路线、反驳路线和独立证据路线。
-7. 如果一个 lemma 持续卡住，先做 bottleneck surgery，再尝试长证明。
-8. 构建带 statement deps、proof deps 和 downstream use 的 lemma graph。
-9. 优先解决当前 theorem path 上的 ready leaves，而不是证明没有下游用途的 side lemmas。
-10. 局部失败重复后，先做 route decision：继续、修复、重拆、检索、工具检查或停止。
-11. 只有当工具输出能转化为可检查 lemma、certificate、counterexample 或 repair 时，才把它纳入证明。
-12. 记录失败路线、blocked retries、route decisions 和没有推进的 proof states。
-13. 写最终证明前通过 verification gates。
+4. 先选择最轻的可行模式：direct、micro-check、light-idea、project 或 recovery。
+5. 在 small、finite、boundary 和 relaxed-assumption cases 中尝试反驳命题。
+6. 选择一条 proof route，并压缩成 proof kernel。
+7. 对困难或曾经失败的证明，先比较真正不同的证明路线、反驳路线和独立证据路线。
+8. 如果一个 lemma 持续卡住，先做 bottleneck surgery，再尝试长证明。
+9. 构建带 statement deps、proof deps 和 downstream use 的 lemma graph。
+10. 优先解决当前 theorem path 上的 ready leaves，而不是证明没有下游用途的 side lemmas。
+11. 局部失败重复后，先做 route decision：继续、修复、重拆、检索、工具检查或停止。
+12. 只有当工具输出能转化为可检查 lemma、certificate、counterexample 或 repair 时，才把它纳入证明。
+13. 记录失败路线、blocked retries、route decisions 和没有推进的 proof states。
+14. 写最终证明前通过 verification gates。
 
 ## 项目工作区
 
 `start_proof.py` 会创建一个结构化 proof workspace：
 
-- `TRIAGE.md`：当前证明的下一步和 proof-mode rules。
+- `TRIAGE.md`：mode decision、当前证明的下一步和 proof-mode rules。
 - `WORKSTREAMS.md`：有边界的 workstream cards、避免重复尝试的 fingerprints，以及 route decision checks。
 - `IDEA_MAP.md`：central objects、proof kernels、construction search 和 one-step proof moves。
 - `ATTACK_MATRIX.md`：proof routes 和 falsification routes。

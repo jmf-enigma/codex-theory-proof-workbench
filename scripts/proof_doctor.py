@@ -216,7 +216,7 @@ def pattern_scan_need(project: Path, state: str, selected: list[tuple[str, int]]
         reasons.append("proof state is stuck")
     if selected and max(value for _, value in selected) == 0 and state in scan_states:
         reasons.append("playbook routing is low-confidence")
-    if len(re.findall(r"obstruction type:", text)) >= 2:
+    if filled_field_count(text, "obstruction type") >= 2:
         reasons.append("two or more obstruction slots are present")
     return {"needed": bool(reasons), "reasons": reasons}
 
@@ -254,6 +254,32 @@ def attempt_fingerprint_summary(project: Path) -> dict:
     }
 
 
+def filled_field_count(text: str, field: str) -> int:
+    return len(
+        re.findall(
+            rf"^(?:[-*][^\S\r\n]*)?{re.escape(field)}:[^\S\r\n]*\S+",
+            text,
+            flags=re.I | re.M,
+        )
+    )
+
+
+def filled_field_values(text: str, field: str) -> list[str]:
+    pattern = rf"^(?:[-*][^\S\r\n]*)?{re.escape(field)}:[^\S\r\n]*(?P<value>\S.*)$"
+    return [match.group("value").strip() for match in re.finditer(pattern, text, flags=re.I | re.M)]
+
+
+def looks_like_template_choice(value: str) -> bool:
+    lower = value.strip().lower()
+    if not lower:
+        return True
+    if " / " in lower:
+        return True
+    if lower in {"pending", "planned", "missing", "candidate", "yes", "no", "unknown"}:
+        return True
+    return False
+
+
 def progress_evidence_summary(project: Path) -> dict:
     chunks = []
     for name in ["LEDGER.md", "IDEA_MAP.md", "WORKSTREAMS.md", "ATTACK_MATRIX.md"]:
@@ -272,13 +298,21 @@ def progress_evidence_summary(project: Path) -> dict:
             flags=re.I | re.M,
         )
     )
-    evidence = len(
-        re.findall(
-            r"\b(tool certificate|counterexample|missing assumption|verified trick|theorem repair|retrieved theorem|formalization|new evidence expected)\b",
-            text,
-            flags=re.I,
-        )
-    )
+    evidence = 0
+    for field in [
+        "result",
+        "external method used",
+        "theorem repair, if any",
+        "new evidence expected",
+        "expected artifact",
+        "retrieved theorem",
+        "tool certificate",
+        "counterexample",
+        "missing assumption",
+        "verified trick",
+        "formalization",
+    ]:
+        evidence += sum(1 for value in filled_field_values(text, field) if not looks_like_template_choice(value))
     return {
         "unchanged_or_larger_moves": unchanged,
         "smaller_moves": smaller,
@@ -301,7 +335,11 @@ def route_decision_summary(state: str, progress: dict, fingerprints: dict, idea_
         decision = "continue current node with local repair"
         next_artifact = "proved local lemma or one smaller subgoal"
         reasons.append("recent proof-state evidence is shrinking")
-    elif state in {"S1-classify", "S2-stress-test", "S2b-idea-map", "S3-route-portfolio"} and idea_map["needed"]:
+    elif state in {"S1-classify", "S2-stress-test"} and idea_map["needed"]:
+        decision = "run direct-solve or micro pattern check before proving"
+        next_artifact = "named theorem/certificate, clear mismatch, or one central object"
+        reasons.append("route is low-confidence but not yet in idea-map mode")
+    elif state in {"S2b-idea-map", "S3-route-portfolio"} and idea_map["needed"]:
         decision = "run idea pass before proving"
         next_artifact = "central object, proof kernel, central lemma, or verification hook"
         reasons.append("proof route is not yet grounded in a kernel")
@@ -423,7 +461,7 @@ def diagnose(project: Path) -> dict:
     if idea_map["needed"] or pattern_scan["needed"]:
         actions.append("If direct solve is unavailable, mine prior papers, local drafts, appendices, or ledgers for a transferable proof architecture.")
         actions.append("Save only useful paper tricks as short local trick cards; do not promote them globally until validated or reused.")
-    if (project / "ESCALATION.md").exists() and len(re.findall(r"obstruction type:", text)) >= 2:
+    if (project / "ESCALATION.md").exists() and filled_field_count(text, "obstruction type") >= 2:
         actions.append("Two or more failed-route slots are present; run the escalation ladder before trying another route.")
     if audit["placeholder_count"]:
         actions.append("Fill ledger placeholders before presenting a final proof.")
@@ -506,6 +544,7 @@ def print_human(result: dict) -> None:
     print(f"- unchanged_or_larger_moves: {progress['unchanged_or_larger_moves']}")
     print(f"- smaller_moves: {progress['smaller_moves']}")
     print(f"- blocked_retries: {progress['blocked_retries']}")
+    print(f"- evidence_markers: {progress['evidence_markers']}")
     route = result["route_decision"]
     print("route decision:")
     print(f"- decision: {route['decision']}")
