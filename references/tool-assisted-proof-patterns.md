@@ -11,7 +11,7 @@ Use this for hard proofs where computation, CAS, SMT, optimization solvers, or L
 
 ## Imported Patterns
 
-- **Lean blueprint pattern**: maintain a human-readable proof map and a machine-checkable lemma graph. Each node has a statement, dependencies, and status.
+- **Lean/Goedel blueprint pattern**: maintain a human-readable proof map and a machine-checkable or reviewer-checkable dependency graph. Each node has a statement, declared parents, status, and failure diagnosis. Prove or check a node using only its declared parents unless explicitly rewiring the graph.
 - **Flyspeck pattern**: combine a human proof with formal verification and external computations only when every computational step has a checked certificate or proof object.
 - **CAS refutation pattern**: before simplifying a theorem, ask for a counterexample to the theorem's negation under explicit domains.
 - **Certificate pattern**: prefer certificates that can be independently checked: dual variables, KKT conditions, exact rational identities, interval bounds, SMT models/unsat cores, or Lean proof terms.

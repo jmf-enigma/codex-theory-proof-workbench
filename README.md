@@ -24,7 +24,7 @@ The workbench encourages Codex to:
 - **Proof routing**: classify the target by theorem family and proof pattern.
 - **Assumption audit**: check quantifiers, domains, compactness, convexity, continuity, measurability, boundedness, independence, tie-breaking, and boundary cases.
 - **Falsification first**: search small, finite, boundary, and relaxed-assumption cases before committing to a proof route.
-- **Lemma graphing**: split the theorem into named lemmas with statuses such as `known`, `proved`, `tool-checked`, `missing`, or `false`.
+- **Blueprint lemma graphing**: split the theorem into a dependency graph of definitions, lemmas, and final assembly nodes, with declared parents, statuses, and failure diagnoses.
 - **No-repeat memory**: fingerprint repeated constructions, failed routes, missing assumptions, and unchanged proof states.
 - **Progress contract**: require a retry to bring new evidence rather than a rewritten version of the same missing lemma.
 - **Divergence before convergence**: compare proof, falsification, and orthogonal evidence routes before committing to a long proof.
@@ -143,7 +143,7 @@ The core loop is:
 - `WORKSTREAMS.md`: bounded workstream cards and no-repeat attempt fingerprints.
 - `IDEA_MAP.md`: central objects, proof kernels, construction search, and one-step proof moves.
 - `ATTACK_MATRIX.md`: proof routes and falsification routes.
-- `LEMMA_QUEUE.md`: candidate lemmas to prove, refute, or certify.
+- `LEMMA_QUEUE.md`: blueprint-style dependency graph of candidate definitions, lemmas, theorem assembly nodes, declared parents, statuses, and failure diagnoses.
 - `PATTERN_SCAN.md`: bounded extraction from papers, prior ledgers, formalization projects, or proof-agent workflows.
 - `TOOL_PLAN.md`: expected artifacts before CAS, SMT, optimization, Python, Wolfram, Sage, or Lean checks.
 - `LEDGER.md`: persistent proof state, failed routes, verification gates, and current obstruction.
@@ -245,7 +245,7 @@ This project is released under the MIT License. See [LICENSE](LICENSE).
 - **证明路由**：根据 theorem family 和 proof pattern 分类。
 - **假设审计**：检查 quantifiers、domains、compactness、convexity、continuity、measurability、boundedness、independence、tie-breaking 和 boundary cases。
 - **先反驳再证明**：先搜索 small、finite、boundary 和 relaxed-assumption cases，再投入主要证明路线。
-- **Lemma graph**：把 theorem 拆成带状态的 lemmas，例如 `known`、`proved`、`tool-checked`、`missing` 或 `false`。
+- **Blueprint lemma graph**：把 theorem 拆成带依赖关系的 definitions、lemmas 和 final assembly nodes，并记录 parents、statuses 和 failure diagnoses。
 - **防重复记忆**：记录重复构造、失败路线、missing assumptions 和 unchanged proof states 的 fingerprints。
 - **进步契约**：要求每次 retry 带来新证据，而不是把同一个 missing lemma 换一种说法。
 - **先发散再收敛**：在长证明前比较证明路线、反驳路线和独立证据路线。
@@ -364,7 +364,7 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 - `WORKSTREAMS.md`：有边界的 workstream cards，以及避免重复尝试的 fingerprints。
 - `IDEA_MAP.md`：central objects、proof kernels、construction search 和 one-step proof moves。
 - `ATTACK_MATRIX.md`：proof routes 和 falsification routes。
-- `LEMMA_QUEUE.md`：待证明、反驳或认证的 candidate lemmas。
+- `LEMMA_QUEUE.md`：blueprint-style dependency graph，记录 candidate definitions、lemmas、theorem assembly nodes、declared parents、statuses 和 failure diagnoses。
 - `PATTERN_SCAN.md`：从论文、旧 ledgers、formalization projects 或 proof-agent workflows 中提取可迁移结构。
 - `TOOL_PLAN.md`：在运行 CAS、SMT、optimization、Python、Wolfram、Sage 或 Lean 前写清 expected artifacts。
 - `LEDGER.md`：持久化 proof state、失败路线、verification gates 和当前 obstruction。

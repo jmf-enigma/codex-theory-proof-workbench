@@ -17,6 +17,7 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - Goal-based workstreams: define approved goals first, then create bounded workstream cards. Each card may use retrieval, computation, proof search, review, or steering as needed.
 - How-others-do-it gate: before heavy execution, inspect nearby papers, appendices, prior ledgers, theorem names, analogous models, and formal-library patterns. Extract architecture and hidden assumptions, not prose.
 - Tiered activation: use a micro pattern check for small unclear proofs, a workstream card for expensive branches, and a full project only when the proof needs durable state.
+- Goedel-Architect blueprint pattern: plan a global dependency graph of definitions and lemmas before proving; prove nodes with only their declared parents; preserve solved nodes; diagnose failed nodes as `STATEMENT_WRONG` or `PROOF_TOO_HARD`; revise only the failed subgraph and its dependents.
 
 ## Loop
 
@@ -27,7 +28,7 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 5. Retrieval: before inventing a new central lemma, search relevant playbooks, prior ledgers, local paper text, user-provided papers, paper appendices, theorem names, formal libraries, and external proof-pattern sources if available. For small unclear proofs, do this as a micro check and stop after one useful pattern or a clear mismatch. Use `external-proof-pattern-scan.md` when the proof is unfamiliar or repeatedly stuck.
 6. Workstream assignment: for hard projects, fill `WORKSTREAMS.md` with approved goals and only the active workstream cards needed next. Each card must include a look-at-how-others-do-it pass or a skip reason. Keep the first pass to one to three strong sources or patterns. Use roles serially by default; use actual parallel agents only when the user explicitly asks.
 7. Draft: write a rough proof in 5-10 steps. Each step must name its intended theorem family, such as convex duality, envelope, single crossing, martingale concentration, elliptical potential, or information lower bound.
-8. Sketch: convert the draft into a lemma graph. Each lemma gets inputs, output, likely proof route, tool check, and failure mode.
+8. Sketch: convert the draft into a blueprint dependency graph. Each node gets inputs, output, parents, likely proof route, tool check, status, and failure mode. Independent branches should stay independent.
 9. Prove locally: solve the smallest unresolved lemma first. Work one move at a time when fragile: proposed move, expected new subgoal, check, proof-state delta. Use Wolfram/SymPy for algebra, Python/Z3/CVXPy/Sage for finite or optimization checks, and Lean for local formalizable lemmas.
 10. Bottleneck surgery: if the same lemma remains unresolved, shrink it, flip to the negation, change representation, then certify/falsify/retrieve/repair before another prose proof.
 11. Repair: if a lemma fails, determine whether the issue is false claim, missing assumption, quantifier mismatch, boundary case, or proof technique mismatch.
@@ -58,6 +59,7 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - For formalizable fragments, Lean-style checking is strongest on local lemmas, not necessarily on the full research theorem.
 - For empirical or simulation support, route to `empirical-tools`; simulations can refute or sanity-check but do not prove the theorem.
 - When searching papers or existing skills, extract route structure, certificate type, stopping rule, and failure repair rule. Do not import unexplained claims as proof steps.
+- When a proof attempt fails, require a structured forfeit: diagnosis, forensic analysis, and suggested fix. If the statement is false, repair/drop it. If the proof is too hard, split it into helper lemmas.
 
 ## Source Log
 
@@ -68,6 +70,7 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - Draft, Sketch, and Prove: informal proofs can guide formal proof sketches and reduce proof search to easier subproblems.
 - LeanDojo/ReProver: retrieval of accessible premises is a central bottleneck and improves theorem proving.
 - APOLLO: compiler-guided repair, sublemma isolation, solver use, recombination, and controlled attempt budgets.
+- Goedel-Architect (Chung et al., 2026): blueprint generation and refinement, node-level proving with declared dependencies, negated sub-lemmas, structured forfeits, and solved-node preservation.
 - LeanSearch-style global premise retrieval: sketch-retrieve-reflect cycles help find scattered lemma sets.
 - BFS-Prover-style route search: simple best-first expansion can be useful when many subgoals compete for attention.
 - ExVerus-style counterexample repair: concrete failures can suggest the invariant or assumption needed to repair a proof.

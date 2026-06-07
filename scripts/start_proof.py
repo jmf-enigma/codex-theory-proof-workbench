@@ -825,16 +825,37 @@ def lemma_queue_text(title: str, claim: str, selected: list[tuple[str, int]]) ->
 
 {claim}
 
-## Candidate Lemmas To Prove Or Refute
+## Blueprint Dependency Graph
 
-{lemma_lines}
+Use this as a proof blueprint, not a flat checklist. Keep the final theorem as the unique sink when possible. Independent proof branches should stay independent until assembly.
 
-## Status Key
+| node id | type | status | statement / role | declared parents | expected artifact | failure diagnosis | suggested fix |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| N1 | lemma | missing |  |  | human proof / tool check / counterexample / theorem pattern |  |  |
+
+Status values:
 
 - missing: needed but not proved.
 - checked: verified by symbolic, numeric, finite, or formal tool.
 - proved: human proof written and reviewed.
-- false: counterexample found; repair the theorem before continuing.
+- false-negated: counterexample or proof of negation found.
+- conditional: true only under named extra assumptions or weaker conclusion.
+
+Failure diagnoses:
+
+- `STATEMENT_WRONG`: the node is false, too strong, missing an assumption, or uses the wrong representation. Repair or drop it and rewire dependents.
+- `PROOF_TOO_HARD`: the node is plausible but too large. Split it into helper lemmas and make those helper lemmas parents.
+
+Blueprint refinement rule:
+
+- Preserve solved nodes whose statements and parents are unchanged.
+- If a parent changes, mark dependents as missing until rechecked.
+- When a node fails, record a short forfeit: diagnosis, forensic analysis, and suggested fix.
+- Do not retry a failed node unless the graph changed: new parent, new helper lemma, repaired statement, counterexample, theorem pattern, or certificate.
+
+## Candidate Lemmas To Prove Or Refute
+
+{lemma_lines}
 
 ## Promotion Rule
 
@@ -1083,7 +1104,7 @@ def triage_text(title: str, claim: str, selected: list[tuple[str, int]]) -> str:
 8. If the route is unfamiliar or repeatedly stuck, fill `PATTERN_SCAN.md` from prior papers, local drafts, appendices, formalization projects, or proof-agent skills.
 9. Read `ATTACK_MATRIX.md` and choose one proof route plus one falsification route.
 10. Write the negation and smallest toy model in `counterexamples.md`.
-11. Turn `LEMMA_QUEUE.md` into a lemma graph in `LEDGER.md`.
+11. Turn `LEMMA_QUEUE.md` into a blueprint DAG in `LEDGER.md`: nodes, declared parents, statuses, failure diagnoses, and suggested fixes.
 12. If a step needs tools, fill `TOOL_PLAN.md` with the expected artifact before running commands.
 13. If two routes fail or the same obstruction repeats, follow `ESCALATION.md` before another prose proof attempt.
 14. Run `proof_doctor.py .` when stuck and `audit_ledger.py LEDGER.md` before claiming a final proof.

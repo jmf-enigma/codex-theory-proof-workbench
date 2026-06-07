@@ -80,7 +80,8 @@ STATE_ACTIONS = {
     ],
     "S4-lemma-graph": [
         "Before attacking the same missing lemma again, write the route family, central object, failure witness, and new delta in WORKSTREAMS.md.",
-        "Turn every nontrivial step into a named lemma with status known/proved/tool-checked/missing/false.",
+        "Turn every nontrivial step into a blueprint node with declared parents, status, expected artifact, and failure diagnosis.",
+        "Preserve solved nodes; if a failed node is STATEMENT_WRONG, repair/drop it and rewire dependents; if PROOF_TOO_HARD, split it into helper nodes.",
         "For the hardest unresolved lemma, run bottleneck surgery: shrink, flip, change representation, then certify/falsify/retrieve/repair.",
         "For the hardest fragile lemma, use one-step moves: current subgoal, proposed move, expected new subgoal, check result, proof-state delta.",
         "Promote the single hardest missing step to its own lemma card.",
@@ -347,7 +348,7 @@ def diagnose(project: Path) -> dict:
     if not (project / "ATTACK_MATRIX.md").exists():
         actions.append("Create ATTACK_MATRIX.md with one proof route and one falsification route.")
     if not (project / "LEMMA_QUEUE.md").exists():
-        actions.append("Create LEMMA_QUEUE.md and move candidate lemmas into LEDGER.md.")
+        actions.append("Create LEMMA_QUEUE.md as a blueprint DAG with nodes, declared parents, statuses, and failure diagnoses.")
     if not (project / "WORKSTREAMS.md").exists() and state in {"S3-route-portfolio", "S5-local-certification", "S7-adversarial-review", "S9-stuck"}:
         actions.append("Create WORKSTREAMS.md with approved goals, bounded workstream cards, and a look-at-how-others-do-it gate.")
     if state in {"S3-route-portfolio", "S4-lemma-graph", "S9-stuck"} and fingerprints["exists"] and not fingerprints["has_real_entries"]:
