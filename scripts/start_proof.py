@@ -125,6 +125,16 @@ Keep entries short. Use this when a proof move leaves the same subgoal unchanged
 | --- | --- | --- | --- | --- | --- |
 | F1 |  |  |  |  |  |
 
+## Route Decision Check
+
+Use this after two local attempts on a node, one repeated failure signature, or any expensive proof move. The decision should be short and evidence-based.
+
+| target node | attempts | proof-state delta | failure diversity | proof similarity / repeat risk | expected next artifact | decision | reason |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| N1 |  | smaller / unchanged / larger | new / same / mixed | low / medium / high | proof / counterexample / certificate / theorem pattern / repair / none | continue / repair / re-decompose / retrieve / tool-falsify / stop-report |  |
+
+Use the table to avoid repeated small edits to the same failed idea. Continue only when the next attempt has a new premise, central object, representation, certificate, counterexample, theorem repair, or a smaller proof state.
+
 ## Bottleneck Surgery
 
 Use this when the same missing lemma or algebraic obstacle survives.
@@ -852,9 +862,11 @@ def lemma_queue_text(title: str, claim: str, selected: list[tuple[str, int]]) ->
 
 Use this as a proof blueprint, not a flat checklist. Keep the final theorem as the unique sink when possible. Independent proof branches should stay independent until assembly.
 
-| node id | type | status | statement / role | declared parents | expected artifact | gap grade | failure diagnosis | compact repair state | suggested fix |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| N1 | lemma | missing |  |  | human proof / tool check / counterexample / theorem pattern | good / bad / unknown |  | statement + parents + previous attempt + feedback |  |
+Separate statement dependencies from proof dependencies. Statement dependencies define the node's mathematical meaning; proof dependencies are facts, tools, or helper lemmas used to prove it. A node should normally feed the current assembly path before receiving heavy proof effort.
+
+| node id | type | status | statement / role | statement deps | proof deps | used by assembly | expected artifact | gap grade | failure diagnosis | compact repair state | suggested fix |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| N1 | lemma | missing |  |  |  | yes / no / unknown | human proof / tool check / counterexample / theorem pattern | good / bad / unknown |  | statement + deps + previous attempt + feedback |  |
 
 Status values:
 
@@ -867,7 +879,7 @@ Status values:
 Failure diagnoses:
 
 - `STATEMENT_WRONG`: the node is false, too strong, missing an assumption, or uses the wrong representation. Repair or drop it and rewire dependents.
-- `PROOF_TOO_HARD`: the node is plausible but too large. Split it into helper lemmas and make those helper lemmas parents.
+- `PROOF_TOO_HARD`: the node is plausible but too large. Split it into helper lemmas and record those helpers as proof dependencies.
 
 Gap grades:
 
@@ -876,10 +888,21 @@ Gap grades:
 
 Blueprint refinement rule:
 
-- Preserve solved nodes whose statements and parents are unchanged.
-- If a parent changes, mark dependents as missing until rechecked.
+- Preserve solved nodes whose statements and dependencies are unchanged.
+- If a statement dependency changes, mark dependents as missing until rechecked.
+- If a proof dependency changes, recheck the proof route without changing the node statement unless needed.
+- Prove ready leaves whose dependencies are settled and that feed the final assembly path first.
+- Postpone orphan lemmas unless they are used for falsification, theorem repair, or a clearly named route experiment.
 - When a node fails, record a short forfeit: diagnosis, forensic analysis, and suggested fix.
 - Do not retry a failed node unless the graph changed: new parent, new helper lemma, repaired statement, counterexample, theorem pattern, or certificate.
+
+## Blueprint Metadata Audit
+
+- statement status: intended / suspect / repaired:
+- proof status: missing / checked / proved / conditional / false-negated:
+- not-ready reason or discussion:
+- downstream theorem path:
+- orphan or unused nodes to postpone:
 
 ## Candidate Lemmas To Prove Or Refute
 
@@ -964,6 +987,8 @@ Read `external-proof-pattern-scan.md` before broad literature or skill browsing.
 - retrieval target:
 - tool/certificate pattern:
 - failure or repair rule:
+- route-control lesson:
+- dependency lesson:
 - good-gap / bad-gap lesson:
 - transplantable idea:
 - hidden assumptions:
@@ -1072,7 +1097,9 @@ def strategy_text(selected: list[tuple[str, int]]) -> str:
 - premise retrieval targets: selected playbooks, prior ledgers, paper lemmas, formalization projects, proof-agent workflows, mathlib/search if relevant
 - external pattern scan: fill `PATTERN_SCAN.md` if routes are unfamiliar or repeated attempts failed
 - tool-guided repair targets: first false or unproved sublemma
-- compact repair rule: retry a failed node using only statement, parents, previous attempt signature, previous feedback, and suggested fix
+- compact repair rule: retry a failed node using only statement, dependencies, previous attempt signature, previous feedback, and suggested fix
+- route decision rule: after two local failures, choose continue / repair / re-decompose / retrieve / tool-falsify / stop-report before another attempt
+- used-node rule: prove ready leaves on the current assembly path before side lemmas
 - gap review: good gaps may be deferred as lemmas; bad gaps must be split, retrieved, falsified, or repaired
 - progress budget: stop or switch after two unchanged obstruction cycles
 
@@ -1142,10 +1169,12 @@ def triage_text(title: str, claim: str, selected: list[tuple[str, int]]) -> str:
 10. If the route is unfamiliar or repeatedly stuck, fill `PATTERN_SCAN.md` from prior papers, local drafts, appendices, formalization projects, or proof-agent skills.
 11. Read `ATTACK_MATRIX.md` and choose one proof route plus one falsification route.
 12. Write the negation and smallest toy model in `counterexamples.md`.
-13. Turn `LEMMA_QUEUE.md` into a blueprint DAG in `LEDGER.md`: nodes, declared parents, statuses, gap grades, failure diagnoses, compact repair states, and suggested fixes.
-14. If a step needs tools, fill `TOOL_PLAN.md` with the expected artifact before running commands.
-15. If two routes fail or the same obstruction repeats, follow `ESCALATION.md` before another prose proof attempt.
-16. Run `proof_doctor.py .` when stuck and `audit_ledger.py LEDGER.md` before claiming a final proof.
+13. Turn `LEMMA_QUEUE.md` into a blueprint DAG in `LEDGER.md`: nodes, statement deps, proof deps, downstream use, statuses, gap grades, failure diagnoses, compact repair states, and suggested fixes.
+14. Prove ready leaves that feed the current assembly path first. Postpone orphan lemmas unless they falsify, repair, or unlock the route.
+15. If a node fails twice, fill the Route Decision Check in `WORKSTREAMS.md` before another attempt.
+16. If a step needs tools, fill `TOOL_PLAN.md` with the expected artifact before running commands.
+17. If two routes fail or the same obstruction repeats, follow `ESCALATION.md` before another prose proof attempt.
+18. Run `proof_doctor.py .` when stuck and `audit_ledger.py LEDGER.md` before claiming a final proof.
 
 ## Do Not
 
@@ -1187,7 +1216,7 @@ Use this file after two failed routes, one repeated obstruction, or a failed too
 
 ## Ladder
 
-1. Local reroute: name obstruction, shrink to the missing lemma, switch theorem family.
+1. Local reroute: name obstruction, shrink to the missing lemma, make a route decision, then switch theorem family if needed.
 2. Tool falsification: write negation; search finite/boundary examples; use Wolfram, Python, Z3, CVXPy, Sage, or OR-Tools.
 3. Retrieval: search playbooks, prior ledgers, local paper text, theorem names, and formal libraries; use web literature only when needed or requested.
 4. Local formalization: formalize the fragile local lemma in Lean/mathlib or write a pseudo-formal lemma card.
@@ -1207,6 +1236,8 @@ Use this file after two failed routes, one repeated obstruction, or a failed too
 - failed route:
 - obstruction:
 - smaller lemma or negation:
+- route decision:
+- proof-state delta and failure diversity:
 - external method used:
 - result:
 - theorem repair, if any:

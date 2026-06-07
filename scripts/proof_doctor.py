@@ -85,7 +85,9 @@ STATE_ACTIONS = {
     ],
     "S4-lemma-graph": [
         "Before attacking the same missing lemma again, write the route family, central object, failure witness, and new delta in WORKSTREAMS.md.",
-        "Turn every nontrivial step into a blueprint node with declared parents, status, expected artifact, gap grade, failure diagnosis, and compact repair state.",
+        "Turn every nontrivial step into a blueprint node with statement deps, proof deps, downstream use, status, expected artifact, gap grade, failure diagnosis, and compact repair state.",
+        "Prove ready leaves that feed the current assembly path first; postpone orphan lemmas unless they falsify, repair, or unlock the route.",
+        "After two local attempts on a node, fill the Route Decision Check before retrying.",
         "Preserve solved nodes; if a failed node is STATEMENT_WRONG, repair/drop it and rewire dependents; if PROOF_TOO_HARD, split it into helper nodes.",
         "If a skeleton is right but a block fails, preserve the skeleton and isolate the bad block as a named lemma.",
         "For the hardest unresolved lemma, run bottleneck surgery: shrink, flip, change representation, then certify/falsify/retrieve/repair.",
@@ -111,11 +113,12 @@ STATE_ACTIONS = {
         "Name the exact obstruction in LEDGER.md.",
         "Check the Attempt Fingerprint Index in WORKSTREAMS.md; run check_attempt.py only if several fingerprints or an ambiguous match make this hard.",
         "Shrink the obstruction to one proof kernel before trying another long proof route.",
+        "Fill Route Decision Check in WORKSTREAMS.md: continue, repair, re-decompose, retrieve, tool-falsify, or stop-report.",
         "Rank next moves by decision value: kernel proof/refutation, counterexample, missing assumption, certificate, retrieval, representation change, or theorem repair.",
         "If a proposed move leaves the proof state unchanged, add a Failed-State Notebook entry in WORKSTREAMS.md before retrying.",
         "If no construction is visible, mine small cases for a pattern; use pattern_miner.py for exact sequences and test one holdout case before promoting the guess.",
         "Classify the current gap as good or bad; bad gaps require splitting, retrieval, falsification, or theorem repair.",
-        "Use compact repair state for the bottleneck: statement, parents, previous attempt signature, previous feedback, and suggested fix.",
+        "Use compact repair state for the bottleneck: statement, dependencies, previous attempt signature, previous feedback, and suggested fix.",
         "Before repeating proof search, inspect one to three nearby papers, appendices, prior ledgers, theorem families, or analogous models for this obstruction.",
         "Create a bounded workstream card only if the next branch needs durable state.",
         "Choose one escalation method: tool falsification, retrieval, local formalization, theorem repair, or stop/report.",
@@ -285,6 +288,45 @@ def progress_evidence_summary(project: Path) -> dict:
     }
 
 
+def route_decision_summary(state: str, progress: dict, fingerprints: dict, idea_map: dict, pattern_scan: dict) -> dict:
+    reasons = []
+    decision = "continue"
+    next_artifact = "smaller proof state or proved local lemma"
+
+    if progress["no_progress_threshold_met"] or fingerprints["blocked_retry_count"] > 0:
+        decision = "re-decompose / retrieve / tool-falsify before another prose attempt"
+        next_artifact = "new helper DAG, retrieved theorem pattern, counterexample, certificate, or theorem repair"
+        reasons.append("no-progress threshold or blocked retry is present")
+    elif progress["smaller_moves"] > 0 and progress["unchanged_or_larger_moves"] == 0:
+        decision = "continue current node with local repair"
+        next_artifact = "proved local lemma or one smaller subgoal"
+        reasons.append("recent proof-state evidence is shrinking")
+    elif state in {"S1-classify", "S2-stress-test", "S2b-idea-map", "S3-route-portfolio"} and idea_map["needed"]:
+        decision = "run idea pass before proving"
+        next_artifact = "central object, proof kernel, central lemma, or verification hook"
+        reasons.append("proof route is not yet grounded in a kernel")
+    elif pattern_scan["needed"]:
+        decision = "retrieve / pattern scan before another same-style route"
+        next_artifact = "theorem pattern, hidden assumption, or route repair"
+        reasons.append("external pattern scan is needed for this state")
+    elif state in {"S4-lemma-graph", "S5-local-certification"}:
+        decision = "prove a ready leaf on the assembly path"
+        next_artifact = "proved/tool-checked leaf lemma or failed-node diagnosis"
+        reasons.append("proof is in local lemma/certification mode")
+    elif state == "S9-stuck":
+        decision = "escalate before proving"
+        next_artifact = "counterexample, certificate, retrieval result, local formalization, or theorem repair"
+        reasons.append("proof state is stuck")
+    else:
+        reasons.append("no repeated-failure signal found")
+
+    return {
+        "decision": decision,
+        "next_artifact": next_artifact,
+        "reasons": reasons,
+    }
+
+
 def external_pattern_queries(claim: str, selected: list[tuple[str, int]]) -> list[str]:
     queries = []
     for name, _ in selected[:2]:
@@ -298,6 +340,9 @@ def external_pattern_queries(claim: str, selected: list[tuple[str, int]]) -> lis
         [
             "Goedel Architect blueprint refinement proof DAG",
             "MerLean Prover proof plan faithfulness decomposition check",
+            "LeanMarathon dynamic proof DAG target fidelity",
+            "LeanArchitect blueprint metadata dependency graph",
+            "optimizing cost quality Lean agent routing failed trajectories",
             "AlphaProof Nexus proof sketches good gap bad gap",
             "OProver APOLLO LEAP feedback repair proof DAG",
             "Draft Sketch Prove theorem proving proof decomposition",
@@ -324,8 +369,8 @@ def recommended_files(project: Path, routing: dict, state: str) -> list[str]:
         "S2-stress-test": ["counterexamples.md", "ATTACK_MATRIX.md", "LEDGER.md"],
         "S2b-idea-map": ["IDEA_MAP.md", "counterexamples.md", "ATTACK_MATRIX.md", "LEDGER.md"],
         "S3-route-portfolio": ["WORKSTREAMS.md", "strategy.md", "ATTACK_MATRIX.md", "PATTERN_SCAN.md", "LEDGER.md"],
-        "S4-lemma-graph": ["LEMMA_QUEUE.md", "LEDGER.md"],
-        "S5-local-certification": ["TOOL_PLAN.md", "tool_checks/README.md", "LEDGER.md"],
+        "S4-lemma-graph": ["LEMMA_QUEUE.md", "WORKSTREAMS.md", "LEDGER.md"],
+        "S5-local-certification": ["TOOL_PLAN.md", "tool_checks/README.md", "WORKSTREAMS.md", "LEDGER.md"],
         "S6-assembly": ["LEDGER.md", "writeup"],
         "S7-adversarial-review": ["LEDGER.md", "counterexamples.md"],
         "S8-finalize": ["LEDGER.md", "writeup"],
@@ -355,12 +400,13 @@ def diagnose(project: Path) -> dict:
     pattern_scan = pattern_scan_need(project, state, selected, text)
     fingerprints = attempt_fingerprint_summary(project)
     progress = progress_evidence_summary(project)
+    route_decision = route_decision_summary(state, progress, fingerprints, idea_map, pattern_scan)
 
     actions = []
     if not (project / "ATTACK_MATRIX.md").exists():
         actions.append("Create ATTACK_MATRIX.md with one proof route and one falsification route.")
     if not (project / "LEMMA_QUEUE.md").exists():
-        actions.append("Create LEMMA_QUEUE.md as a blueprint DAG with nodes, declared parents, statuses, and failure diagnoses.")
+        actions.append("Create LEMMA_QUEUE.md as a blueprint DAG with nodes, statement deps, proof deps, downstream use, statuses, and failure diagnoses.")
     if not (project / "WORKSTREAMS.md").exists() and state in {"S3-route-portfolio", "S5-local-certification", "S7-adversarial-review", "S9-stuck"}:
         actions.append("Create WORKSTREAMS.md with approved goals, bounded workstream cards, and a look-at-how-others-do-it gate.")
     if state in {"S3-route-portfolio", "S4-lemma-graph", "S9-stuck"} and fingerprints["exists"] and not fingerprints["has_real_entries"]:
@@ -369,6 +415,8 @@ def diagnose(project: Path) -> dict:
         actions.append(f"Compare the next attempt against {fingerprints['count']} recorded attempt fingerprint(s) before proceeding.")
     if progress["no_progress_threshold_met"]:
         actions.append("No-progress threshold met: do not retry prose. Switch to counterexample search, tools, retrieval, local formalization, theorem repair, or user steering.")
+    if state in {"S4-lemma-graph", "S5-local-certification", "S9-stuck"}:
+        actions.append(f"Route decision: {route_decision['decision']}; expected artifact: {route_decision['next_artifact']}.")
     actions.extend(STATE_ACTIONS.get(state, STATE_ACTIONS["S9-stuck"]))
     if idea_map["needed"] and state in {"S1-classify", "S2-stress-test", "S2b-idea-map", "S3-route-portfolio", "S9-stuck"}:
         actions.append("Use IDEA_MAP.md as an optional idea pass: failure world, pattern guess, central object, proof kernel, central lemma, verification hook.")
@@ -418,6 +466,7 @@ def diagnose(project: Path) -> dict:
         },
         "attempt_fingerprints": fingerprints,
         "progress_evidence": progress,
+        "route_decision": route_decision,
         "audit": audit,
     }
 
@@ -457,6 +506,12 @@ def print_human(result: dict) -> None:
     print(f"- unchanged_or_larger_moves: {progress['unchanged_or_larger_moves']}")
     print(f"- smaller_moves: {progress['smaller_moves']}")
     print(f"- blocked_retries: {progress['blocked_retries']}")
+    route = result["route_decision"]
+    print("route decision:")
+    print(f"- decision: {route['decision']}")
+    print(f"- next_artifact: {route['next_artifact']}")
+    for reason in route["reasons"]:
+        print(f"- reason: {reason}")
     print(f"ready_for_final_proof: {result['audit']['ready_for_final_proof']}")
 
 

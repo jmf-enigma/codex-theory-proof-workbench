@@ -11,14 +11,15 @@ Use this for hard proofs where computation, CAS, SMT, optimization solvers, or L
 
 ## Imported Patterns
 
-- **Lean/Goedel blueprint pattern**: maintain a human-readable proof map and a machine-checkable or reviewer-checkable dependency graph. Each node has a statement, declared parents, status, and failure diagnosis. Prove or check a node using only its declared parents unless explicitly rewiring the graph.
+- **Lean/Goedel blueprint pattern**: maintain a human-readable proof map and a machine-checkable or reviewer-checkable dependency graph. Each node has a statement, statement dependencies, proof dependencies, downstream use, status, and failure diagnosis. Prove or check ready leaves on the current theorem path before side lemmas unless explicitly rewiring the graph.
+- **Cost-aware tool routing**: after repeated failed tool or Lean attempts, decide whether the next run has positive value. Continue only if the expected artifact is new: counterexample, exact condition, certificate, smaller subgoal, retrieved premise, or theorem repair.
 - **Flyspeck pattern**: combine a human proof with formal verification and external computations only when every computational step has a checked certificate or proof object.
 - **CAS refutation pattern**: before simplifying a theorem, ask for a counterexample to the theorem's negation under explicit domains.
 - **Certificate pattern**: prefer certificates that can be independently checked: dual variables, KKT conditions, exact rational identities, interval bounds, SMT models/unsat cores, or Lean proof terms.
 - **Premise-retrieval pattern**: when a lemma feels standard, search for the nearest theorem pattern or library lemma before inventing a new proof.
 - **Repair-loop pattern**: when a tool rejects a step, preserve the failed subgoal, extract the smallest missing lemma, then retry only that lemma.
-- **Sorrify/localize pattern**: when a skeleton is promising, replace the failed block with a named lemma, keep the good parents, and repair only that lemma.
-- **Compact-feedback pattern**: after a tool or Lean failure, keep the next repair input small: node statement, assumptions, parents, previous attempt, feedback, and proposed fix.
+- **Sorrify/localize pattern**: when a skeleton is promising, replace the failed block with a named lemma, keep the good dependencies, and repair only that lemma.
+- **Compact-feedback pattern**: after a tool or Lean failure, keep the next repair input small: node statement, assumptions, dependencies, previous attempt, feedback, and proposed fix.
 
 ## Tool Roles
 

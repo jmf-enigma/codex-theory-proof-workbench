@@ -20,6 +20,7 @@ Use a minimal scan first. For a small unclear proof, inspect one close theorem f
 - Prover papers: Draft-Sketch-Prove, retrieval-augmented proving, compiler-guided repair, counterexample-guided repair, tree or best-first proof search.
 - Agent skills/workflows: Lean proof skills, proof-review skills, proof-memory systems, formalization workflows.
 - Recent proof-agent methods: blueprint refinement, compact feedback repair, AND/OR proof DAGs, answer-discovery before proof, evolutionary proof sketches, structured forfeits, and statement-fidelity audits.
+- Long-horizon harness methods: target-fidelity review, dynamic DAG leaves, local repair scopes, cost-aware route decisions, and used-lemma filters.
 
 ## Extraction Card
 
@@ -32,6 +33,8 @@ For every useful source, record:
 - retrieval target: theorem name, library lemma, assumption list, or paper lemma.
 - tool/certificate pattern:
 - failure or repair rule:
+- routing or stopping rule:
+- dependency lesson: statement dependency, proof dependency, downstream use, or orphan lemma.
 - transplantable idea:
 - hidden assumptions:
 - verification hook:
@@ -63,6 +66,9 @@ Prefer a route with medium plausibility and a checkable certificate over a route
 - **Idea-map extraction**: when a paper or formalization is useful, extract the failure world, pattern guess if any, central object, proof kernel or central lemma, and verification hook, not just the final theorem.
 - **Paper trick card**: save local reusable moves with source, problem shape, hidden assumptions, transplant step, verification hook, and failure mode.
 - **Persistent memory**: record successful patterns, dead ends, and reusable lemmas so the next attempt starts with evidence.
+- **Cost-aware route control**: treat failed attempts as data. If failures are repetitive and the proof state is not shrinking, switch action instead of spending another attempt on the same node.
+- **Target-fidelity first**: when a source paper or model motivates the theorem, check target statements and node roles before proving. A formally valid lemma that proves the wrong role is wasted.
+- **Dynamic leaf proving**: prove ready leaves on the theorem path first; postpone orphan lemmas and side machinery until they have downstream use.
 
 ## Recent Method Patterns
 
@@ -72,6 +78,9 @@ Use these as importable proof-search mechanisms:
 - **Discover-and-Prove**: if an answer or object is hidden, separate discovery from proof. Self-check the discovered answer on holdout cases before turning it into a theorem.
 - **OProver/APOLLO**: use tool/compiler feedback as a local repair signal. Preserve the skeleton, isolate the bad block, and retry only the failed lemma with compact feedback.
 - **LEAP/Goedel-Architect**: after direct failure, create a DAG of lemmas with declared dependencies. Review acyclicity, parent sufficiency, and whether each child lemma is simpler than its parent.
+- **Cost-quality Lean agents**: after failed attempts, decide between continuing the node and restarting/re-decomposing by using proof-state delta, failure diversity, proof similarity, and attempt count.
+- **LeanArchitect**: use blueprint metadata to separate statement text, proof text, dependency inference, status, and discussion/not-ready notes.
+- **LeanMarathon**: stabilize target fidelity before proof discharge, then work from dynamic leaves upward with local repairs and a closeness check that every lemma feeds a target.
 - **AlphaProof Nexus**: keep a small population of sketches; use a reviewer to score decomposition quality, novelty, plausibility, and good-gap versus bad-gap.
 - **MerLean-Prover/lean-collab**: separate planning, proving, and checking roles. A clean proof must still pass faithfulness to the original statement and mathematical-correctness checks.
 
@@ -91,7 +100,7 @@ Use these as importable proof-search mechanisms:
 - OR/optimization: `KKT sufficiency proof`, `primal dual certificate`, `exchange argument proof`, `subgradient optimality certificate`.
 - Lower bounds: `two point testing lower bound`, `Fano Assouad proof`, `change of measure bandit lower bound`, `KL TV reduction`.
 - Formal/prover: `Lean formalization theorem name`, `mathlib lemma`, `Draft Sketch Prove`, `retrieval augmented theorem proving`, `compiler guided proof repair`.
-- Recent proof agents: `Goedel Architect blueprint refinement`, `MerLean Prover recursive proof plan`, `AlphaProof Nexus good gap bad gap`, `OProver feedback refinement`, `APOLLO proof repair`, `LEAP AND OR proof DAG`.
+- Recent proof agents: `Goedel Architect blueprint refinement`, `LeanMarathon dynamic proof DAG`, `LeanArchitect blueprint metadata`, `cost quality Lean theorem prover routing`, `MerLean Prover recursive proof plan`, `AlphaProof Nexus good gap bad gap`, `OProver feedback refinement`, `APOLLO proof repair`, `LEAP AND OR proof DAG`.
 
 ## Stop Rule
 

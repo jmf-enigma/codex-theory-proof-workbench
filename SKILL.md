@@ -53,6 +53,8 @@ Use these as light control rules, not a mandatory checklist.
 - **Good gap / bad gap reviewer**: a good gap is smaller than the parent, routine under clear assumptions, and has a verification hook. A bad gap restates the theorem, hides the core insight, is circular, or has no falsification path.
 - **Localize before regenerating**: preserve the proof skeleton when it is structurally right; isolate the failed block as a named lemma, repair or split that block, then recombine.
 - **Small route population**: for hard proofs, maintain 2-4 route candidates and score them by failure-world control, novelty, decomposition quality, and certificate availability. Do not run a large search unless the user asks.
+- **Cost-quality routing**: after two failed local attempts, use failed-state signals to decide whether to continue, locally repair, re-decompose, retrieve a premise/paper pattern, or stop/report.
+- **Dynamic leaf discipline**: in a lemma graph, prove ready leaves whose dependencies are settled and that feed the current theorem path. Postpone orphan or unused lemmas.
 - **Structured forfeit**: when a route runs out of budget, write diagnosis, forensic analysis, and suggested fix before the next attempt.
 
 ## Use Gate
@@ -75,7 +77,7 @@ For a hard or previously failed proof, start a proof project only when light mod
 codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/start_proof.py --title "SHORT PROOF NAME" --claim "CLAIM"
 ```
 
-This creates `TRIAGE.md`, `WORKSTREAMS.md`, `IDEA_MAP.md`, `ATTACK_MATRIX.md`, `LEMMA_QUEUE.md`, `PATTERN_SCAN.md`, `TOOL_PLAN.md`, `LEDGER.md`, `ESCALATION.md`, `counterexamples.md`, `strategy.md`, `state.md`, `tool_checks/`, `trick_cards/`, and supporting folders. Use `ATTACK_MATRIX.md` to force one proof route and one falsification route before drafting a final proof. Use `LEMMA_QUEUE.md` as a blueprint DAG: named definitions/lemmas, declared dependencies, node statuses, failure diagnoses, and refinement notes.
+This creates `TRIAGE.md`, `WORKSTREAMS.md`, `IDEA_MAP.md`, `ATTACK_MATRIX.md`, `LEMMA_QUEUE.md`, `PATTERN_SCAN.md`, `TOOL_PLAN.md`, `LEDGER.md`, `ESCALATION.md`, `counterexamples.md`, `strategy.md`, `state.md`, `tool_checks/`, `trick_cards/`, and supporting folders. Use `ATTACK_MATRIX.md` to force one proof route and one falsification route before drafting a final proof. Use `LEMMA_QUEUE.md` as a blueprint DAG: named definitions/lemmas, statement and proof dependencies, node statuses, used-node path, gap grades, failure diagnoses, and refinement notes.
 
 When returning to an existing proof project, diagnose the next move first:
 
@@ -110,7 +112,8 @@ If a route fails twice or the same obstruction repeats, use [references/proof-es
 5. Choose proof routes with [references/strategy-scheduler.md](references/strategy-scheduler.md); run at least two genuinely different routes for hard or previously failed proofs. Different means a different central object, theorem family, certificate type, failure world, or evidence source.
 6. Before proving, try to break the claim: edge cases, missing compactness/convexity/continuity, finite counterexamples, numerical examples, and relaxed assumptions.
 7. If the route is still unclear, run the optional idea pass: failure world -> small-case pattern guess -> central object -> proof kernel -> central lemma -> verification hook. Use `pattern_miner.py` only when the small cases produce a useful exact sequence. If the same obstruction remains, do bottleneck surgery: shrink to the smallest local lemma, flip to the negation, try a certificate or alternate representation, then retrieve or repair before drafting again.
-8. Build a blueprint-style lemma graph: label each needed definition/lemma/theorem node, declare dependencies, and mark status as missing, proved, checked, false/negated, or conditional. For repeated attempts, record the attempt fingerprint and expected new evidence in `WORKSTREAMS.md` before trying a variant. When a node fails, diagnose it as `STATEMENT_WRONG` or `PROOF_TOO_HARD`, grade the gap as good or bad, and keep a compact repair state; preserve solved nodes and refine only the failed subgraph when possible.
+8. Build a blueprint-style lemma graph: label each needed definition/lemma/theorem node, declare statement dependencies and proof dependencies, and mark status as missing, proved, checked, false/negated, or conditional. For repeated attempts, record the attempt fingerprint and expected new evidence in `WORKSTREAMS.md` before trying a variant. When a node fails, diagnose it as `STATEMENT_WRONG` or `PROOF_TOO_HARD`, grade the gap as good or bad, and keep a compact repair state; preserve solved nodes and refine only the failed subgraph when possible.
+Before proving a repeated or expensive node, run a lightweight route decision: continue current node, locally repair it, re-decompose the subgraph, retrieve a premise/paper pattern, or stop/report. Prefer ready leaves whose dependencies are settled and that feed the current assembly path. Do not prove unused lemmas that are not on that path.
 9. Work one proof move at a time when a kernel is fragile: name the current subgoal, propose one move, predict the new subgoal, check it by theorem match, algebra, toy case, tool, or reviewer pass, then keep, repair, or discard it based on proof-state delta. If two moves leave the same obstruction unchanged, stop proving in prose and switch to retrieval, tools, counterexample search, theorem repair, or user steering.
 10. Read only the relevant branch playbook. If unsure, run:
 
@@ -140,6 +143,7 @@ If a proof attempt stalls, do not start over. Create or update a proof ledger. T
 - failed proof routes and where they broke,
 - failed proof states that remained unchanged after a move,
 - blocked retries and why they had no new evidence,
+- route decisions after repeated local failures: continue, repair, re-decompose, retrieve, or stop, with reason,
 - named obstruction types,
 - attempted counterexamples,
 - proved lemmas,

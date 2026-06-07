@@ -10,6 +10,7 @@ Escalate when any of these occurs:
 - two distinct proof routes fail without shrinking the missing lemma;
 - a proposed retry has no new central object, certificate, counterexample, theorem pattern, missing assumption, or theorem repair;
 - a construction, hard instance, threshold, potential, or algebraic normal form is being retried with the same parameterization and failure witness;
+- two local attempts on the same node have no proof-state delta, low failure diversity, or no expected artifact;
 - a tool check, toy model, or boundary case contradicts a proof step;
 - the current proof needs an unstated assumption;
 - the user has asked the same theorem before and it remained unresolved.
@@ -22,6 +23,7 @@ Move upward only after recording the result in `LEDGER.md`.
    - name the obstruction using `obstruction-taxonomy.md`;
    - shrink the target to the proof kernel: the smallest missing lemma, certificate, or counterexample barrier;
    - switch theorem family using `strategy-scheduler.md`.
+   - make a route decision: continue, local repair, re-decompose, retrieve, tool/falsification check, or stop/report.
 2. Discovery and gap review:
    - if the proof needs an unknown object, discover it first from small cases, tight cases, paper tricks, or symbolic patterns;
    - classify the current missing lemma as a good gap or bad gap;
@@ -42,7 +44,7 @@ Move upward only after recording the result in `LEDGER.md`.
 6. Local proof repair:
    - preserve solved or structurally sound proof nodes;
    - replace only the failing block with a named sublemma or helper DAG;
-   - keep compact repair state: statement, parents, previous attempt, feedback, and suggested fix.
+   - keep compact repair state: statement, dependencies, previous attempt, feedback, and suggested fix.
 7. Theorem repair:
    - if a counterexample exists, mark the original claim `refuted`;
    - otherwise propose the weakest extra assumption or weaker conclusion that makes the lemma true;
@@ -69,6 +71,8 @@ For each escalation, record:
 - obstruction:
 - smaller lemma or negation:
 - why the next route is genuinely new:
+- route decision: continue / local repair / re-decompose / retrieve / tool-falsify / stop-report, with reason:
+- proof-state delta and failure diversity:
 - gap grade: good / bad, with reason:
 - compact repair state:
 - external method used:

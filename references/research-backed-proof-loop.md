@@ -17,13 +17,16 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - Goal-based workstreams: define approved goals first, then create bounded workstream cards. Each card may use retrieval, computation, proof search, review, or steering as needed.
 - How-others-do-it gate: before heavy execution, inspect nearby papers, appendices, prior ledgers, theorem names, analogous models, and formal-library patterns. Extract architecture and hidden assumptions, not prose.
 - Tiered activation: use a micro pattern check for small unclear proofs, a workstream card for expensive branches, and a full project only when the proof needs durable state.
-- Goedel-Architect blueprint pattern: plan a global dependency graph of definitions and lemmas before proving; prove nodes with only their declared parents; preserve solved nodes; diagnose failed nodes as `STATEMENT_WRONG` or `PROOF_TOO_HARD`; revise only the failed subgraph and its dependents.
+- Goedel-Architect blueprint pattern: plan a global dependency graph of definitions and lemmas before proving; prove nodes with only their declared dependencies; preserve solved nodes; diagnose failed nodes as `STATEMENT_WRONG` or `PROOF_TOO_HARD`; revise only the failed subgraph and its dependents.
 - Numina/LEAP pattern: try direct formalization or direct proof first; if it fails, decompose into an AND/OR blueprint DAG, check that child lemmas are simpler and acyclic, and memoize shared subgoals.
 - OProver pattern: repair from compact state, not full transcript: statement, retrieved context, previous attempt, and previous feedback. Feedback-conditioned repair beats blind regeneration.
 - APOLLO pattern: preserve a useful skeleton, replace the bad block with a named sublemma, use solvers/search for routine blocks, and recursively repair only remaining gaps.
 - AlphaProof Nexus pattern: maintain a small population of proof sketches, use reviewer/rater passes for decomposition quality, distinguish good gaps from bad gaps, and reuse solved or refuted subgoals.
 - Formal Conjectures pattern: treat statement auditing as part of proof work. Translation, underspecification, source errors, and implicit conventions can make a formally precise theorem different from the intended one.
 - MerLean-Prover pattern: keep the proof plan as the global state; use focused roles for planning, local proof, and checking; replan when faithfulness, mathematical correctness, or decomposition checks fail.
+- Cost-quality agent pattern: failed proof trajectories are useful routing signals. After repeated local failures, decide whether another attempt has positive value by checking proof-state delta, failure diversity, proof similarity/repetition, attempt count, and expected artifact.
+- LeanArchitect pattern: keep informal and formal-blueprint views synchronized. Separate statement dependencies from proof dependencies, track statement readiness separately from proof status, and audit metadata when a node looks formally plausible but mathematically wrong.
+- LeanMarathon pattern: first stabilize target fidelity, then discharge the proof DAG from ready leaves upward. Keep repairs local, preserve solved nodes, and reject orphan lemmas that do not feed a target theorem.
 
 ## Loop
 
@@ -35,15 +38,16 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 6. Workstream assignment: for hard projects, fill `WORKSTREAMS.md` with approved goals and only the active workstream cards needed next. Each card must include a look-at-how-others-do-it pass or a skip reason. Keep the first pass to one to three strong sources or patterns. Use roles serially by default; use actual parallel agents only when the user explicitly asks.
 7. Discovery gate: if the theorem contains an unknown construction, coefficient, threshold, policy, potential, active set, hard instance, or numerical answer, discover and self-check that object before writing a proof. Use holdout toy cases and a verification hook; do not let the proof infer the answer by wishful algebra.
 8. Draft: write a rough proof in 5-10 steps. Each step must name its intended theorem family, such as convex duality, envelope, single crossing, martingale concentration, elliptical potential, or information lower bound.
-9. Sketch: convert the draft into a blueprint dependency graph. Each node gets inputs, output, parents, likely proof route, tool check, status, failure mode, gap grade, and compact repair state. Independent branches should stay independent.
-10. Prove locally: solve the smallest unresolved lemma first. Work one move at a time when fragile: proposed move, expected new subgoal, check, proof-state delta. Use Wolfram/SymPy for algebra, Python/Z3/CVXPy/Sage for finite or optimization checks, and Lean for local formalizable lemmas.
+9. Sketch: convert the draft into a blueprint dependency graph. Each node gets statement dependencies, proof dependencies, downstream use, likely proof route, tool check, statement status, proof status, failure mode, gap grade, and compact repair state. Independent branches should stay independent.
+10. Prove locally: solve the smallest ready leaf on the current assembly path first. Work one move at a time when fragile: proposed move, expected new subgoal, check, proof-state delta. Use Wolfram/SymPy for algebra, Python/Z3/CVXPy/Sage for finite or optimization checks, and Lean for local formalizable lemmas. If a top-level assembly can be checked conditionally using assumed lemmas, use that to identify which lemmas are actually needed before proving side lemmas.
 11. Bottleneck surgery: if the same lemma remains unresolved, shrink it, flip to the negation, change representation, then certify/falsify/retrieve/repair before another prose proof.
 12. Gap review: accept a missing lemma only if it is a good gap, meaning smaller, non-circular, assumption-explicit, and checkable. If it is a bad gap, split, retrieve, falsify, or change route.
 13. Repair: if a lemma fails, determine whether the issue is false claim, missing assumption, quantifier mismatch, boundary case, or proof technique mismatch.
-14. Recombine: assemble only after all essential lemmas have statuses. Verify exact variables, quantifiers, constants, events, and assumptions.
-15. Review: adversarially attack the proof. Try to break the weakest lemma and the final assembly.
-16. Human steering checkpoint: if the obstruction is mathematical taste, model choice, definition choice, or a missing heuristic rather than a narrow check, ask the user for domain intuition before spending another heavy cycle.
-17. Escalate: if two consecutive cycles make no progress, use `proof-escalation-protocol.md` to choose counterexample search, tool certification, retrieval, local formalization, theorem repair, or stop/report.
+14. Route decision: after two failed local attempts or one repeated failure signature, choose one action before another attempt: continue current node, locally repair, re-decompose the subgraph, retrieve a premise/paper pattern, run a tool/falsification check, or stop/report. Continue only if the next attempt has new evidence or the proof state is shrinking.
+15. Recombine: assemble only after all essential lemmas have statuses. Verify exact variables, quantifiers, constants, events, and assumptions.
+16. Review: adversarially attack the proof. Try to break the weakest lemma and the final assembly.
+17. Human steering checkpoint: if the obstruction is mathematical taste, model choice, definition choice, or a missing heuristic rather than a narrow check, ask the user for domain intuition before spending another heavy cycle.
+18. Escalate: if two consecutive cycles make no progress, use `proof-escalation-protocol.md` to choose counterexample search, tool certification, retrieval, local formalization, theorem repair, or stop/report.
 
 ## Stop Budgets
 
@@ -60,6 +64,7 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - Prefer premise retrieval over free invention when a proof uses standard machinery.
 - Treat failed proof states as data: record the exact bad step and reuse it to avoid repeating the same route.
 - Let proof-state delta govern search: if a move only renames the same missing lemma, it is not progress.
+- Use failed-attempt features as a stop signal: repeated proof shape, low failure diversity, no smaller subgoal, high attempt count, and no new artifact mean route away rather than retry.
 - Keep a compact failed-state note: subgoal, attempted move, why it failed, and what new ingredient would make a retry legal.
 - Preserve negative results as first-class outputs. A rejected proof can still contain the right strategy, missing condition, useful counterexample, or reusable trick.
 - Use coordinator-style summaries for hard projects: current claim, active routes, blocked lemma, failed routes, next bounded move, and where user steering would help.
@@ -70,6 +75,8 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - When a proof attempt fails, require a structured forfeit: diagnosis, forensic analysis, and suggested fix. If the statement is false, repair/drop it. If the proof is too hard, split it into helper lemmas.
 - When a local proof skeleton is coherent but a block fails, "sorrify" the block: name it as a lemma, preserve the good skeleton, and repair only the isolated lemma.
 - When several routes are plausible, keep a small candidate board rather than one long monologue. Rate each route by plausibility, novelty, decomposition quality, evidence, and risk of circularity.
+- Use a used-node filter in lemma graphs: prove only definitions and lemmas that are on the current route to the theorem, unless an exploratory lemma has a clear falsification or theorem-repair purpose.
+- For long proof projects, target fidelity comes before proof effort. If the statement, role, or dependency metadata of a node is suspect, file a repair note before trying to prove it.
 
 ## Source Log
 
@@ -88,6 +95,9 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - AlphaProof Nexus (DeepMind, 2026): evolutionary proof sketches, good-gap/bad-gap review, rater-guided route selection, and solved/refuted goal cache.
 - Formal Conjectures (DeepMind, 2026): statement-fidelity auditing, `answer(sorry)`-style separation of discovery from proof, and misformalization taxonomy.
 - MerLean-Prover (Li, Zhu, Ren, 2026): proof-plan global state, planning/proving/checking roles, faithfulness checks, mathematical-correction checks, and decomposition-driven replanning.
+- Optimizing the Cost-Quality Tradeoff of Agentic Theorem Provers in Lean (Roegnvaldsson et al., 2026): failed proof trajectories can route proving effort by estimating success probability and cost; useful natural-language signals are proof-state delta, failure diversity, proof similarity, attempt count, and expected artifact.
+- LeanArchitect (Zhu et al., 2026): blueprint metadata, dependency inference, statement/proof synchronization, and fine-grained status tracking expose inconsistent or stale proof plans.
+- LeanMarathon (Zhang et al., 2026): target-fidelity review, dynamic proof DAG leaves, local edit scopes, CI-gated acceptance, source-aware repair, and lemma-closeness checks reduce drift in long proof projects.
 - LeanSearch-style global premise retrieval: sketch-retrieve-reflect cycles help find scattered lemma sets.
 - BFS-Prover-style route search: simple best-first expansion can be useful when many subgoals compete for attention.
 - ExVerus-style counterexample repair: concrete failures can suggest the invariant or assumption needed to repair a proof.

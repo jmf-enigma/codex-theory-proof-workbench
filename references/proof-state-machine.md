@@ -9,7 +9,7 @@ Use this to keep a hard proof moving instead of looping.
 - `S2-stress-test`: negation, edge cases, finite/numeric examples, relaxed assumptions.
 - `S2b-idea-map`: optional state for unclear or repeatedly failed proofs; propose failure world, small-case pattern guess, central object, proof kernel, central lemma, and verification hook.
 - `S3-route-portfolio`: at least two plausible proof routes with switch rules.
-- `S4-lemma-graph`: theorem reduced to a blueprint-style dependency graph of definitions, lemmas, and theorem assembly nodes with declared parents and statuses.
+- `S4-lemma-graph`: theorem reduced to a blueprint-style dependency graph of definitions, lemmas, and theorem assembly nodes with statement dependencies, proof dependencies, downstream use, and statuses.
 - `S5-local-certification`: check fragile lemmas with tools, known theorems, or one-step proof-state feedback.
 - `S6-assembly`: combine lemmas into the exact target statement.
 - `S7-adversarial-review`: try to break assumptions, quantifiers, boundary cases, and conclusion.
@@ -26,7 +26,7 @@ Use this to keep a hard proof moving instead of looping.
 - `S2 -> S2b`: no obvious central route or the same obstruction has appeared before.
 - `S2b -> S3`: one proof kernel or candidate central lemma has a verification hook; if an unknown construction or answer is required, it has passed a holdout/self-check.
 - `S3 -> S4`: route has a decomposable proof skeleton.
-- `S4 -> S5`: all nontrivial steps are lemma candidates with declared dependencies, statuses, expected evidence artifacts, gap grades, and compact repair states for failed nodes.
+- `S4 -> S5`: all nontrivial steps are lemma candidates with statement dependencies, proof dependencies, downstream use, statuses, expected evidence artifacts, gap grades, and compact repair states for failed nodes.
 - `S5 -> S6`: each essential lemma is proved, tool-checked, or explicitly marked conditional.
 - `S6 -> S7`: assembled proof matches the exact claim.
 - `S7 -> S8`: review finds no unhandled gaps.
@@ -41,6 +41,7 @@ After two failed attempts, do not continue prose proof. Update the ledger with:
 - named obstruction,
 - failed routes,
 - failed proof state if the last move left the same subgoal unchanged,
+- route decision: continue, repair, re-decompose, retrieve, tool/falsify, or stop/report,
 - smallest toy version,
 - next experiment.
 
@@ -55,7 +56,8 @@ For proofs that have already failed or look paper-level, run `S3 -> S6` as a Dra
 - Prove: fill or refute the subgoals one by one; for fragile kernels, try one move at a time and record whether the subgoal became smaller.
 - Repair: when a subgoal fails, classify the exact failure, weaken the lemma or add the missing assumption, then recombine.
 - Blueprint refinement: preserve solved nodes, diagnose failed nodes as false statement or too-hard proof, then rewrite only the failed node and its dependents.
+- Dynamic leaves: work on ready leaves whose dependencies are settled and whose downstream use feeds the current theorem. Do not prove orphan lemmas unless they falsify or repair the route.
 - Good-gap review: do not accept a missing lemma unless it is smaller than its parent, non-circular, assumption-explicit, and checkable.
-- Compact repair: the next repair should use the node statement, parents, previous attempt signature, previous feedback, and suggested fix, not the full failed transcript.
+- Compact repair: the next repair should use the node statement, dependencies, previous attempt signature, previous feedback, and suggested fix, not the full failed transcript.
 
 Do not polish final prose until every sketch subgoal is `proved`, `tool-checked`, `known`, or explicitly `missing`.

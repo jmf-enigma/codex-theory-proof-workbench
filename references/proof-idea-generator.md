@@ -10,7 +10,7 @@ The goal is not to force another checklist. The goal is to find a central object
 - Idea map and proof kernel: find the central object and decisive local lemma.
 - One-step queue and construction search: invent/check clever moves without looping.
 - Idea engines and paper tricks: retrieve or synthesize a route, then stop.
-- Gap review and compact repair: decide whether a missing lemma is a real smaller step or just the theorem in disguise.
+- Gap review, route decision, and compact repair: decide whether a missing lemma is a real smaller step or just the theorem in disguise, then choose whether to continue, repair, re-decompose, retrieve, tool-check, or stop.
 
 ## When To Use
 
@@ -79,7 +79,7 @@ Use this before accepting a missing lemma or moving to final proof.
 A good gap:
 
 - is strictly smaller than the parent theorem;
-- has explicit assumptions and declared parents;
+- has explicit assumptions and declared dependencies;
 - is not circular and does not restate the target;
 - has a verification hook such as a theorem match, algebra check, finite falsification, certificate, or local formalization;
 - if proved, would leave only routine assembly.
@@ -132,6 +132,8 @@ Track a tiny queue:
 
 If two moves leave the same subgoal unchanged, stop proving in prose. Record the failed state in the ledger, retrieve a closer premise or paper pattern, tool-check the subgoal, or repair the theorem.
 
+Before the next attempt, make a route decision. Continue only if the next move has a new expected artifact such as a smaller subgoal, verified identity, counterexample, theorem pattern, certificate, repaired statement, or genuinely new central object.
+
 ## Construction And Algebra Move Search
 
 Use this only when the proof kernel needs a clever object or a non-obvious manipulation. The goal is to synthesize one local move, not to brainstorm indefinitely.
@@ -171,6 +173,8 @@ When several clever moves are plausible, keep a small board instead of a long br
 | --- | --- | --- | --- | --- | --- | --- |
 
 Keep 2-4 routes. Retire a route if its compact failure state matches a previous attempt or if its key gap is bad and cannot be split.
+
+Prefer routes that feed the current theorem assembly. A clever side lemma that has no downstream use is a pattern card or exploratory note, not a proof target.
 
 ## Pre-Solve Gate
 

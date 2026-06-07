@@ -25,14 +25,17 @@ The workbench encourages Codex to:
 - **Assumption audit**: check quantifiers, domains, compactness, convexity, continuity, measurability, boundedness, independence, tie-breaking, and boundary cases.
 - **Statement-fidelity audit**: catch translation errors, implicit conventions, missing boundary cases, and formal/informal mismatch before proof search.
 - **Falsification first**: search small, finite, boundary, and relaxed-assumption cases before committing to a proof route.
-- **Blueprint lemma graphing**: split the theorem into a dependency graph of definitions, lemmas, and final assembly nodes, with declared parents, statuses, and failure diagnoses.
+- **Blueprint lemma graphing**: split the theorem into a dependency graph of definitions, lemmas, and final assembly nodes, with statement deps, proof deps, downstream use, statuses, and failure diagnoses.
+- **Dependency hygiene**: distinguish statement dependencies, proof dependencies, and downstream theorem use.
+- **Dynamic leaf proving**: prove ready lemmas on the current theorem path before side lemmas.
 - **Gap grading**: distinguish good gaps that can be deferred as lemmas from bad gaps that hide the core proof idea.
 - **No-repeat memory**: fingerprint repeated constructions, failed routes, missing assumptions, and unchanged proof states.
+- **Cost-aware route decisions**: after repeated local failures, decide whether to continue, repair, re-decompose, retrieve, tool-check, or stop.
 - **Progress contract**: require a retry to bring new evidence rather than a rewritten version of the same missing lemma.
 - **Divergence before convergence**: compare proof, falsification, and orthogonal evidence routes before committing to a long proof.
 - **Bottleneck surgery**: shrink a stuck proof to the smallest local lemma, flip it, change representation, then certify, refute, retrieve, or repair.
 - **Construction search**: use small cases, exact pattern mining, tight examples, and algebraic normal forms to guess useful objects.
-- **Compact local repair**: preserve a useful proof skeleton, isolate the bad block as a named lemma, and retry with only the statement, parents, previous attempt, and feedback.
+- **Compact local repair**: preserve a useful proof skeleton, isolate the bad block as a named lemma, and retry with only the statement, dependencies, previous attempt, and feedback.
 - **Tool-assisted proof control**: translate Wolfram, Python, CVXPy, Z3, OR-Tools, Sage, or Lean output into lemmas, certificates, counterexamples, or theorem repairs.
 - **Escalation**: when a proof stalls, move to counterexample search, symbolic checks, LP/SMT certificates, premise retrieval, local formalization, or theorem repair.
 
@@ -135,20 +138,22 @@ The core loop is:
 7. Choose a proof route and compress it into a proof kernel.
 8. For hard or previously failed proofs, compare genuinely different proof, falsification, and evidence routes.
 9. If one lemma remains stuck, perform bottleneck surgery and gap grading before another long proof attempt.
-10. Build a lemma graph and solve fragile lemmas one at a time.
-11. Use tools only when their output becomes a checkable lemma, certificate, counterexample, or repair.
-12. Record failed routes, blocked retries, compact repair states, and unchanged proof states.
-13. Apply verification gates before writing the final proof.
+10. Build a lemma graph with statement dependencies, proof dependencies, and downstream use.
+11. Solve ready leaves on the current theorem path before orphan side lemmas.
+12. After repeated local failures, run a route decision: continue, repair, re-decompose, retrieve, tool-check, or stop.
+13. Use tools only when their output becomes a checkable lemma, certificate, counterexample, or repair.
+14. Record failed routes, blocked retries, compact repair states, route decisions, and unchanged proof states.
+15. Apply verification gates before writing the final proof.
 
 ## Project Workspace
 
 `start_proof.py` creates a structured proof workspace:
 
 - `TRIAGE.md`: immediate next steps and proof-mode rules.
-- `WORKSTREAMS.md`: bounded workstream cards and no-repeat attempt fingerprints.
+- `WORKSTREAMS.md`: bounded workstream cards, no-repeat attempt fingerprints, and route decision checks.
 - `IDEA_MAP.md`: central objects, proof kernels, construction search, gap grading, route candidates, and one-step proof moves.
 - `ATTACK_MATRIX.md`: proof routes and falsification routes.
-- `LEMMA_QUEUE.md`: blueprint-style dependency graph of candidate definitions, lemmas, theorem assembly nodes, declared parents, statuses, gap grades, compact repair states, and failure diagnoses.
+- `LEMMA_QUEUE.md`: blueprint-style dependency graph of candidate definitions, lemmas, theorem assembly nodes, statement deps, proof deps, downstream use, statuses, gap grades, compact repair states, and failure diagnoses.
 - `PATTERN_SCAN.md`: bounded extraction from papers, prior ledgers, formalization projects, or proof-agent workflows.
 - `TOOL_PLAN.md`: expected artifacts before CAS, SMT, optimization, Python, Wolfram, Sage, or Lean checks.
 - `LEDGER.md`: persistent proof state, failed routes, verification gates, and current obstruction.
@@ -250,8 +255,11 @@ This project is released under the MIT License. See [LICENSE](LICENSE).
 - **证明路由**：根据 theorem family 和 proof pattern 分类。
 - **假设审计**：检查 quantifiers、domains、compactness、convexity、continuity、measurability、boundedness、independence、tie-breaking 和 boundary cases。
 - **先反驳再证明**：先搜索 small、finite、boundary 和 relaxed-assumption cases，再投入主要证明路线。
-- **Blueprint lemma graph**：把 theorem 拆成带依赖关系的 definitions、lemmas 和 final assembly nodes，并记录 parents、statuses 和 failure diagnoses。
+- **Blueprint lemma graph**：把 theorem 拆成带依赖关系的 definitions、lemmas 和 final assembly nodes，并记录 statement deps、proof deps、downstream use、statuses 和 failure diagnoses。
+- **依赖卫生**：区分 statement dependencies、proof dependencies 和 downstream theorem use。
+- **Dynamic leaf proving**：优先证明依赖已解决、且通向当前 theorem assembly 的 ready lemmas。
 - **防重复记忆**：记录重复构造、失败路线、missing assumptions 和 unchanged proof states 的 fingerprints。
+- **Cost-aware route decision**：局部失败重复后，先判断继续、修复、重拆、检索、工具检查还是停止。
 - **进步契约**：要求每次 retry 带来新证据，而不是把同一个 missing lemma 换一种说法。
 - **先发散再收敛**：在长证明前比较证明路线、反驳路线和独立证据路线。
 - **瓶颈手术**：把卡住的证明缩到最小 local lemma，翻成反命题或 tight case，换表示，再认证、反驳、检索或修复。
@@ -356,20 +364,22 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 5. 选择一条 proof route，并压缩成 proof kernel。
 6. 对困难或曾经失败的证明，先比较真正不同的证明路线、反驳路线和独立证据路线。
 7. 如果一个 lemma 持续卡住，先做 bottleneck surgery，再尝试长证明。
-8. 构建 lemma graph，一次解决一个脆弱 lemma。
-9. 只有当工具输出能转化为可检查 lemma、certificate、counterexample 或 repair 时，才把它纳入证明。
-10. 记录失败路线、blocked retries 和没有推进的 proof states。
-11. 写最终证明前通过 verification gates。
+8. 构建带 statement deps、proof deps 和 downstream use 的 lemma graph。
+9. 优先解决当前 theorem path 上的 ready leaves，而不是证明没有下游用途的 side lemmas。
+10. 局部失败重复后，先做 route decision：继续、修复、重拆、检索、工具检查或停止。
+11. 只有当工具输出能转化为可检查 lemma、certificate、counterexample 或 repair 时，才把它纳入证明。
+12. 记录失败路线、blocked retries、route decisions 和没有推进的 proof states。
+13. 写最终证明前通过 verification gates。
 
 ## 项目工作区
 
 `start_proof.py` 会创建一个结构化 proof workspace：
 
 - `TRIAGE.md`：当前证明的下一步和 proof-mode rules。
-- `WORKSTREAMS.md`：有边界的 workstream cards，以及避免重复尝试的 fingerprints。
+- `WORKSTREAMS.md`：有边界的 workstream cards、避免重复尝试的 fingerprints，以及 route decision checks。
 - `IDEA_MAP.md`：central objects、proof kernels、construction search 和 one-step proof moves。
 - `ATTACK_MATRIX.md`：proof routes 和 falsification routes。
-- `LEMMA_QUEUE.md`：blueprint-style dependency graph，记录 candidate definitions、lemmas、theorem assembly nodes、declared parents、statuses 和 failure diagnoses。
+- `LEMMA_QUEUE.md`：blueprint-style dependency graph，记录 candidate definitions、lemmas、theorem assembly nodes、statement deps、proof deps、downstream use、statuses 和 failure diagnoses。
 - `PATTERN_SCAN.md`：从论文、旧 ledgers、formalization projects 或 proof-agent workflows 中提取可迁移结构。
 - `TOOL_PLAN.md`：在运行 CAS、SMT、optimization、Python、Wolfram、Sage 或 Lean 前写清 expected artifacts。
 - `LEDGER.md`：持久化 proof state、失败路线、verification gates 和当前 obstruction。

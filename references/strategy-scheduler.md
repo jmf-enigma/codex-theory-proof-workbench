@@ -36,6 +36,31 @@ Run at least two routes for a hard proof unless one route cleanly proves or refu
 - Progress estimate: after each route, mark whether the remaining obstacle is smaller, unchanged, or bigger; stop or switch after two unchanged/bigger cycles.
 - Recombine only after local checks: a final proof is allowed only when each sketch lemma has a status and the assembly matches the original quantifiers.
 - Gap reviewer: before accepting a missing lemma, classify it as a good gap or bad gap. A bad gap is equivalent to the theorem, hides the core construction, is circular, or lacks a verification hook.
+- Used-node filter: before proving side lemmas, check whether they feed the current theorem assembly. If not, postpone them unless they are being used to falsify, retrieve, or repair the theorem.
+- Dependency split: distinguish statement dependencies from proof dependencies. A theorem can structurally depend on one lemma while its proof temporarily needs a different theorem, tool certificate, or local helper.
+
+## Marginal Value Routing
+
+Use this after two failed local attempts, one repeated failure signature, or any expensive proof move.
+
+Choose exactly one next action:
+
+- continue current node: only if the proof state got smaller, failures are genuinely diverse, or a new certificate/premise is now available;
+- local repair: if the statement seems right but the proof block fails for one identifiable reason;
+- re-decompose: if the current missing lemma is a bad gap, too broad, circular, or hides the core construction;
+- retrieve/pattern scan: if the route needs a theorem name, standard trick, or assumption list not yet identified;
+- tool/falsification check: if a finite example, algebra identity, LP/SMT witness, or local formalization can decide the kernel;
+- stop/report: if failure signatures repeat, the proof state is unchanged, and no next move has a checkable artifact.
+
+Route by signals, not vibes:
+
+- proof-state delta: smaller / unchanged / larger;
+- failure diversity: new obstruction or same obstruction;
+- proof similarity: same central object, same algebra, same parameterization, or same construction;
+- attempt count on the node;
+- expected artifact from the next attempt.
+
+If the next attempt cannot name an expected artifact, do not continue the same proof route.
 
 ## Novelty And Evidence
 
