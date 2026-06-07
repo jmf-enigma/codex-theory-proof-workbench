@@ -109,6 +109,14 @@ If there are several fingerprints or the match is ambiguous, run:
 codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/check_attempt.py . --route-family "ROUTE" --central-object "OBJECT" --target-lemma "LEMMA" --failure-witness "WITNESS"
 ```
 
+## Route Candidate Board
+
+Use this when several proof sketches are plausible. Keep it small and retire repeats quickly.
+
+| route | central object | why plausible | verification hook | novelty axis | gap grade | status | retire if |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| R1 |  |  |  |  | good / bad / unknown | candidate |  |
+
 ## Failed-State Notebook
 
 Keep entries short. Use this when a proof move leaves the same subgoal unchanged.
@@ -308,6 +316,21 @@ Use this only when the kernel needs a clever object or non-obvious manipulation.
 - why this move controls the failure world:
 - quick check: finite example / Wolfram or SymPy simplification / LP or SMT certificate / known identity:
 - discard condition:
+
+## Good Gap / Bad Gap Review
+
+- current missing lemma:
+- gap grade: good / bad / unknown:
+- reason:
+- if bad, split/retrieve/repair action:
+
+## Route Candidate Board
+
+Keep 2-4 routes when the proof needs invention.
+
+| route | central object | why plausible | verification hook | novelty axis | gap grade | status | retire if |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| R1 |  |  |  |  | good / bad / unknown | candidate |  |
 
 ## Paper Trick Cards
 
@@ -829,9 +852,9 @@ def lemma_queue_text(title: str, claim: str, selected: list[tuple[str, int]]) ->
 
 Use this as a proof blueprint, not a flat checklist. Keep the final theorem as the unique sink when possible. Independent proof branches should stay independent until assembly.
 
-| node id | type | status | statement / role | declared parents | expected artifact | failure diagnosis | suggested fix |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| N1 | lemma | missing |  |  | human proof / tool check / counterexample / theorem pattern |  |  |
+| node id | type | status | statement / role | declared parents | expected artifact | gap grade | failure diagnosis | compact repair state | suggested fix |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| N1 | lemma | missing |  |  | human proof / tool check / counterexample / theorem pattern | good / bad / unknown |  | statement + parents + previous attempt + feedback |  |
 
 Status values:
 
@@ -845,6 +868,11 @@ Failure diagnoses:
 
 - `STATEMENT_WRONG`: the node is false, too strong, missing an assumption, or uses the wrong representation. Repair or drop it and rewire dependents.
 - `PROOF_TOO_HARD`: the node is plausible but too large. Split it into helper lemmas and make those helper lemmas parents.
+
+Gap grades:
+
+- good: smaller than the parent, non-circular, assumption-explicit, and checkable.
+- bad: hides the core insight, restates the theorem, is circular, or has no verification hook.
 
 Blueprint refinement rule:
 
@@ -927,12 +955,16 @@ Read `external-proof-pattern-scan.md` before broad literature or skill browsing.
 ### Source 1
 
 - source:
+- source type: paper / appendix / formalization project / proof-agent skill / prior ledger:
 - trick name:
 - theorem family:
 - proof decomposition:
+- statement-fidelity lesson:
+- discovery or construction step:
 - retrieval target:
 - tool/certificate pattern:
 - failure or repair rule:
+- good-gap / bad-gap lesson:
 - transplantable idea:
 - hidden assumptions:
 - verification hook:
@@ -1009,6 +1041,8 @@ For each tool-assisted step, fill one block:
 - result:
 - translation into proof:
 - failure interpretation:
+- compact repair state if failed:
+- next legal repair:
 
 ## Artifact Rules
 
@@ -1038,6 +1072,8 @@ def strategy_text(selected: list[tuple[str, int]]) -> str:
 - premise retrieval targets: selected playbooks, prior ledgers, paper lemmas, formalization projects, proof-agent workflows, mathlib/search if relevant
 - external pattern scan: fill `PATTERN_SCAN.md` if routes are unfamiliar or repeated attempts failed
 - tool-guided repair targets: first false or unproved sublemma
+- compact repair rule: retry a failed node using only statement, parents, previous attempt signature, previous feedback, and suggested fix
+- gap review: good gaps may be deferred as lemmas; bad gaps must be split, retrieved, falsified, or repaired
 - progress budget: stop or switch after two unchanged obstruction cycles
 
 ## Route A
@@ -1097,17 +1133,19 @@ def triage_text(title: str, claim: str, selected: list[tuple[str, int]]) -> str:
 1. Fill exact variables, domains, quantifiers, and assumptions in `claim.md`.
 2. Record the statement fence: do not change theorem statement, assumptions, quantifiers, domains, or conclusion unless marking theorem repair.
 3. Run the direct-solve check: if a named theorem, certificate, contradiction, or known decomposition proves the claim, proceed directly and verify.
-4. Read `research-backed-proof-loop.md` from the skill references if the proof has failed before or looks paper-level.
-5. If the direct-solve check fails, update `IDEA_MAP.md` with a failure world, pattern guess when useful, central object, proof kernel, central lemma, and verification hook.
-6. For a fragile kernel, fill the one-step proof move queue before writing a long proof.
-7. If several branches are needed, fill goal-based cards in `WORKSTREAMS.md`. Do not create cards for routine direct proofs. Each active card must pass the `Look At How Others Do It Gate` or record a skip reason before heavy execution.
-8. If the route is unfamiliar or repeatedly stuck, fill `PATTERN_SCAN.md` from prior papers, local drafts, appendices, formalization projects, or proof-agent skills.
-9. Read `ATTACK_MATRIX.md` and choose one proof route plus one falsification route.
-10. Write the negation and smallest toy model in `counterexamples.md`.
-11. Turn `LEMMA_QUEUE.md` into a blueprint DAG in `LEDGER.md`: nodes, declared parents, statuses, failure diagnoses, and suggested fixes.
-12. If a step needs tools, fill `TOOL_PLAN.md` with the expected artifact before running commands.
-13. If two routes fail or the same obstruction repeats, follow `ESCALATION.md` before another prose proof attempt.
-14. Run `proof_doctor.py .` when stuck and `audit_ledger.py LEDGER.md` before claiming a final proof.
+4. Run a statement-fidelity audit for model-heavy or literature-derived claims: definitions, quantifiers, boundary cases, implicit conventions, and theorem statement fence.
+5. Read `research-backed-proof-loop.md` from the skill references if the proof has failed before or looks paper-level.
+6. If the direct-solve check fails, update `IDEA_MAP.md` with a failure world, pattern guess when useful, central object, proof kernel, central lemma, and verification hook.
+7. If the proof needs an unknown construction, threshold, potential, hard instance, coefficient, or exact answer, run discovery and holdout checks before proving.
+8. For a fragile kernel, fill the one-step proof move queue before writing a long proof.
+9. If several branches are needed, fill goal-based cards in `WORKSTREAMS.md`. Do not create cards for routine direct proofs. Each active card must pass the `Look At How Others Do It Gate` or record a skip reason before heavy execution.
+10. If the route is unfamiliar or repeatedly stuck, fill `PATTERN_SCAN.md` from prior papers, local drafts, appendices, formalization projects, or proof-agent skills.
+11. Read `ATTACK_MATRIX.md` and choose one proof route plus one falsification route.
+12. Write the negation and smallest toy model in `counterexamples.md`.
+13. Turn `LEMMA_QUEUE.md` into a blueprint DAG in `LEDGER.md`: nodes, declared parents, statuses, gap grades, failure diagnoses, compact repair states, and suggested fixes.
+14. If a step needs tools, fill `TOOL_PLAN.md` with the expected artifact before running commands.
+15. If two routes fail or the same obstruction repeats, follow `ESCALATION.md` before another prose proof attempt.
+16. Run `proof_doctor.py .` when stuck and `audit_ledger.py LEDGER.md` before claiming a final proof.
 
 ## Do Not
 

@@ -24,9 +24,9 @@ Use this to keep a hard proof moving instead of looping.
 - `S2 -> refuted`: counterexample found.
 - `S2 -> S3`: no counterexample found and assumptions look coherent.
 - `S2 -> S2b`: no obvious central route or the same obstruction has appeared before.
-- `S2b -> S3`: one proof kernel or candidate central lemma has a verification hook.
+- `S2b -> S3`: one proof kernel or candidate central lemma has a verification hook; if an unknown construction or answer is required, it has passed a holdout/self-check.
 - `S3 -> S4`: route has a decomposable proof skeleton.
-- `S4 -> S5`: all nontrivial steps are lemma candidates with declared dependencies, statuses, and expected evidence artifacts.
+- `S4 -> S5`: all nontrivial steps are lemma candidates with declared dependencies, statuses, expected evidence artifacts, gap grades, and compact repair states for failed nodes.
 - `S5 -> S6`: each essential lemma is proved, tool-checked, or explicitly marked conditional.
 - `S6 -> S7`: assembled proof matches the exact claim.
 - `S7 -> S8`: review finds no unhandled gaps.
@@ -55,5 +55,7 @@ For proofs that have already failed or look paper-level, run `S3 -> S6` as a Dra
 - Prove: fill or refute the subgoals one by one; for fragile kernels, try one move at a time and record whether the subgoal became smaller.
 - Repair: when a subgoal fails, classify the exact failure, weaken the lemma or add the missing assumption, then recombine.
 - Blueprint refinement: preserve solved nodes, diagnose failed nodes as false statement or too-hard proof, then rewrite only the failed node and its dependents.
+- Good-gap review: do not accept a missing lemma unless it is smaller than its parent, non-circular, assumption-explicit, and checkable.
+- Compact repair: the next repair should use the node statement, parents, previous attempt signature, previous feedback, and suggested fix, not the full failed transcript.
 
 Do not polish final prose until every sketch subgoal is `proved`, `tool-checked`, `known`, or explicitly `missing`.

@@ -1,6 +1,6 @@
 interface:
   display_name: "Theory Proof Workbench"
-  short_description: "Debug hard theory proofs"
-  default_prompt: "Use $theory-proof-workbench to start or diagnose a hard proof project with proof kernels, pattern mining, attack routes, falsification, lemma queue, proof ledger, escalation, and verification gates."
+  short_description: "Recover hard theory proofs"
+  default_prompt: "Use $theory-proof-workbench to start or diagnose a hard proof project with proof kernels, falsification, blueprint lemma graphs, gap review, compact repair states, proof ledger, escalation, and verification gates."
 policy:
   allow_implicit_invocation: true

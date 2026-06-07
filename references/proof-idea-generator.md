@@ -10,6 +10,7 @@ The goal is not to force another checklist. The goal is to find a central object
 - Idea map and proof kernel: find the central object and decisive local lemma.
 - One-step queue and construction search: invent/check clever moves without looping.
 - Idea engines and paper tricks: retrieve or synthesize a route, then stop.
+- Gap review and compact repair: decide whether a missing lemma is a real smaller step or just the theorem in disguise.
 
 ## When To Use
 
@@ -44,6 +45,7 @@ For a hard proof, optionally fill these before the final proof route:
 - Verification hook: how can the lemma be tested, retrieved, tool-checked, or locally formalized?
 - Paper pattern: what proof architecture from a prior paper, local draft, or known theorem family can be transplanted?
 - Paper trick: what local trick from a paper can be reused, and what assumptions make it legal?
+- Gap grade: is the current missing step a good gap or bad gap?
 
 If no central object appears, do not write a final proof. Switch to counterexample search, retrieval, or theorem repair.
 
@@ -69,6 +71,39 @@ A usable kernel has four parts:
 - failure shape: the counterexample, boundary case, or missing assumption that would make the kernel false.
 
 If no kernel can be stated, keep searching for the central object or try to falsify the claim. If two kernels fail without shrinking the obstruction, switch route or repair the theorem.
+
+## Good Gap / Bad Gap Review
+
+Use this before accepting a missing lemma or moving to final proof.
+
+A good gap:
+
+- is strictly smaller than the parent theorem;
+- has explicit assumptions and declared parents;
+- is not circular and does not restate the target;
+- has a verification hook such as a theorem match, algebra check, finite falsification, certificate, or local formalization;
+- if proved, would leave only routine assembly.
+
+A bad gap:
+
+- hides the main construction, threshold, hard instance, or inequality;
+- is equivalent to the original theorem under renamed notation;
+- depends on an unstated regularity, monotonicity, measurability, or boundary condition;
+- cannot be falsified or checked locally;
+- asks the user to trust "standard arguments" for the hardest step.
+
+If the gap is bad, do not polish. Split it, retrieve a pattern, run construction search, try a counterexample, or repair the theorem.
+
+## Hard-Mode Discovery
+
+Use this when the proof cannot start because the theorem needs an unknown object: policy threshold, potential, active set, coefficient sequence, hard instance, coupling, payment, or exact answer.
+
+1. Generate candidate objects from tiny cases, equality cases, binding constraints, or analogous papers.
+2. Self-check candidates on at least one holdout case not used to guess them.
+3. Reject candidates that only fit numerically but have no proof kernel.
+4. Promote a candidate only when it yields a central lemma, certificate, theorem pattern, or local formalization target.
+
+This is discovery, not proof. Once the object is found, return to the proof kernel and prove it.
 
 ## Bottleneck Surgery
 
@@ -127,6 +162,15 @@ Check the move quickly on the smallest toy instance or with Wolfram/SymPy/Python
 A pattern guess is not a lemma. Promote it only after one of these happens: it survives holdout toy cases, it has a proof kernel, it matches a known theorem pattern, or it yields a certificate that can be checked independently.
 
 The best clever move usually explains the tight case. Prefer a construction that makes equality, indifference, binding constraints, worst-case histories, least favorable instances, or zero-slack conditions visible. If a construction cannot say why the known hard example is hard, treat it as decorative.
+
+## Route Candidate Board
+
+When several clever moves are plausible, keep a small board instead of a long brainstorm.
+
+| route | central object | why plausible | verification hook | novelty | gap grade | retire if |
+| --- | --- | --- | --- | --- | --- | --- |
+
+Keep 2-4 routes. Retire a route if its compact failure state matches a previous attempt or if its key gap is bad and cannot be split.
 
 ## Pre-Solve Gate
 

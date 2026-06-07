@@ -29,10 +29,13 @@ Run at least two routes for a hard proof unless one route cleanly proves or refu
 - Guess before proving when the object is hidden: compute tiny cases, infer a formula, threshold, active set, invariant, tight instance, or potential, then reserve one holdout case before promoting the guess.
 - Kernel before long proof: state the one lemma, certificate, or counterexample barrier that would decide the route, then prove, refute, retrieve, or tool-check that kernel first.
 - Draft-Sketch-Prove: turn the intuitive proof into named subgoals before filling details; subgoals should be small enough for algebra, finite checks, Lean, or direct theorem matching.
+- Direct-first then blueprint: try a short direct route once. If it fails, build a lemma graph rather than extending the same prose proof.
 - One-step verifier loop: for a fragile subgoal, try one move, predict the new subgoal, check it, and record whether the proof state became smaller.
 - Repair by isolation: when a route fails, isolate the first false or unproved subgoal instead of rewriting the whole proof.
+- Compact feedback repair: when retrying a failed node, use the node statement, retrieved pattern, previous attempt signature, and previous feedback. Do not reload the whole failed history into the next attempt.
 - Progress estimate: after each route, mark whether the remaining obstacle is smaller, unchanged, or bigger; stop or switch after two unchanged/bigger cycles.
 - Recombine only after local checks: a final proof is allowed only when each sketch lemma has a status and the assembly matches the original quantifiers.
+- Gap reviewer: before accepting a missing lemma, classify it as a good gap or bad gap. A bad gap is equivalent to the theorem, hides the core construction, is circular, or lacks a verification hook.
 
 ## Novelty And Evidence
 
@@ -50,6 +53,13 @@ A route has made progress only if it proves/refutes a kernel, shrinks the missin
 
 For difficult proofs, use a three-lane first pass unless direct mode succeeds: proof route, falsification route, and orthogonal evidence route. The third lane can be small-case pattern mining, symbolic simplification, LP/SMT/CVX certificate search, Lean for a local lemma, or a one-to-three-source pattern scan.
 
+For research-level stuck proofs, keep a small route population after the first pass:
+
+- 2-4 routes only;
+- each route must differ by central object, certificate type, theorem family, or failure world;
+- score by plausibility, novelty, decomposition quality, evidence/certificate availability, and circularity risk;
+- retire any route whose compact failure state matches an earlier fingerprint.
+
 ## Decision Value Ranking
 
 When several next moves are possible, choose the one with the highest decision value. A high-value move can end or sharply reroute the search:
@@ -63,6 +73,8 @@ When several next moves are possible, choose the one with the highest decision v
 Low-value moves include polishing exposition, adding an unmotivated case split, strengthening the same missing lemma, or trying another route whose failure witness is unchanged.
 
 If all candidate moves have low decision value, stop and ask whether the theorem statement, modeling assumptions, or intended conclusion should change.
+
+When the theorem needs a construction, threshold, potential, hard instance, coefficient, or exact answer, the highest decision-value move is often discovery, not proof: compute or derive the object, self-check it on a holdout case, then convert it into a lemma.
 
 ## Switch Rules
 

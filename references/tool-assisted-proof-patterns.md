@@ -17,6 +17,8 @@ Use this for hard proofs where computation, CAS, SMT, optimization solvers, or L
 - **Certificate pattern**: prefer certificates that can be independently checked: dual variables, KKT conditions, exact rational identities, interval bounds, SMT models/unsat cores, or Lean proof terms.
 - **Premise-retrieval pattern**: when a lemma feels standard, search for the nearest theorem pattern or library lemma before inventing a new proof.
 - **Repair-loop pattern**: when a tool rejects a step, preserve the failed subgoal, extract the smallest missing lemma, then retry only that lemma.
+- **Sorrify/localize pattern**: when a skeleton is promising, replace the failed block with a named lemma, keep the good parents, and repair only that lemma.
+- **Compact-feedback pattern**: after a tool or Lean failure, keep the next repair input small: node statement, assumptions, parents, previous attempt, feedback, and proposed fix.
 
 ## Tool Roles
 
@@ -40,6 +42,7 @@ For each proof-critical step, write:
 - expected artifact: counterexample, `True`, conditions, dual certificate, unsat result, exact identity, Lean proof.
 - how the artifact becomes a proof step:
 - failure interpretation:
+- compact repair state if the step fails:
 
 If the expected artifact is only "numerical evidence," the step is not proof-ready.
 
@@ -55,6 +58,7 @@ If the expected artifact is only "numerical evidence," the step is not proof-rea
 8. **Translate** tool output into a lemma, missing assumption, counterexample, or certificate.
 9. **Independently check** proof-critical artifacts when feasible: symbolic plus numeric, CAS plus exact arithmetic, LP solution plus dual certificate, informal proof plus Lean.
 10. **Record** command, assumptions, result, and translation in `TOOL_PLAN.md` and `LEDGER.md`.
+11. **Local repair** if the check fails: preserve any proved parent nodes, isolate the first false or too-hard block, and retry only after adding a new parent, repaired statement, counterexample, theorem pattern, or certificate.
 
 ## Artifact Translation
 
@@ -67,6 +71,8 @@ If the expected artifact is only "numerical evidence," the step is not proof-rea
 - LP dual variables or Bellman inequalities: convert to a certificate that a human can verify line by line.
 - Lean accepts a lemma: status becomes `formalized-local`; still explain how the lemma fits the paper proof.
 - Lean fails: inspect the failed subgoal; often it reveals a missing assumption, coercion/domain issue, or too-strong statement.
+- Tool returns a counterexample to a sublemma: mark the node `false-negated`; repair/drop it and rewire dependents instead of regenerating the whole proof.
+- Tool times out or gives no useful artifact: classify the gap. If the missing lemma is a bad gap, switch to discovery/retrieval before more tool calls.
 
 ## Domain Recipes
 

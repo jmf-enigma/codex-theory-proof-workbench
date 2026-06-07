@@ -43,6 +43,18 @@ For hard proofs, use divergence before convergence unless a direct theorem alrea
 
 When a route stalls, optimize for decision value, not activity. The next move should decide a kernel, refute a small claim, expose a missing assumption, import a usable theorem pattern, or produce a checkable certificate. If it cannot do one of these, do not spend a long prose attempt on it.
 
+## Recent Proof-Agent Lessons
+
+Use these as light control rules, not a mandatory checklist.
+
+- **Statement-fidelity first**: for formal, model-heavy, or literature-derived claims, check whether definitions, quantifiers, boundary cases, and implicit conventions match the intended theorem before proving.
+- **Hard-mode discovery gate**: if the theorem needs an unknown construction, threshold, coefficient, potential, hard instance, or answer, first discover and self-check that object on small or symbolic cases; then prove it.
+- **Compact repair state**: after a failed local attempt, carry only the exact statement, retrieved premises/patterns, previous attempt signature, and previous feedback into the next repair. Keep full history in the ledger, not in the active proof context.
+- **Good gap / bad gap reviewer**: a good gap is smaller than the parent, routine under clear assumptions, and has a verification hook. A bad gap restates the theorem, hides the core insight, is circular, or has no falsification path.
+- **Localize before regenerating**: preserve the proof skeleton when it is structurally right; isolate the failed block as a named lemma, repair or split that block, then recombine.
+- **Small route population**: for hard proofs, maintain 2-4 route candidates and score them by failure-world control, novelty, decomposition quality, and certificate availability. Do not run a large search unless the user asks.
+- **Structured forfeit**: when a route runs out of budget, write diagnosis, forensic analysis, and suggested fix before the next attempt.
+
 ## Use Gate
 
 Do not blindly escalate to the full workbench. Pick the lightest useful mode.
@@ -87,7 +99,7 @@ codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scrip
 
 1. Restate the claim with variables, domains, quantifiers, and all assumptions.
 Do not silently change the theorem statement, assumptions, or conclusion. If the proof needs a different statement, mark it as theorem repair or ask the user when the modeling meaning changes.
-2. Run the pre-solve gate: decide whether the claim has an obvious direct theorem, certificate, or one-page proof. If yes, prove it and still pass verification gates. If no, do a micro pattern check or use the light idea pass. Retrieve nearby proof patterns from prior papers, local drafts, ledgers, or literature only when the central object or central lemma is unclear.
+2. Run the statement-fidelity and pre-solve gates: decide whether the claim is the intended theorem, then whether an obvious direct theorem, certificate, or one-page proof applies. If yes, prove directly and still pass verification gates. If no, do a micro pattern check or use the light idea pass. Retrieve nearby proof patterns from prior papers, local drafts, ledgers, or literature only when the central object or central lemma is unclear.
 3. Classify the proof target using [references/proof-router.md](references/proof-router.md) and the state machine in [references/proof-state-machine.md](references/proof-state-machine.md).
 For hard, research-level, or twice-failed proofs, also apply [references/research-backed-proof-loop.md](references/research-backed-proof-loop.md): prior-result audit, Draft-Sketch-Prove, premise retrieval, tool-guided repair, and progress-budget stop rules.
 When the proof idea is unclear, optionally apply [references/proof-idea-generator.md](references/proof-idea-generator.md) before the route portfolio. This is not mandatory for routine proofs; use it to find the failure world, central object, proof kernel, pattern guess, central lemma, and verification hook.
@@ -98,7 +110,7 @@ If a route fails twice or the same obstruction repeats, use [references/proof-es
 5. Choose proof routes with [references/strategy-scheduler.md](references/strategy-scheduler.md); run at least two genuinely different routes for hard or previously failed proofs. Different means a different central object, theorem family, certificate type, failure world, or evidence source.
 6. Before proving, try to break the claim: edge cases, missing compactness/convexity/continuity, finite counterexamples, numerical examples, and relaxed assumptions.
 7. If the route is still unclear, run the optional idea pass: failure world -> small-case pattern guess -> central object -> proof kernel -> central lemma -> verification hook. Use `pattern_miner.py` only when the small cases produce a useful exact sequence. If the same obstruction remains, do bottleneck surgery: shrink to the smallest local lemma, flip to the negation, try a certificate or alternate representation, then retrieve or repair before drafting again.
-8. Build a blueprint-style lemma graph: label each needed definition/lemma/theorem node, declare dependencies, and mark status as missing, proved, checked, false/negated, or conditional. For repeated attempts, record the attempt fingerprint and expected new evidence in `WORKSTREAMS.md` before trying a variant. When a node fails, diagnose it as `STATEMENT_WRONG` or `PROOF_TOO_HARD`; preserve solved nodes and refine only the failed subgraph when possible.
+8. Build a blueprint-style lemma graph: label each needed definition/lemma/theorem node, declare dependencies, and mark status as missing, proved, checked, false/negated, or conditional. For repeated attempts, record the attempt fingerprint and expected new evidence in `WORKSTREAMS.md` before trying a variant. When a node fails, diagnose it as `STATEMENT_WRONG` or `PROOF_TOO_HARD`, grade the gap as good or bad, and keep a compact repair state; preserve solved nodes and refine only the failed subgraph when possible.
 9. Work one proof move at a time when a kernel is fragile: name the current subgoal, propose one move, predict the new subgoal, check it by theorem match, algebra, toy case, tool, or reviewer pass, then keep, repair, or discard it based on proof-state delta. If two moves leave the same obstruction unchanged, stop proving in prose and switch to retrieval, tools, counterexample search, theorem repair, or user steering.
 10. Read only the relevant branch playbook. If unsure, run:
 
@@ -133,6 +145,7 @@ If a proof attempt stalls, do not start over. Create or update a proof ledger. T
 - proved lemmas,
 - missing lemmas,
 - the next most plausible theorem pattern.
+- compact repair state for the current bottleneck: statement, retrieved premise/pattern, previous attempt signature, previous feedback, and next legal edit.
 
 When the user asks again about the same proof, read the ledger first and continue from it.
 

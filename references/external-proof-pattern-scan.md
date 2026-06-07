@@ -19,6 +19,7 @@ Use a minimal scan first. For a small unclear proof, inspect one close theorem f
 - Formalization projects: Lean/mathlib examples, blueprints, Liquid Tensor-style dependency graphs, Flyspeck-style certificates.
 - Prover papers: Draft-Sketch-Prove, retrieval-augmented proving, compiler-guided repair, counterexample-guided repair, tree or best-first proof search.
 - Agent skills/workflows: Lean proof skills, proof-review skills, proof-memory systems, formalization workflows.
+- Recent proof-agent methods: blueprint refinement, compact feedback repair, AND/OR proof DAGs, answer-discovery before proof, evolutionary proof sketches, structured forfeits, and statement-fidelity audits.
 
 ## Extraction Card
 
@@ -63,6 +64,17 @@ Prefer a route with medium plausibility and a checkable certificate over a route
 - **Paper trick card**: save local reusable moves with source, problem shape, hidden assumptions, transplant step, verification hook, and failure mode.
 - **Persistent memory**: record successful patterns, dead ends, and reusable lemmas so the next attempt starts with evidence.
 
+## Recent Method Patterns
+
+Use these as importable proof-search mechanisms:
+
+- **Formal Conjectures**: audit the statement before proof. Look for translation errors, implicit conventions, underspecified source claims, zero/boundary behavior, and wrong quantifier scope.
+- **Discover-and-Prove**: if an answer or object is hidden, separate discovery from proof. Self-check the discovered answer on holdout cases before turning it into a theorem.
+- **OProver/APOLLO**: use tool/compiler feedback as a local repair signal. Preserve the skeleton, isolate the bad block, and retry only the failed lemma with compact feedback.
+- **LEAP/Goedel-Architect**: after direct failure, create a DAG of lemmas with declared dependencies. Review acyclicity, parent sufficiency, and whether each child lemma is simpler than its parent.
+- **AlphaProof Nexus**: keep a small population of sketches; use a reviewer to score decomposition quality, novelty, plausibility, and good-gap versus bad-gap.
+- **MerLean-Prover/lean-collab**: separate planning, proving, and checking roles. A clean proof must still pass faithfulness to the original statement and mathematical-correctness checks.
+
 ## Use In A Proof Project
 
 1. Fill `PATTERN_SCAN.md` only with sources that change the next proof move.
@@ -79,6 +91,7 @@ Prefer a route with medium plausibility and a checkable certificate over a route
 - OR/optimization: `KKT sufficiency proof`, `primal dual certificate`, `exchange argument proof`, `subgradient optimality certificate`.
 - Lower bounds: `two point testing lower bound`, `Fano Assouad proof`, `change of measure bandit lower bound`, `KL TV reduction`.
 - Formal/prover: `Lean formalization theorem name`, `mathlib lemma`, `Draft Sketch Prove`, `retrieval augmented theorem proving`, `compiler guided proof repair`.
+- Recent proof agents: `Goedel Architect blueprint refinement`, `MerLean Prover recursive proof plan`, `AlphaProof Nexus good gap bad gap`, `OProver feedback refinement`, `APOLLO proof repair`, `LEAP AND OR proof DAG`.
 
 ## Stop Rule
 

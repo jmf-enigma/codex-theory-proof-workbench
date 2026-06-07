@@ -50,11 +50,13 @@ STATE_ACTIONS = {
     "S0-parse": [
         "Make variables, domains, quantifiers, assumptions, and desired conclusion explicit in claim.md.",
         "Record the statement fence: proof mode must not silently change assumptions, quantifiers, domains, or conclusion.",
+        "Audit statement fidelity for model-heavy or literature-derived claims: definitions, zero/boundary behavior, implicit conventions, and quantifier scope.",
         "Run the direct-solve check: named theorem, certificate, contradiction, or known decomposition.",
         "Classify the theorem family with select_playbook.py.",
     ],
     "S1-classify": [
         "Before route search, check whether the selected playbook gives a direct theorem or certificate.",
+        "If the statement came from a paper or informal model, confirm that the formal claim matches the intended theorem before route search.",
         "If no direct route is visible but the proof is still small, do a micro pattern check: one theorem family, prior ledger, or close paper pattern.",
         "Choose at least two proof routes and one falsification route in ATTACK_MATRIX.md or strategy.md.",
         "Move to stress testing before drafting the final proof.",
@@ -69,19 +71,23 @@ STATE_ACTIONS = {
     "S2b-idea-map": [
         "Fill failure world, central object candidates, one proof kernel, candidate central lemma, and verification hook in IDEA_MAP.md.",
         "If the kernel needs invention, guess from small cases: formula, threshold, invariant, active set, tight instance, or potential; use pattern_miner.py for exact sequences and keep one holdout check.",
+        "If an answer, construction, threshold, potential, hard instance, or coefficient is unknown, treat discovery as a separate step before proof.",
+        "Review the current missing lemma as a good gap or bad gap before promoting it.",
         "Use nearby papers, appendices, prior ledgers, theorem families, or analogous models to extract a candidate proof architecture.",
         "Move to route portfolio only after one kernel can be proved, refuted, retrieved, tool-checked, or locally formalized.",
     ],
     "S3-route-portfolio": [
         "Before adding another route, compare it with the Attempt Fingerprint Index in WORKSTREAMS.md; run check_attempt.py only if several fingerprints or an ambiguous match make this hard.",
+        "Keep a small route candidate board: 2-4 routes scored by central object, verification hook, novelty, and gap quality.",
         "Update WORKSTREAMS.md only for branches that need durable state; each active card should include a look-at-how-others-do-it pass or a skip reason.",
         "Fill Route A, Route B, and Route C statuses in LEDGER.md.",
         "Pick the route whose theorem assumptions most closely match the claim.",
     ],
     "S4-lemma-graph": [
         "Before attacking the same missing lemma again, write the route family, central object, failure witness, and new delta in WORKSTREAMS.md.",
-        "Turn every nontrivial step into a blueprint node with declared parents, status, expected artifact, and failure diagnosis.",
+        "Turn every nontrivial step into a blueprint node with declared parents, status, expected artifact, gap grade, failure diagnosis, and compact repair state.",
         "Preserve solved nodes; if a failed node is STATEMENT_WRONG, repair/drop it and rewire dependents; if PROOF_TOO_HARD, split it into helper nodes.",
+        "If a skeleton is right but a block fails, preserve the skeleton and isolate the bad block as a named lemma.",
         "For the hardest unresolved lemma, run bottleneck surgery: shrink, flip, change representation, then certify/falsify/retrieve/repair.",
         "For the hardest fragile lemma, use one-step moves: current subgoal, proposed move, expected new subgoal, check result, proof-state delta.",
         "Promote the single hardest missing step to its own lemma card.",
@@ -108,6 +114,8 @@ STATE_ACTIONS = {
         "Rank next moves by decision value: kernel proof/refutation, counterexample, missing assumption, certificate, retrieval, representation change, or theorem repair.",
         "If a proposed move leaves the proof state unchanged, add a Failed-State Notebook entry in WORKSTREAMS.md before retrying.",
         "If no construction is visible, mine small cases for a pattern; use pattern_miner.py for exact sequences and test one holdout case before promoting the guess.",
+        "Classify the current gap as good or bad; bad gaps require splitting, retrieval, falsification, or theorem repair.",
+        "Use compact repair state for the bottleneck: statement, parents, previous attempt signature, previous feedback, and suggested fix.",
         "Before repeating proof search, inspect one to three nearby papers, appendices, prior ledgers, theorem families, or analogous models for this obstruction.",
         "Create a bounded workstream card only if the next branch needs durable state.",
         "Choose one escalation method: tool falsification, retrieval, local formalization, theorem repair, or stop/report.",
@@ -288,6 +296,10 @@ def external_pattern_queries(claim: str, selected: list[tuple[str, int]]) -> lis
             queries.append(f"{cleaned} counterexample missing assumption")
     queries.extend(
         [
+            "Goedel Architect blueprint refinement proof DAG",
+            "MerLean Prover proof plan faithfulness decomposition check",
+            "AlphaProof Nexus proof sketches good gap bad gap",
+            "OProver APOLLO LEAP feedback repair proof DAG",
             "Draft Sketch Prove theorem proving proof decomposition",
             "retrieval augmented theorem proving premise selection",
             "compiler guided proof repair Lean",

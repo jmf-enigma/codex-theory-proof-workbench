@@ -23,13 +23,16 @@ The workbench encourages Codex to:
 
 - **Proof routing**: classify the target by theorem family and proof pattern.
 - **Assumption audit**: check quantifiers, domains, compactness, convexity, continuity, measurability, boundedness, independence, tie-breaking, and boundary cases.
+- **Statement-fidelity audit**: catch translation errors, implicit conventions, missing boundary cases, and formal/informal mismatch before proof search.
 - **Falsification first**: search small, finite, boundary, and relaxed-assumption cases before committing to a proof route.
 - **Blueprint lemma graphing**: split the theorem into a dependency graph of definitions, lemmas, and final assembly nodes, with declared parents, statuses, and failure diagnoses.
+- **Gap grading**: distinguish good gaps that can be deferred as lemmas from bad gaps that hide the core proof idea.
 - **No-repeat memory**: fingerprint repeated constructions, failed routes, missing assumptions, and unchanged proof states.
 - **Progress contract**: require a retry to bring new evidence rather than a rewritten version of the same missing lemma.
 - **Divergence before convergence**: compare proof, falsification, and orthogonal evidence routes before committing to a long proof.
 - **Bottleneck surgery**: shrink a stuck proof to the smallest local lemma, flip it, change representation, then certify, refute, retrieve, or repair.
 - **Construction search**: use small cases, exact pattern mining, tight examples, and algebraic normal forms to guess useful objects.
+- **Compact local repair**: preserve a useful proof skeleton, isolate the bad block as a named lemma, and retry with only the statement, parents, previous attempt, and feedback.
 - **Tool-assisted proof control**: translate Wolfram, Python, CVXPy, Z3, OR-Tools, Sage, or Lean output into lemmas, certificates, counterexamples, or theorem repairs.
 - **Escalation**: when a proof stalls, move to counterexample search, symbolic checks, LP/SMT certificates, premise retrieval, local formalization, or theorem repair.
 
@@ -126,14 +129,16 @@ The core loop is:
 1. Restate the claim with exact variables, domains, quantifiers, and assumptions.
 2. Preserve the theorem statement. If the proof needs a changed statement, mark it as theorem repair.
 3. Check for a direct theorem, certificate, contradiction, or known decomposition.
-4. Try to break the claim using small, finite, boundary, and relaxed-assumption cases.
-5. Choose a proof route and compress it into a proof kernel.
-6. For hard or previously failed proofs, compare genuinely different proof, falsification, and evidence routes.
-7. If one lemma remains stuck, perform bottleneck surgery before another long proof attempt.
-8. Build a lemma graph and solve fragile lemmas one at a time.
-9. Use tools only when their output becomes a checkable lemma, certificate, counterexample, or repair.
-10. Record failed routes, blocked retries, and unchanged proof states.
-11. Apply verification gates before writing the final proof.
+4. Audit whether the statement matches the intended theorem when the claim comes from a model, paper, or informal derivation.
+5. Try to break the claim using small, finite, boundary, and relaxed-assumption cases.
+6. If the theorem needs an unknown construction, threshold, potential, hard instance, or answer, discover and self-check that object before proving.
+7. Choose a proof route and compress it into a proof kernel.
+8. For hard or previously failed proofs, compare genuinely different proof, falsification, and evidence routes.
+9. If one lemma remains stuck, perform bottleneck surgery and gap grading before another long proof attempt.
+10. Build a lemma graph and solve fragile lemmas one at a time.
+11. Use tools only when their output becomes a checkable lemma, certificate, counterexample, or repair.
+12. Record failed routes, blocked retries, compact repair states, and unchanged proof states.
+13. Apply verification gates before writing the final proof.
 
 ## Project Workspace
 
@@ -141,9 +146,9 @@ The core loop is:
 
 - `TRIAGE.md`: immediate next steps and proof-mode rules.
 - `WORKSTREAMS.md`: bounded workstream cards and no-repeat attempt fingerprints.
-- `IDEA_MAP.md`: central objects, proof kernels, construction search, and one-step proof moves.
+- `IDEA_MAP.md`: central objects, proof kernels, construction search, gap grading, route candidates, and one-step proof moves.
 - `ATTACK_MATRIX.md`: proof routes and falsification routes.
-- `LEMMA_QUEUE.md`: blueprint-style dependency graph of candidate definitions, lemmas, theorem assembly nodes, declared parents, statuses, and failure diagnoses.
+- `LEMMA_QUEUE.md`: blueprint-style dependency graph of candidate definitions, lemmas, theorem assembly nodes, declared parents, statuses, gap grades, compact repair states, and failure diagnoses.
 - `PATTERN_SCAN.md`: bounded extraction from papers, prior ledgers, formalization projects, or proof-agent workflows.
 - `TOOL_PLAN.md`: expected artifacts before CAS, SMT, optimization, Python, Wolfram, Sage, or Lean checks.
 - `LEDGER.md`: persistent proof state, failed routes, verification gates, and current obstruction.
