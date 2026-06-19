@@ -31,6 +31,7 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 13. Progress gate: if the same obstruction survives two cycles, stop polishing and either isolate the missing lemma, weaken the theorem, or return `still open`.
 14. Novelty gate: for a repeated proof, state what changed since the last failed attempt. Acceptable changes are a new central object, theorem family, certificate, counterexample, missing assumption, verified trick, tool artifact, or theorem repair.
 15. Decision-value gate: before another long proof attempt, state the artifact it is expected to produce. If there is no expected artifact, choose counterexample search, retrieval, local formalization, theorem repair, or stop.
+16. Formal artifact gate: if Lean or a formal-proving API was used, check for `sorry`, admitted axioms, incomplete declarations, unproved theorem dependencies, and whether verified helper lemmas actually imply the original theorem.
 
 ## Adversarial Review Checklist
 
@@ -45,6 +46,8 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 - Did any proof of uniqueness rely only on weak concavity or weak monotonicity?
 - Did the proof retry the same missing lemma with only different notation or a stronger unsupported claim?
 - Did the hardest algebra step have a sign, equality case, certificate, or alternate representation?
+- Did a formal artifact verify only local helper lemmas while leaving the main theorem, counting step, or global assembly obligation open?
+- Did two routes reach equivalent proof states under different notation or variable names?
 
 ## Missing Lemma Search
 
@@ -66,6 +69,7 @@ For a hard proof, the final answer should include:
 - essential assumptions,
 - proof pattern,
 - lemma graph with statuses,
+- any formal artifact status, including unresolved `sorry`/admitted obligations if present,
 - counterexample searches attempted,
 - proof or exact obstruction,
 - novelty since the last failed route, if applicable,

@@ -27,6 +27,7 @@ Use this to keep a hard proof moving instead of looping.
 - `S2b -> S3`: one proof kernel or candidate central lemma has a verification hook; if an unknown construction or answer is required, it has passed a holdout/self-check.
 - `S3 -> S4`: route has a decomposable proof skeleton.
 - `S4 -> S5`: all nontrivial steps are lemma candidates with statement dependencies, proof dependencies, downstream use, statuses, expected evidence artifacts, gap grades, and compact repair states for failed nodes.
+- `S4 -> S4`: merge equivalent proof states or actions before retrying. Equivalent means same goal, same local assumptions, same central object, and same failure witness up to notation.
 - `S5 -> S6`: each essential lemma is proved, tool-checked, or explicitly marked conditional.
 - `S6 -> S7`: assembled proof matches the exact claim.
 - `S7 -> S8`: review finds no unhandled gaps.
@@ -56,6 +57,9 @@ For proofs that have already failed or look paper-level, run `S3 -> S6` as a Dra
 - Prove: fill or refute the subgoals one by one; for fragile kernels, try one move at a time and record whether the subgoal became smaller.
 - Repair: when a subgoal fails, classify the exact failure, weaken the lemma or add the missing assumption, then recombine.
 - Blueprint refinement: preserve solved nodes, diagnose failed nodes as false statement or too-hard proof, then rewrite only the failed node and its dependents.
+- AND/OR proof graph: treat alternative routes as OR nodes and required child lemmas as AND nodes. A parent proof route is not solved until all required children are solved. Work the lowest-confidence required child first.
+- Action/state equivalence: if a new tactic, derivation, or construction produces the same remaining subgoal as a previous failed move, record it as the same proof state instead of counting it as a new attempt.
+- Lemma revision loop: after failure, keep proved nodes and verified helper lemmas, add or repair only unproved lemmas, and rerun assembly only after the changed dependencies are ready.
 - Dynamic leaves: work on ready leaves whose dependencies are settled and whose downstream use feeds the current theorem. Do not prove orphan lemmas unless they falsify or repair the route.
 - Good-gap review: do not accept a missing lemma unless it is smaller than its parent, non-circular, assumption-explicit, and checkable.
 - Compact repair: the next repair should use the node statement, dependencies, previous attempt signature, previous feedback, and suggested fix, not the full failed transcript.

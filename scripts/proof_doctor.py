@@ -86,9 +86,12 @@ STATE_ACTIONS = {
     "S4-lemma-graph": [
         "Before attacking the same missing lemma again, write the route family, central object, failure witness, and new delta in WORKSTREAMS.md.",
         "Turn every nontrivial step into a blueprint node with statement deps, proof deps, downstream use, status, expected artifact, gap grade, failure diagnosis, and compact repair state.",
+        "Mark OR alternatives and AND required child lemmas; attack the lowest-confidence required child before expanding another route.",
+        "Merge equivalent proof states/actions before retrying: same goal, assumptions, central object, and failure witness means same state unless a new artifact exists.",
         "Prove ready leaves that feed the current assembly path first; postpone orphan lemmas unless they falsify, repair, or unlock the route.",
         "After two local attempts on a node, fill the Route Decision Check before retrying.",
         "Preserve solved nodes; if a failed node is STATEMENT_WRONG, repair/drop it and rewire dependents; if PROOF_TOO_HARD, split it into helper nodes.",
+        "After failure, keep proved helper lemmas and revise only unproved or false nodes plus dependents.",
         "If a skeleton is right but a block fails, preserve the skeleton and isolate the bad block as a named lemma.",
         "For the hardest unresolved lemma, run bottleneck surgery: shrink, flip, change representation, then certify/falsify/retrieve/repair.",
         "For the hardest fragile lemma, use one-step moves: current subgoal, proposed move, expected new subgoal, check result, proof-state delta.",
@@ -96,6 +99,7 @@ STATE_ACTIONS = {
     ],
     "S5-local-certification": [
         "Check fragile algebra, finite cases, optimization certificates, or formalizable inequalities with tools.",
+        "For Lean/API artifacts, audit `sorry`, admitted axioms, unresolved obligations, and whether verified helper lemmas assemble into the original theorem.",
         "Record the exact command/result in LEDGER.md.",
     ],
     "S6-assembly": [
@@ -112,7 +116,9 @@ STATE_ACTIONS = {
     "S9-stuck": [
         "Name the exact obstruction in LEDGER.md.",
         "Check the Attempt Fingerprint Index in WORKSTREAMS.md; run check_attempt.py only if several fingerprints or an ambiguous match make this hard.",
+        "Fill Proof-State Equivalence if the new idea has the same goal, assumptions, central object, and failure witness as a prior route.",
         "Shrink the obstruction to one proof kernel before trying another long proof route.",
+        "If the proof graph has an AND bottleneck, work that required child before opening another OR route.",
         "Fill Route Decision Check in WORKSTREAMS.md: continue, repair, re-decompose, retrieve, tool-falsify, or stop-report.",
         "Rank next moves by decision value: kernel proof/refutation, counterexample, missing assumption, certificate, retrieval, representation change, or theorem repair.",
         "If a proposed move leaves the proof state unchanged, add a Failed-State Notebook entry in WORKSTREAMS.md before retrying.",
@@ -376,6 +382,8 @@ def external_pattern_queries(claim: str, selected: list[tuple[str, int]]) -> lis
             queries.append(f"{cleaned} counterexample missing assumption")
     queries.extend(
         [
+            "Aristotle IMO-level automated theorem proving Monte Carlo Graph Search Lean",
+            "Aristotle API Lean proof sorry verified helper lemmas",
             "Goedel Architect blueprint refinement proof DAG",
             "MerLean Prover proof plan faithfulness decomposition check",
             "LeanMarathon dynamic proof DAG target fidelity",

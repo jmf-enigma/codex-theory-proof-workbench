@@ -61,9 +61,11 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 | --- | --- |
 | The proof silently changes the theorem | Statement-fidelity and theorem-repair gates |
 | The same route keeps returning | Attempt fingerprints and no-repeat decisions |
+| Notation changes hide repeated proof states | State/action equivalence checks |
 | The key construction is unknown | Small-case discovery, pattern mining, tight-case search |
 | A lemma hides the whole theorem | Good-gap / bad-gap review |
 | Tools produce numbers but not proof | Artifact-first tool plans |
+| Formal output proves helpers but not the theorem | `sorry`/obligation and assembly audits |
 | The proof gets stuck after several tries | Route decision: continue, repair, re-decompose, retrieve, tool-check, or stop |
 
 ## Core Workflow
@@ -76,10 +78,11 @@ The default spine is deliberately small:
 4. Try to falsify the claim with small, finite, boundary, and relaxed-assumption cases.
 5. If needed, discover the central object, proof kernel, or missing construction.
 6. For hard proofs, compare a small portfolio of genuinely different routes.
-7. Build a blueprint lemma graph with statement deps, proof deps, downstream use, and node statuses.
-8. Prove ready leaves on the current theorem path before side lemmas.
-9. After repeated local failure, make a route decision before another attempt.
-10. Assemble, adversarially review, and report the final proof status.
+7. Build an AND/OR blueprint lemma graph with statement deps, proof deps, downstream use, and node statuses.
+8. Merge equivalent proof states and prove bottleneck required children before expanding more routes.
+9. Preserve proved helper lemmas and revise only unproved or false nodes.
+10. After repeated local failure, make a route decision before another attempt.
+11. Assemble, audit any formal artifact for unresolved obligations, adversarially review, and report the final proof status.
 
 ## Proof Project Files
 
@@ -193,7 +196,7 @@ codex-math-python scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 
 ## Research Influences
 
-The workflow is inspired by practical patterns from proof-agent and formalization work: Draft-Sketch-Prove, premise retrieval, compiler-guided repair, blueprint-style dependency graphs, cost-aware theorem-prover routing, LeanArchitect, LeanMarathon, and AI co-mathematician workstreams. The skill imports these as lightweight control rules rather than as a mandatory heavy process.
+The workflow is inspired by practical patterns from proof-agent and formalization work: Draft-Sketch-Prove, premise retrieval, compiler-guided repair, blueprint-style dependency graphs, cost-aware theorem-prover routing, LeanArchitect, LeanMarathon, Harmonic Aristotle's Lean/MCTS-style proof-state search, and AI co-mathematician workstreams. The skill imports these as lightweight control rules rather than as a mandatory heavy process.
 
 ## License
 
@@ -264,9 +267,11 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 | --- | --- |
 | 证明偷偷改了 theorem | Statement-fidelity 和 theorem-repair gates |
 | 同一条路线反复失败 | Attempt fingerprints 和 no-repeat decisions |
+| 换了符号但 proof state 其实一样 | State/action equivalence checks |
 | 关键构造不知道是什么 | 小例子、pattern mining、tight-case search |
 | 一个 lemma 其实藏了整个 theorem | Good-gap / bad-gap review |
 | 工具只给了数值现象 | Artifact-first tool plans |
+| Formal output 只证明了 helper lemmas | `sorry`、obligation 和 assembly audit |
 | 局部证明失败多次 | Route decision：继续、修复、重拆、检索、工具检查或停止 |
 
 ## 核心流程
@@ -279,10 +284,11 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 4. 用 small、finite、boundary 和 relaxed-assumption cases 尝试反驳命题。
 5. 必要时寻找 central object、proof kernel 或 missing construction。
 6. 对困难证明，比较几条真正不同的 proof routes。
-7. 构建 blueprint lemma graph，区分 statement deps、proof deps、downstream use 和 node status。
-8. 优先证明当前 theorem path 上的 ready leaves，而不是证明没有下游用途的 side lemmas。
-9. 局部失败重复后，先做 route decision，再决定是否继续。
-10. 最后 assemble、adversarial review，并报告 proof status。
+7. 构建 AND/OR blueprint lemma graph，区分 statement deps、proof deps、downstream use 和 node status。
+8. 合并等价 proof states，优先处理瓶颈 required child，而不是继续扩展新路线。
+9. 保留已经证明的 helper lemmas，只修复未证明或错误的节点。
+10. 局部失败重复后，先做 route decision，再决定是否继续。
+11. 最后 assemble，审计 formal artifact 是否还有未闭合 obligation，再 adversarial review 并报告 proof status。
 
 ## Proof Project 文件
 

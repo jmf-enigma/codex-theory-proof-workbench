@@ -20,6 +20,8 @@ Use this for hard proofs where computation, CAS, SMT, optimization solvers, or L
 - **Repair-loop pattern**: when a tool rejects a step, preserve the failed subgoal, extract the smallest missing lemma, then retry only that lemma.
 - **Sorrify/localize pattern**: when a skeleton is promising, replace the failed block with a named lemma, keep the good dependencies, and repair only that lemma.
 - **Compact-feedback pattern**: after a tool or Lean failure, keep the next repair input small: node statement, assumptions, dependencies, previous attempt, feedback, and proposed fix.
+- **Aristotle formal-feedback pattern**: use Lean feedback as a hard proof-state signal. Search or repair one state at a time, keep an action history, merge equivalent states, preserve verified helper lemmas, and prioritize the hardest required subgoal in an AND branch.
+- **Formal artifact audit pattern**: a Lean/API result is not a completed proof if the main theorem still contains `sorry`, admits extra axioms, or relies on an unencoded global assembly step. Treat such output as verified local components plus explicit missing obligations.
 
 ## Tool Roles
 
@@ -71,6 +73,7 @@ If the expected artifact is only "numerical evidence," the step is not proof-rea
 - LP/MIP/SMT feasible model: use it as a counterexample or witness.
 - LP dual variables or Bellman inequalities: convert to a certificate that a human can verify line by line.
 - Lean accepts a lemma: status becomes `formalized-local`; still explain how the lemma fits the paper proof.
+- Lean/API returns several verified helper lemmas but leaves the theorem open: keep the helpers, mark the theorem `lemma-conditional` or `still open`, and encode the missing global assembly lemma before claiming success.
 - Lean fails: inspect the failed subgoal; often it reveals a missing assumption, coercion/domain issue, or too-strong statement.
 - Tool returns a counterexample to a sublemma: mark the node `false-negated`; repair/drop it and rewire dependents instead of regenerating the whole proof.
 - Tool times out or gives no useful artifact: classify the gap. If the missing lemma is a bad gap, switch to discovery/retrieval before more tool calls.
@@ -112,6 +115,7 @@ If the expected artifact is only "numerical evidence," the step is not proof-rea
 - If two tools disagree, inspect domains, numeric precision, branch cuts, and boundary assumptions before trusting either.
 - If the same missing assumption appears in two tool outputs, repair the theorem statement before drafting prose.
 - If no artifact can be translated into a proof step, report `still open` with the smallest remaining lemma.
+- If Lean compiles only because of `sorry`, an admitted axiom, or an unproved theorem dependency, do not upgrade status beyond `lemma-conditional` or `formalized-local`.
 
 ## Source Patterns
 

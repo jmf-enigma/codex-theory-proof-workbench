@@ -55,6 +55,9 @@ Use these as light control rules, not a mandatory checklist.
 - **Small route population**: for hard proofs, maintain 2-4 route candidates and score them by failure-world control, novelty, decomposition quality, and certificate availability. Do not run a large search unless the user asks.
 - **Cost-quality routing**: after two failed local attempts, use failed-state signals to decide whether to continue, locally repair, re-decompose, retrieve a premise/paper pattern, or stop/report.
 - **Dynamic leaf discipline**: in a lemma graph, prove ready leaves whose dependencies are settled and that feed the current theorem path. Postpone orphan or unused lemmas.
+- **AND/OR bottleneck discipline**: treat alternative routes as OR nodes and lemma dependencies as AND nodes; attack the lowest-confidence required child before expanding more prose.
+- **State/action dedupe**: if two attempted routes have the same goal, context, central object, and failure witness, treat them as the same proof state even if notation differs.
+- **Formal-status honesty**: Lean compilation, API output, or local tool success is not enough if the main theorem still has `sorry`, unresolved obligations, or unverified global bookkeeping.
 - **Structured forfeit**: when a route runs out of budget, write diagnosis, forensic analysis, and suggested fix before the next attempt.
 
 ## Use Gate
@@ -126,6 +129,7 @@ If a route fails twice or the same obstruction repeats, use [references/proof-es
 6. Before proving, try to break the claim: edge cases, missing compactness/convexity/continuity, finite counterexamples, numerical examples, and relaxed assumptions.
 7. If the route is still unclear, run the optional idea pass: failure world -> small-case pattern guess -> central object -> proof kernel -> central lemma -> verification hook. Use `pattern_miner.py` only when the small cases produce a useful exact sequence. If the same obstruction remains, do bottleneck surgery: shrink to the smallest local lemma, flip to the negation, try a certificate or alternate representation, then retrieve or repair before drafting again.
 8. Build a blueprint-style lemma graph: label each needed definition/lemma/theorem node, declare statement dependencies and proof dependencies, and mark status as missing, proved, checked, false/negated, or conditional. For repeated attempts, record the attempt fingerprint and expected new evidence in `WORKSTREAMS.md` before trying a variant. When a node fails, diagnose it as `STATEMENT_WRONG` or `PROOF_TOO_HARD`, grade the gap as good or bad, and keep a compact repair state; preserve solved nodes and refine only the failed subgraph when possible.
+For hard formalizable proofs, make the graph AND/OR-aware: OR branches are alternative routes or constructions, AND branches are required sublemmas. Merge equivalent states and actions before retrying. Preserve proved lemmas, revise only unproved or false nodes, and attack the bottleneck child first.
 Before proving a repeated or expensive node, run a lightweight route decision: continue current node, locally repair it, re-decompose the subgraph, retrieve a premise/paper pattern, or stop/report. Prefer ready leaves whose dependencies are settled and that feed the current assembly path. Do not prove unused lemmas that are not on that path.
 9. Work one proof move at a time when a kernel is fragile: name the current subgoal, propose one move, predict the new subgoal, check it by theorem match, algebra, toy case, tool, or reviewer pass, then keep, repair, or discard it based on proof-state delta. If two moves leave the same obstruction unchanged, stop proving in prose and switch to retrieval, tools, counterexample search, theorem repair, or user steering.
 10. Read only the relevant branch playbook. If unsure, run:
@@ -146,6 +150,7 @@ Branch playbooks:
 11. If stuck, name the obstruction using [references/obstruction-taxonomy.md](references/obstruction-taxonomy.md) before changing routes. If the block is about model meaning, promising structure, or domain taste, surface a short steering question to the user. If the obstruction repeats, escalate through counterexample search, tools, retrieval, local formalization, or theorem repair with [references/proof-escalation-protocol.md](references/proof-escalation-protocol.md).
 12. Apply the proof-status and review gates in [references/verification-gate.md](references/verification-gate.md).
 13. Use `math-tools` for local checks: Wolfram for algebra/conditions, Python/CVXPy/OR-Tools/Z3 for finite or numeric checks, Sage for discrete structures, Lean for local formalizable lemmas. For proof-critical checks, first decide the expected artifact: counterexample, condition, exact identity, KKT/dual certificate, SMT model/unsat result, or Lean lemma.
+If using Lean or an external formal prover/API, audit the final artifact for `sorry`, admitted axioms, incomplete declarations, and whether verified helper lemmas actually assemble into the original theorem.
 14. Write the proof in layers: intuition, formal lemma statements, proof of each lemma, final assembly.
 
 ## Failure Recovery

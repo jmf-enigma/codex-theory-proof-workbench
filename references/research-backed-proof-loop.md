@@ -27,6 +27,11 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - Cost-quality agent pattern: failed proof trajectories are useful routing signals. After repeated local failures, decide whether another attempt has positive value by checking proof-state delta, failure diversity, proof similarity/repetition, attempt count, and expected artifact.
 - LeanArchitect pattern: keep informal and formal-blueprint views synchronized. Separate statement dependencies from proof dependencies, track statement readiness separately from proof status, and audit metadata when a node looks formally plausible but mathematically wrong.
 - LeanMarathon pattern: first stabilize target fidelity, then discharge the proof DAG from ready leaves upward. Keep repairs local, preserve solved nodes, and reject orphan lemmas that do not feed a target theorem.
+- Aristotle pattern: combine informal lemma generation with Lean feedback and Monte Carlo-style proof-state search. Represent proof work as an AND/OR graph: alternative tactics/routes are OR choices, while all subgoals from a tactic or decomposition are AND obligations.
+- Aristotle graph-search lesson: merge equivalent proof states and equivalent actions before spending more budget. Two states are equivalent for this workbench when the goal, local assumptions, central object, and failure witness are the same, even if notation changed.
+- Aristotle bottleneck lesson: for an action that creates several required subgoals, prioritize the hardest unresolved child first. Do not expand new routes while an existing AND child is a known bad gap.
+- Aristotle lemma-revision lesson: after a failed proof, keep proved helper lemmas, mark unproved or false lemmas explicitly, and revise only the failed subgraph plus its dependents.
+- Aristotle verification lesson: compiling or receiving a formal artifact is not proof unless the main theorem has no `sorry`, admitted axioms, unresolved obligations, or unproved global assembly step.
 
 ## Loop
 
@@ -39,15 +44,19 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 7. Discovery gate: if the theorem contains an unknown construction, coefficient, threshold, policy, potential, active set, hard instance, or numerical answer, discover and self-check that object before writing a proof. Use holdout toy cases and a verification hook; do not let the proof infer the answer by wishful algebra.
 8. Draft: write a rough proof in 5-10 steps. Each step must name its intended theorem family, such as convex duality, envelope, single crossing, martingale concentration, elliptical potential, or information lower bound.
 9. Sketch: convert the draft into a blueprint dependency graph. Each node gets statement dependencies, proof dependencies, downstream use, likely proof route, tool check, statement status, proof status, failure mode, gap grade, and compact repair state. Independent branches should stay independent.
-10. Prove locally: solve the smallest ready leaf on the current assembly path first. Work one move at a time when fragile: proposed move, expected new subgoal, check, proof-state delta. Use Wolfram/SymPy for algebra, Python/Z3/CVXPy/Sage for finite or optimization checks, and Lean for local formalizable lemmas. If a top-level assembly can be checked conditionally using assumed lemmas, use that to identify which lemmas are actually needed before proving side lemmas.
-11. Bottleneck surgery: if the same lemma remains unresolved, shrink it, flip to the negation, change representation, then certify/falsify/retrieve/repair before another prose proof.
-12. Gap review: accept a missing lemma only if it is a good gap, meaning smaller, non-circular, assumption-explicit, and checkable. If it is a bad gap, split, retrieve, falsify, or change route.
-13. Repair: if a lemma fails, determine whether the issue is false claim, missing assumption, quantifier mismatch, boundary case, or proof technique mismatch.
-14. Route decision: after two failed local attempts or one repeated failure signature, choose one action before another attempt: continue current node, locally repair, re-decompose the subgraph, retrieve a premise/paper pattern, run a tool/falsification check, or stop/report. Continue only if the next attempt has new evidence or the proof state is shrinking.
-15. Recombine: assemble only after all essential lemmas have statuses. Verify exact variables, quantifiers, constants, events, and assumptions.
-16. Review: adversarially attack the proof. Try to break the weakest lemma and the final assembly.
-17. Human steering checkpoint: if the obstruction is mathematical taste, model choice, definition choice, or a missing heuristic rather than a narrow check, ask the user for domain intuition before spending another heavy cycle.
-18. Escalate: if two consecutive cycles make no progress, use `proof-escalation-protocol.md` to choose counterexample search, tool certification, retrieval, local formalization, theorem repair, or stop/report.
+10. Graph search discipline: mark OR nodes for alternative routes, constructions, or tactics; mark AND nodes for required subgoals. Before expanding a new OR branch, check whether an existing AND child is the bottleneck and should be proved, refuted, split, retrieved, or repaired first.
+11. State/action dedupe: compare a new proof move against prior states and fingerprints. If the goal, local assumptions, central object, failure witness, and expected artifact match a prior attempt, treat it as the same state/action unless there is a real new premise or certificate.
+12. Prove locally: solve the smallest ready leaf on the current assembly path first. Work one move at a time when fragile: proposed move, expected new subgoal, check, proof-state delta. Use Wolfram/SymPy for algebra, Python/Z3/CVXPy/Sage for finite or optimization checks, and Lean for local formalizable lemmas. If a top-level assembly can be checked conditionally using assumed lemmas, use that to identify which lemmas are actually needed before proving side lemmas.
+13. Bottleneck surgery: if the same lemma remains unresolved, shrink it, flip to the negation, change representation, then certify/falsify/retrieve/repair before another prose proof.
+14. Gap review: accept a missing lemma only if it is a good gap, meaning smaller, non-circular, assumption-explicit, and checkable. If it is a bad gap, split, retrieve, falsify, or change route.
+15. Repair: if a lemma fails, determine whether the issue is false claim, missing assumption, quantifier mismatch, boundary case, or proof technique mismatch.
+16. Lemma revision loop: preserve proved nodes and verified helper lemmas, then generate only the missing helper lemmas needed by the failed subgraph. Do not rewrite solved parts unless their statement dependencies changed.
+17. Route decision: after two failed local attempts or one repeated failure signature, choose one action before another attempt: continue current node, locally repair, re-decompose the subgraph, retrieve a premise/paper pattern, run a tool/falsification check, or stop/report. Continue only if the next attempt has new evidence or the proof state is shrinking.
+18. Recombine: assemble only after all essential lemmas have statuses. Verify exact variables, quantifiers, constants, events, and assumptions.
+19. Formal artifact audit: if Lean, Aristotle, or any prover/API produced code, inspect declarations and dependencies. A helper lemma being verified does not prove the theorem unless the final theorem reduces to verified obligations and has no `sorry` or admitted gap.
+20. Review: adversarially attack the proof. Try to break the weakest lemma and the final assembly.
+21. Human steering checkpoint: if the obstruction is mathematical taste, model choice, definition choice, or a missing heuristic rather than a narrow check, ask the user for domain intuition before spending another heavy cycle.
+22. Escalate: if two consecutive cycles make no progress, use `proof-escalation-protocol.md` to choose counterexample search, tool certification, retrieval, local formalization, theorem repair, or stop/report.
 
 ## Stop Budgets
 
@@ -77,6 +86,8 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - When several routes are plausible, keep a small candidate board rather than one long monologue. Rate each route by plausibility, novelty, decomposition quality, evidence, and risk of circularity.
 - Use a used-node filter in lemma graphs: prove only definitions and lemmas that are on the current route to the theorem, unless an exploratory lemma has a clear falsification or theorem-repair purpose.
 - For long proof projects, target fidelity comes before proof effort. If the statement, role, or dependency metadata of a node is suspect, file a repair note before trying to prove it.
+- For formal prover/API outputs, separate verified helper components from unverified global bookkeeping. Local exchange, algebra, or monotonicity lemmas may be real progress even when the final counting, assembly, or theorem statement is still open.
+- Use proof history as a visible action trace. A short comment on why a move was tried helps later cycles avoid circular trajectories, but do not preserve hidden or sprawling reasoning in the active context.
 
 ## Source Log
 
@@ -105,3 +116,5 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - Theorem Proving in Lean: formal checking requires every claim to be justified by definitions, axioms, or prior theorems.
 - Montana State proof guidelines: expand definitions, use prior results, test conjectures by examples, and search counterexamples to failed steps.
 - Zheng et al. 2026, AI co-mathematician: stateful mathematical workspace, asynchronous workstreams, uncertainty management, failed-exploration preservation, reviewer loops, and human steering.
+- Harmonic Aristotle technical report (Achim et al., 2025): Lean proof search with Monte Carlo Graph Search, policy/value guidance, lemma-based informal reasoning, formal feedback, solved-lemma preservation, and test-time learning from failed traces.
+- Lau 2026 Aristotle API case study: verified local Lean helper lemmas do not establish a theorem when the main theorem remains closed by `sorry` or the global counting/assembly obligation is not encoded.

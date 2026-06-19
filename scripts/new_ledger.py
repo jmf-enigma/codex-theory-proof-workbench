@@ -85,10 +85,19 @@ Selected playbooks:
 ## Lemma Graph
 
 Use statement deps for mathematical meaning and proof deps for facts/tools/helper lemmas used to prove the node.
+Use OR nodes for alternative routes and AND nodes for required child lemmas. Merge equivalent states/actions before retrying the same obstruction.
 
 | node id | type | status | statement / role | statement deps | proof deps | used by assembly | expected artifact | gap grade | failure diagnosis |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | N1 | lemma | missing |  |  |  | yes / no / unknown | proof / tool check / counterexample / theorem pattern | good / bad / unknown |  |
+
+## Proof-State Equivalence
+
+- repeated state/action:
+- shared goal and assumptions:
+- shared central object:
+- shared failure witness:
+- decision: merge / allow-new
 
 ## Failed Routes
 
@@ -115,6 +124,7 @@ Use statement deps for mathematical meaning and proof deps for facts/tools/helpe
 - Wolfram/SymPy:
 - Python/CVXPy/Z3/OR-Tools/Sage:
 - Lean:
+- formal artifact audit: `sorry` / admitted axioms / unresolved obligations / missing assembly:
 - expected artifact before next tool call:
 
 ## Current Obstruction

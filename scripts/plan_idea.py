@@ -80,6 +80,11 @@ def main() -> int:
     print("- Keep the move only if the proof state becomes smaller or reveals a concrete theorem repair.")
     print("- If two moves leave the same subgoal unchanged, record the failed state and switch to retrieval, tool-checking, or theorem repair.")
 
+    print("\nFormal and graph discipline")
+    print("- Treat alternative routes as OR nodes and required sublemmas as AND nodes; a route is solved only when all required children are solved.")
+    print("- Merge proof states that have the same goal, local assumptions, central object, and failure witness, even if notation changed.")
+    print("- If Lean or an API proves helper lemmas, still audit the main theorem for `sorry`, admitted axioms, unresolved obligations, and missing assembly.")
+
     print("\nConstruction and algebra search")
     print("- Guess from small cases first: formula, threshold, invariant, active set, tight instance, coefficient pattern, or potential.")
     print("- Keep one holdout case that was not used to guess the pattern.")

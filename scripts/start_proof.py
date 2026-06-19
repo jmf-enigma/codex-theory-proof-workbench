@@ -117,6 +117,22 @@ Use this when several proof sketches are plausible. Keep it small and retire rep
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | R1 |  |  |  |  | good / bad / unknown | candidate |  |
 
+## Proof-State Equivalence
+
+Use this before retrying a route. Merge states or actions that differ only by notation.
+
+| id | equivalent prior state/action | shared goal | shared local assumptions | shared central object | shared failure witness | decision |
+| --- | --- | --- | --- | --- | --- | --- |
+| E1 |  |  |  |  |  | merge / allow-new |
+
+## AND/OR Bottleneck Board
+
+Alternative routes or constructions are OR nodes. Required child lemmas are AND nodes. Attack the weakest required child before expanding a new route.
+
+| node | kind | parent | required children or alternatives | bottleneck child | next action |
+| --- | --- | --- | --- | --- | --- |
+| G1 | AND / OR |  |  |  | prove / refute / split / retrieve / repair |
+
 ## Failed-State Notebook
 
 Keep entries short. Use this when a proof move leaves the same subgoal unchanged.
@@ -864,6 +880,8 @@ Use this as a proof blueprint, not a flat checklist. Keep the final theorem as t
 
 Separate statement dependencies from proof dependencies. Statement dependencies define the node's mathematical meaning; proof dependencies are facts, tools, or helper lemmas used to prove it. A node should normally feed the current assembly path before receiving heavy proof effort.
 
+Use AND nodes for required sublemmas and OR nodes for alternative routes, constructions, or representations. A route is complete only when every required AND child is solved. Before expanding another OR branch, work the lowest-confidence required child or record why it is being postponed.
+
 | node id | type | status | statement / role | statement deps | proof deps | used by assembly | expected artifact | gap grade | failure diagnosis | compact repair state | suggested fix |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | N1 | lemma | missing |  |  |  | yes / no / unknown | human proof / tool check / counterexample / theorem pattern | good / bad / unknown |  | statement + deps + previous attempt + feedback |  |
@@ -891,6 +909,7 @@ Blueprint refinement rule:
 - Preserve solved nodes whose statements and dependencies are unchanged.
 - If a statement dependency changes, mark dependents as missing until rechecked.
 - If a proof dependency changes, recheck the proof route without changing the node statement unless needed.
+- Merge equivalent states/actions: same goal, local assumptions, central object, and failure witness means same proof state unless a new premise or certificate is present.
 - Prove ready leaves whose dependencies are settled and that feed the final assembly path first.
 - Postpone orphan lemmas unless they are used for falsification, theorem repair, or a clearly named route experiment.
 - When a node fails, record a short forfeit: diagnosis, forensic analysis, and suggested fix.
@@ -1076,6 +1095,7 @@ For each tool-assisted step, fill one block:
 - Exact identity or `True`: becomes a named algebraic lemma under copied assumptions.
 - Optimizer output: must be converted into KKT/dual/certificate logic before use.
 - Lean accepted lemma: local formalization only; explain how it connects to the full proof.
+- Lean/API formal artifact: audit for `sorry`, admitted axioms, incomplete declarations, unproved dependencies, and missing global assembly.
 - Simulation: sanity/falsification only, not a proof.
 """
 
@@ -1098,9 +1118,13 @@ def strategy_text(selected: list[tuple[str, int]]) -> str:
 - external pattern scan: fill `PATTERN_SCAN.md` if routes are unfamiliar or repeated attempts failed
 - tool-guided repair targets: first false or unproved sublemma
 - compact repair rule: retry a failed node using only statement, dependencies, previous attempt signature, previous feedback, and suggested fix
+- graph-search rule: mark OR alternatives and AND required subgoals; work the bottleneck required child before expanding another route
+- state/action dedupe rule: same goal, assumptions, central object, and failure witness means the same proof state unless there is a real new artifact
 - route decision rule: after two local failures, choose continue / repair / re-decompose / retrieve / tool-falsify / stop-report before another attempt
 - used-node rule: prove ready leaves on the current assembly path before side lemmas
+- lemma revision rule: preserve proved helper lemmas and revise only unproved or false nodes plus dependents
 - gap review: good gaps may be deferred as lemmas; bad gaps must be split, retrieved, falsified, or repaired
+- formal artifact rule: Lean/API output is not final if the theorem still has `sorry`, admitted axioms, or an unencoded assembly obligation
 - progress budget: stop or switch after two unchanged obstruction cycles
 
 ## Route A
@@ -1177,11 +1201,14 @@ def triage_text(title: str, claim: str, selected: list[tuple[str, int]]) -> str:
 11. Read `ATTACK_MATRIX.md` and choose one proof route plus one falsification route.
 12. Write the negation and smallest toy model in `counterexamples.md`.
 13. Turn `LEMMA_QUEUE.md` into a blueprint DAG in `LEDGER.md`: nodes, statement deps, proof deps, downstream use, statuses, gap grades, failure diagnoses, compact repair states, and suggested fixes.
-14. Prove ready leaves that feed the current assembly path first. Postpone orphan lemmas unless they falsify, repair, or unlock the route.
-15. If a node fails twice, fill the Route Decision Check in `WORKSTREAMS.md` before another attempt.
-16. If a step needs tools, fill `TOOL_PLAN.md` with the expected artifact before running commands.
-17. If two routes fail or the same obstruction repeats, follow `ESCALATION.md` before another prose proof attempt.
-18. Run `proof_doctor.py .` when stuck and `audit_ledger.py LEDGER.md` before claiming a final proof.
+14. Mark OR alternatives and AND required child lemmas; work the bottleneck required child before expanding another route.
+15. Before retrying, check whether the new move is equivalent to a prior state/action under different notation.
+16. Prove ready leaves that feed the current assembly path first. Postpone orphan lemmas unless they falsify, repair, or unlock the route.
+17. If a node fails twice, fill the Route Decision Check in `WORKSTREAMS.md` before another attempt.
+18. If a step needs tools or Lean/API help, fill `TOOL_PLAN.md` with the expected artifact before running commands.
+19. If a formal artifact is produced, audit for `sorry`, admitted axioms, unresolved obligations, and verified-helper-to-main-theorem assembly.
+20. If two routes fail or the same obstruction repeats, follow `ESCALATION.md` before another prose proof attempt.
+21. Run `proof_doctor.py .` when stuck and `audit_ledger.py LEDGER.md` before claiming a final proof.
 
 ## Do Not
 
