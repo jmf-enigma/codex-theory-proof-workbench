@@ -96,6 +96,7 @@ STATE_ACTIONS = {
         "If a skeleton is right but a block fails, preserve the skeleton and isolate the bad block as a named lemma.",
         "For the hardest unresolved lemma, run bottleneck surgery: shrink, flip, change representation, then certify/falsify/retrieve/repair.",
         "For the hardest fragile lemma, use one-step moves: current subgoal, proposed move, expected new subgoal, check result, proof-state delta.",
+        "For multi-step plans, tag fragile steps as tool-verified/easy-to-check/hard-to-check and run goal and logic gates before accepting them.",
         "Promote the single hardest missing step to its own lemma card.",
     ],
     "S5-local-certification": [
@@ -123,6 +124,7 @@ STATE_ACTIONS = {
         "Fill Route Decision Check in WORKSTREAMS.md: continue, repair, re-decompose, retrieve, tool-falsify, or stop-report.",
         "Rank next moves by decision value: kernel proof/refutation, counterexample, missing assumption, certificate, retrieval, representation change, or theorem repair.",
         "If a proposed move leaves the proof state unchanged, add a Failed-State Notebook entry in WORKSTREAMS.md before retrying.",
+        "If a step-level challenge stalls, choose one verdict before more prose: challenge, trace-back, re-decompose, re-plan, switch to pure reasoning on tool artifacts, or stop/report.",
         "If no construction is visible, mine small cases for a pattern; use pattern_miner.py for exact sequences and test one holdout case before promoting the guess.",
         "Classify the current gap as good or bad; bad gaps require splitting, retrieval, falsification, or theorem repair.",
         "Use compact repair state for the bottleneck: statement, dependencies, previous attempt signature, previous feedback, and suggested fix.",
@@ -388,6 +390,7 @@ def external_pattern_queries(claim: str, selected: list[tuple[str, int]]) -> lis
             "Aristotle API Lean proof sorry verified helper lemmas",
             "Rethlas Archon Matlas LeanSearch informal formal reasoning agents",
             "MA-LoT model collaboration Lean theorem proving error analysis correction",
+            "STAR PolyaMath persistent meta strategist challenge trace back replan",
             "MerLean Prover Planning Check Lean roles recursive proof plan",
             "Ax-Prover multi-agent Lean theorem proving MCP",
             "Goedel Architect blueprint refinement proof DAG",
@@ -485,7 +488,7 @@ def diagnose(project: Path) -> dict:
     if pattern_scan["needed"] and state in {"S1-classify", "S3-route-portfolio", "S9-stuck"}:
         actions.append("Fill PATTERN_SCAN.md with one extraction card and route scorecard before another same-style proof route.")
     if any("gate" in pat.lower() for pat in audit["placeholders"]):
-        actions.append("Complete all verification gates: pre-solve, statement, assumption, negation, toy-model, pattern, lemma, proof-state, quantifier, boundary, assembly, review, progress.")
+        actions.append("Complete all verification gates: pre-solve, statement, assumption, negation, toy-model, pattern, lemma, proof-state, step-verdict when relevant, quantifier, boundary, assembly, review, progress.")
     if "S9-stuck" in state:
         actions.append("Use ESCALATION.md before another prose proof attempt; record the external method and result in LEDGER.md.")
         actions.append("Name the smallest missing lemma or false condition, then switch route or repair the theorem.")

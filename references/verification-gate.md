@@ -24,14 +24,15 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 6. Pattern gate: if a formula, construction, active set, potential, or algebra normal form was guessed from examples, check a holdout case or independent certificate before using it as a lemma.
 7. Lemma gate: every non-obvious proof step must point to a named lemma, theorem pattern, tool check, or explicit derivation.
 8. Proof-state gate: for fragile kernels, record the current subgoal, one proposed move, check result, and whether the remaining subgoal became smaller.
-9. Quantifier gate: check whether the claim is pointwise, uniform, in expectation, high probability, almost surely, asymptotic, or finite-sample.
-10. Boundary gate: check zero denominators, inactive/active constraints, ties, support endpoints, nonunique optimizers, and event complements.
-11. Assembly gate: verify the proved lemmas imply exactly the user claim, not a nearby weaker/stronger statement.
-12. Review gate: run an adversarial pass that tries to break the proof before writing the final answer.
-13. Progress gate: if the same obstruction survives two cycles, stop polishing and either isolate the missing lemma, weaken the theorem, or return `still open`.
-14. Novelty gate: for a repeated proof, state what changed since the last failed attempt. Acceptable changes are a new central object, theorem family, certificate, counterexample, missing assumption, verified trick, tool artifact, or theorem repair.
-15. Decision-value gate: before another long proof attempt, state the artifact it is expected to produce. If there is no expected artifact, choose counterexample search, retrieval, local formalization, theorem repair, or stop.
-16. Formal artifact gate: if Lean or a formal-proving API was used, check for `sorry`, admitted axioms, incomplete declarations, unproved theorem dependencies, and whether verified helper lemmas actually imply the original theorem.
+9. Step-verdict gate: for multi-step plans, tag each step as tool-verified, easy-to-check, or hard-to-check; then record goal gate, logic gate, and verdict: accept, challenge, trace-back, re-decompose, re-plan, or stop.
+10. Quantifier gate: check whether the claim is pointwise, uniform, in expectation, high probability, almost surely, asymptotic, or finite-sample.
+11. Boundary gate: check zero denominators, inactive/active constraints, ties, support endpoints, nonunique optimizers, and event complements.
+12. Assembly gate: verify the proved lemmas imply exactly the user claim, not a nearby weaker/stronger statement.
+13. Review gate: run an adversarial pass that tries to break the proof before writing the final answer.
+14. Progress gate: if the same obstruction survives two cycles, stop polishing and either isolate the missing lemma, weaken the theorem, or return `still open`.
+15. Novelty gate: for a repeated proof, state what changed since the last failed attempt. Acceptable changes are a new central object, theorem family, certificate, counterexample, missing assumption, verified trick, tool artifact, or theorem repair.
+16. Decision-value gate: before another long proof attempt, state the artifact it is expected to produce. If there is no expected artifact, choose counterexample search, retrieval, local formalization, theorem repair, or stop.
+17. Formal artifact gate: if Lean or a formal-proving API was used, check for `sorry`, admitted axioms, incomplete declarations, unproved theorem dependencies, and whether verified helper lemmas actually imply the original theorem.
 
 ## Adversarial Review Checklist
 
@@ -46,6 +47,7 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 - Did any proof of uniqueness rely only on weak concavity or weak monotonicity?
 - Did the proof retry the same missing lemma with only different notation or a stronger unsupported claim?
 - Did the hardest algebra step have a sign, equality case, certificate, or alternate representation?
+- Did a local step prove its declared goal, or only prove something true but irrelevant?
 - Did a formal artifact verify only local helper lemmas while leaving the main theorem, counting step, or global assembly obligation open?
 - Did two routes reach equivalent proof states under different notation or variable names?
 

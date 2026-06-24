@@ -99,6 +99,8 @@ Use parallel agents only when the user explicitly asks for them or approves them
 
 The coordinator integrates artifacts by proof-state delta. Several agents should not write competing full proofs of the same route.
 
+For long multi-step proofs, use STAR-PolyaMath-style control without making the process heavy: tag fragile steps by verification level, check whether each step proves its declared goal, check the local logic, then choose accept, challenge, trace-back, re-decompose, re-plan, or stop. If tools dominate without shrinking the proof state, switch to reasoning over the tool artifacts or retire the route.
+
 ## Proof Project Files
 
 `start_proof.py` creates a structured workspace:
@@ -211,7 +213,7 @@ codex-math-python scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 
 ## Research Influences
 
-The workflow is inspired by practical patterns from proof-agent and formalization work: Draft-Sketch-Prove, premise retrieval, compiler-guided repair, blueprint-style dependency graphs, cost-aware theorem-prover routing, MA-LoT model collaboration, Rethlas/Archon informal-formal pairing, MerLean-Prover's Planning/Check/Lean roles, Ax-Prover's tool-equipped multi-agent Lean workflow, OProver repair memory, Harmonic Aristotle's Lean/MCTS-style proof-state search, and AI co-mathematician workstreams. The skill imports these as lightweight control rules rather than as a mandatory heavy process.
+The workflow is inspired by practical patterns from proof-agent and formalization work: Draft-Sketch-Prove, premise retrieval, compiler-guided repair, blueprint-style dependency graphs, cost-aware theorem-prover routing, STAR-PolyaMath's persistent meta-strategist and challenge-step-replan loop, MA-LoT model collaboration, Rethlas/Archon informal-formal pairing, MerLean-Prover's Planning/Check/Lean roles, Ax-Prover's tool-equipped multi-agent Lean workflow, OProver repair memory, Harmonic Aristotle's Lean/MCTS-style proof-state search, and AI co-mathematician workstreams. The skill imports these as lightweight control rules rather than as a mandatory heavy process.
 
 ## License
 
@@ -319,6 +321,8 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 | Reviewer | Adversarial gap report |
 
 Coordinator 按 proof-state delta 整合这些 artifact。不要让多个 agent 同时写同一路线的完整证明。
+
+对于长的 multi-step proof，可以借鉴 STAR-PolyaMath，但不把流程变重：给 fragile step 标注 verification level，检查它是否真的完成 declared goal，再检查 local logic，然后选择 accept、challenge、trace-back、re-decompose、re-plan 或 stop。如果工具调用很多但 proof state 没有缩小，就转向分析已有 tool artifact，或者退掉这条路线。
 
 ## Proof Project 文件
 

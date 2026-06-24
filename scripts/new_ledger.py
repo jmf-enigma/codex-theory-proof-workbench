@@ -76,6 +76,7 @@ Selected playbooks:
 - Pattern gate:
 - Lemma gate:
 - Proof-state gate:
+- Step-verdict gate:
 - Quantifier gate:
 - Boundary gate:
 - Assembly gate:
@@ -98,6 +99,17 @@ Use OR nodes for alternative routes and AND nodes for required child lemmas. Mer
 - shared central object:
 - shared failure witness:
 - decision: merge / allow-new
+
+## Step Challenge Loop
+
+- current step:
+- verification tag: tool-verified / easy-to-check / hard-to-check
+- goal gate:
+- logic gate:
+- verdict: accept / challenge / trace-back / re-decompose / re-plan / stop
+- trace-back target:
+- re-plan directive:
+- tool-use brake needed:
 
 ## Failed Routes
 

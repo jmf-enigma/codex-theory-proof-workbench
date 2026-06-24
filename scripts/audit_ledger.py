@@ -65,11 +65,18 @@ PLACEHOLDER_PATTERNS = [
     r"Pattern gate:[ \t]*$",
     r"Lemma gate:[ \t]*$",
     r"Proof-state gate:[ \t]*$",
+    r"Step-verdict gate:[ \t]*$",
     r"Quantifier gate:[ \t]*$",
     r"Boundary gate:[ \t]*$",
     r"Assembly gate:[ \t]*$",
     r"Review gate:[ \t]*$",
     r"Progress gate:[ \t]*$",
+    r"current step:[ \t]*$",
+    r"verification tag:[ \t]*tool-verified / easy-to-check / hard-to-check[ \t]*$",
+    r"goal gate:[ \t]*$",
+    r"logic gate:[ \t]*$",
+    r"verdict:[ \t]*accept / challenge / trace-back / re-decompose / re-plan / stop[ \t]*$",
+    r"tool-use brake needed:[ \t]*$",
 ]
 
 

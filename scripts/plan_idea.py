@@ -80,6 +80,11 @@ def main() -> int:
     print("- Keep the move only if the proof state becomes smaller or reveals a concrete theorem repair.")
     print("- If two moves leave the same subgoal unchanged, record the failed state and switch to retrieval, tool-checking, or theorem repair.")
 
+    print("\nStep challenge loop")
+    print("- For multi-step proofs, tag fragile steps as tool-verified, easy-to-check, or hard-to-check.")
+    print("- Accept a step only if it passes both the declared-goal gate and the logic gate.")
+    print("- If it fails, choose challenge, trace-back, re-decompose, re-plan, pure-reasoning over tool artifacts, or stop/report before continuing.")
+
     print("\nFormal and graph discipline")
     print("- Treat alternative routes as OR nodes and required sublemmas as AND nodes; a route is solved only when all required children are solved.")
     print("- Merge proof states that have the same goal, local assumptions, central object, and failure witness, even if notation changed.")

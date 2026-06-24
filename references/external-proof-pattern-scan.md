@@ -91,6 +91,7 @@ Use these as importable proof-search mechanisms:
 - **LeanMarathon**: stabilize target fidelity before proof discharge, then work from dynamic leaves upward with local repairs and a closeness check that every lemma feeds a target.
 - **AlphaProof Nexus**: keep a small population of sketches; use a reviewer to score decomposition quality, novelty, plausibility, and good-gap versus bad-gap.
 - **MerLean-Prover/lean-collab**: separate planning, proving, and checking roles. A clean proof must still pass faithfulness to the original statement and mathematical-correctness checks.
+- **STAR-PolyaMath**: keep a non-reasoning coordinator or ledger in charge of state. Use a persistent meta-strategy note for chronic failure patterns, and review each fragile step with accept/challenge/trace-back/re-plan verdicts.
 - **Rethlas/Archon**: split informal route discovery from formal checking. Let retrieval and natural-language reasoning propose candidate lemmas, then ask the checking side to return precise missing obligations.
 - **MA-LoT**: separate whole-proof generation from feedback repair. One pass may draft the route; another pass should only analyze tool or reviewer feedback and patch the failing block.
 - **Ax-Prover**: use tool-equipped agents as artifact producers, not proof authorities. Trust the checker, counterexample, or retrieved theorem pattern over role confidence.
@@ -111,7 +112,7 @@ Use these as importable proof-search mechanisms:
 - OR/optimization: `KKT sufficiency proof`, `primal dual certificate`, `exchange argument proof`, `subgradient optimality certificate`.
 - Lower bounds: `two point testing lower bound`, `Fano Assouad proof`, `change of measure bandit lower bound`, `KL TV reduction`.
 - Formal/prover: `Lean formalization theorem name`, `mathlib lemma`, `Draft Sketch Prove`, `retrieval augmented theorem proving`, `compiler guided proof repair`.
-- Recent proof agents: `Goedel Architect blueprint refinement`, `LeanMarathon dynamic proof DAG`, `LeanArchitect blueprint metadata`, `cost quality Lean theorem prover routing`, `MerLean Prover recursive proof plan`, `Rethlas Archon informal formal proof`, `MA-LoT Lean feedback correction`, `Ax-Prover multi-agent Lean MCP`, `AlphaProof Nexus good gap bad gap`, `OProver feedback refinement`, `APOLLO proof repair`, `LEAP AND OR proof DAG`.
+- Recent proof agents: `STAR PolyaMath meta strategist challenge trace back replan`, `Goedel Architect blueprint refinement`, `LeanMarathon dynamic proof DAG`, `LeanArchitect blueprint metadata`, `cost quality Lean theorem prover routing`, `MerLean Prover recursive proof plan`, `Rethlas Archon informal formal proof`, `MA-LoT Lean feedback correction`, `Ax-Prover multi-agent Lean MCP`, `AlphaProof Nexus good gap bad gap`, `OProver feedback refinement`, `APOLLO proof repair`, `LEAP AND OR proof DAG`.
 
 ## Stop Rule
 
