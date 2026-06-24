@@ -2,6 +2,14 @@
 
 Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL.md` thin and load this file on demand.
 
+## Map
+
+- Imported patterns: use proof-agent and formalization lessons as light control rules.
+- Loop: run statement audit, retrieval, workstream assignment, local proof, repair, and review in order.
+- Stop budgets: stop or reroute when the proof state is unchanged, not merely when prose runs out.
+- Paper-inspired heuristics: turn outside sources into route structure, artifacts, and verification hooks.
+- Source log: track where each imported workflow pattern came from.
+
 ## Imported Patterns
 
 - Thin skill architecture: keep the trigger and core workflow short; move long proof tactics and references into separate files so normal use stays cheap.

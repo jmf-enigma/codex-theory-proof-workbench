@@ -2,6 +2,15 @@
 
 Use this file to choose the next proof route after classification or failure.
 
+## Map
+
+- Normalize first: make objects, quantifiers, and the smallest nontrivial case explicit.
+- Portfolio routes: choose genuinely different proof architectures before converging.
+- Search discipline: retrieve, guess, kernelize, verify, and repair locally.
+- Marginal value routing: after repeated failure, choose exactly one next action.
+- Novelty and decision value: continue only when a route changes evidence, object, or obstruction.
+- Switch rules and scoring: select the route whose assumptions and certificates best match the theorem.
+
 ## Normalize First
 
 - Convert maximization/minimization to a standard objective and feasible set.
