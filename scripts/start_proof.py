@@ -81,6 +81,32 @@ Prefer high decision value moves: kernel proof/refutation, counterexample, missi
 
 No active workstream is required until a branch needs durable state. For a small unclear proof, use a micro check and record the result in `IDEA_MAP.md`, `PATTERN_SCAN.md`, or `LEDGER.md`.
 
+## Multi-Agent Dispatch Gate
+
+Use actual parallel agents only after the user explicitly asks for or approves multi-agent work. The coordinator/integrator remains responsible for statement fidelity, route choice, and final proof status.
+
+Good role split:
+
+- Planner: route portfolio, lemma graph, proof-state equivalence, and bottleneck choice.
+- Falsifier: negation, boundary cases, finite examples, and missing-assumption search.
+- Retriever: one to three theorem patterns, paper tricks, or formal-library premises.
+- Formalizer or Tool-Checker: one local lemma, exact artifact, and failure feedback.
+- Reviewer: adversarial audit of assumptions, quantifiers, assembly, and repeated states.
+
+Bad split: several agents independently writing the same full proof.
+
+| role | assigned artifact | input files | exclusions / do not touch | stop rule | status |
+| --- | --- | --- | --- | --- | --- |
+| Planner | lemma graph / route decision | claim.md, LEDGER.md | no tool runs, no final proof | one route board or one bottleneck | planned |
+| Falsifier | counterexample or missing-assumption report | claim.md, counterexamples.md | no proof polishing | one finite/boundary result | planned |
+| Retriever | pattern card or theorem-premise list | PATTERN_SCAN.md | no unsupported theorem import | 1-3 strong sources | planned |
+| Formalizer | checked local lemma or Lean/tool gap | TOOL_PLAN.md, lean/ | no global theorem claim unless fully closed | one local artifact | planned |
+| Reviewer | gap report | LEDGER.md, writeup/ | no rewriting proof route | one adversarial pass | planned |
+
+## Integration Rule
+
+Integrate returned artifacts by decision value: counterexample, missing assumption, verified lemma, retrieved theorem pattern, exact tool certificate, or concrete gap report. Long prose without a new artifact does not outrank a smaller checked result.
+
 ## Attempt Fingerprint Index
 
 Use this table before any repeated proof route, construction, counterexample search, or tool-backed lemma attempt. The point is to identify the same failed idea under different notation.
@@ -213,8 +239,10 @@ Fill this before heavy execution unless it is intentionally skipped.
 ## Parallelization Rule
 
 - Treat these as roles first, not automatic agents.
-- Use actual parallel agents only when the user explicitly asks for delegation or parallel agent work.
+- Use actual parallel agents only when the user explicitly asks for delegation or parallel agent work, and after the dispatch gate above has non-overlapping assignments.
 - Each branch must have a bounded output and a stop rule before execution.
+- Do not let two agents own the same file or the same proof route unless one is reviewer-only.
+- When agents return, update `LEDGER.md`, `WORKSTREAMS.md`, or `PATTERN_SCAN.md` with the artifact, not the full transcript.
 - Do not create a workstream card for routine direct proofs; use a micro check instead.
 - Failed branches remain in this file and are summarized in `LEDGER.md`.
 """

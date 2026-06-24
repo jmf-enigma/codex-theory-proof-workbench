@@ -85,6 +85,11 @@ def main() -> int:
     print("- Merge proof states that have the same goal, local assumptions, central object, and failure witness, even if notation changed.")
     print("- If Lean or an API proves helper lemmas, still audit the main theorem for `sorry`, admitted axioms, unresolved obligations, and missing assembly.")
 
+    print("\nMulti-agent option")
+    print("- Use actual parallel agents only after explicit user approval and only for hard, stuck, or broad proof projects.")
+    print("- Split by artifact: planner gives lemma graph, falsifier gives counterexample/missing-assumption report, retriever gives theorem patterns, formalizer checks one local lemma, reviewer gives gap report.")
+    print("- Keep one integrator responsible for statement fidelity, route choice, and final proof status.")
+
     print("\nConstruction and algebra search")
     print("- Guess from small cases first: formula, threshold, invariant, active set, tight instance, coefficient pattern, or potential.")
     print("- Keep one holdout case that was not used to guess the pattern.")

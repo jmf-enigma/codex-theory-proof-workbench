@@ -66,6 +66,7 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 | A lemma hides the whole theorem | Good-gap / bad-gap review |
 | Tools produce numbers but not proof | Artifact-first tool plans |
 | Formal output proves helpers but not the theorem | `sorry`/obligation and assembly audits |
+| Several agents repeat the same route | Artifact-based role dispatch and single integrator |
 | The proof gets stuck after several tries | Route decision: continue, repair, re-decompose, retrieve, tool-check, or stop |
 
 ## Core Workflow
@@ -83,6 +84,20 @@ The default spine is deliberately small:
 9. Preserve proved helper lemmas and revise only unproved or false nodes.
 10. After repeated local failure, make a route decision before another attempt.
 11. Assemble, audit any formal artifact for unresolved obligations, adversarially review, and report the final proof status.
+
+## Multi-Agent Use
+
+Use parallel agents only when the user explicitly asks for them or approves them. The workbench treats agents as evidence-producing roles, not voters. A good split is:
+
+| Role | Artifact |
+| --- | --- |
+| Planner | Lemma graph, route board, bottleneck choice |
+| Falsifier | Counterexample or missing-assumption report |
+| Retriever | Nearby theorem patterns, paper tricks, formal-library premises |
+| Formalizer / Tool-Checker | One local checked lemma or precise tool/Lean gap |
+| Reviewer | Adversarial gap report |
+
+The coordinator integrates artifacts by proof-state delta. Several agents should not write competing full proofs of the same route.
 
 ## Proof Project Files
 
@@ -196,7 +211,7 @@ codex-math-python scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 
 ## Research Influences
 
-The workflow is inspired by practical patterns from proof-agent and formalization work: Draft-Sketch-Prove, premise retrieval, compiler-guided repair, blueprint-style dependency graphs, cost-aware theorem-prover routing, LeanArchitect, LeanMarathon, Harmonic Aristotle's Lean/MCTS-style proof-state search, and AI co-mathematician workstreams. The skill imports these as lightweight control rules rather than as a mandatory heavy process.
+The workflow is inspired by practical patterns from proof-agent and formalization work: Draft-Sketch-Prove, premise retrieval, compiler-guided repair, blueprint-style dependency graphs, cost-aware theorem-prover routing, MA-LoT model collaboration, Rethlas/Archon informal-formal pairing, MerLean-Prover's Planning/Check/Lean roles, Ax-Prover's tool-equipped multi-agent Lean workflow, OProver repair memory, Harmonic Aristotle's Lean/MCTS-style proof-state search, and AI co-mathematician workstreams. The skill imports these as lightweight control rules rather than as a mandatory heavy process.
 
 ## License
 
@@ -272,6 +287,7 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 | 一个 lemma 其实藏了整个 theorem | Good-gap / bad-gap review |
 | 工具只给了数值现象 | Artifact-first tool plans |
 | Formal output 只证明了 helper lemmas | `sorry`、obligation 和 assembly audit |
+| 多个 agent 重复同一条路线 | 按 artifact 分工，并由单一 integrator 裁决 |
 | 局部证明失败多次 | Route decision：继续、修复、重拆、检索、工具检查或停止 |
 
 ## 核心流程
@@ -289,6 +305,20 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 9. 保留已经证明的 helper lemmas，只修复未证明或错误的节点。
 10. 局部失败重复后，先做 route decision，再决定是否继续。
 11. 最后 assemble，审计 formal artifact 是否还有未闭合 obligation，再 adversarial review 并报告 proof status。
+
+## 多 Agent 使用
+
+只有当用户明确要求或批准时才使用并行 agent。Workbench 把 agent 当作产出证据的角色，而不是投票者。比较好的分工是：
+
+| 角色 | Artifact |
+| --- | --- |
+| Planner | Lemma graph、route board、bottleneck choice |
+| Falsifier | Counterexample 或 missing-assumption report |
+| Retriever | 相近 theorem patterns、paper tricks、formal-library premises |
+| Formalizer / Tool-Checker | 一个 local checked lemma 或精确 Lean/tool gap |
+| Reviewer | Adversarial gap report |
+
+Coordinator 按 proof-state delta 整合这些 artifact。不要让多个 agent 同时写同一路线的完整证明。
 
 ## Proof Project 文件
 

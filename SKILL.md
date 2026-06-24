@@ -58,6 +58,7 @@ Use these as light control rules, not a mandatory checklist.
 - **AND/OR bottleneck discipline**: treat alternative routes as OR nodes and lemma dependencies as AND nodes; attack the lowest-confidence required child before expanding more prose.
 - **State/action dedupe**: if two attempted routes have the same goal, context, central object, and failure witness, treat them as the same proof state even if notation differs.
 - **Formal-status honesty**: Lean compilation, API output, or local tool success is not enough if the main theorem still has `sorry`, unresolved obligations, or unverified global bookkeeping.
+- **Multi-agent only with a dispatch contract**: use actual parallel agents only when the user explicitly asks or approves; each role must have a disjoint artifact, stop rule, and no-overlap instruction.
 - **Structured forfeit**: when a route runs out of budget, write diagnosis, forensic analysis, and suggested fix before the next attempt.
 
 ## Use Gate
@@ -69,6 +70,7 @@ Do not blindly escalate to the full workbench. Pick the lightest useful mode.
 - **Light idea mode**: if the route is unclear but no project is needed, run `plan_idea.py` and use only the relevant central-object candidates.
 - **Project mode**: start a proof project only for hard, repeated, multi-lemma, tool-assisted, or literature-dependent proofs.
 - **Recovery mode**: if the same proof has failed before, read the existing ledger or create one before trying another route.
+- **Multi-agent mode**: use only for hard, stuck, or broad proof projects after explicit user approval. Keep roles few and disjoint: planner, falsifier, retriever, formalizer/tool-checker, and reviewer.
 
 Use references and tools only when they change the next proof move. Do not load every playbook, scan papers, or start a project just because the topic is theoretical.
 
@@ -125,6 +127,7 @@ For unfamiliar theorem families, literature-dependent proofs, or user-requested 
 When the route needs computation, CAS, SMT, optimization solvers, or Lean, apply [references/tool-assisted-proof-patterns.md](references/tool-assisted-proof-patterns.md) before running broad tool queries.
 If a route fails twice or the same obstruction repeats, use [references/proof-escalation-protocol.md](references/proof-escalation-protocol.md) before another prose proof attempt.
 4. For hard proof projects, use `WORKSTREAMS.md` to define approved goals and active workstream cards. Before heavy execution, each card should inspect how nearby papers, appendices, prior ledgers, theorem families, or analogous models solve similar problems, unless there is a written skip reason. Keep this local-first and bounded: one to three strong sources or patterns are enough before trying the next proof move. Use actual parallel agents only when the user explicitly asks for delegation.
+If the user explicitly asks for multi-agent work, assign disjoint roles and artifacts before spawning agents. Do not let two agents attack the same missing lemma in the same way; one should falsify, one retrieve, one formalize/tool-check, one review, or one plan.
 5. Choose proof routes with [references/strategy-scheduler.md](references/strategy-scheduler.md); run at least two genuinely different routes for hard or previously failed proofs. Different means a different central object, theorem family, certificate type, failure world, or evidence source.
 6. Before proving, try to break the claim: edge cases, missing compactness/convexity/continuity, finite counterexamples, numerical examples, and relaxed assumptions.
 7. If the route is still unclear, run the optional idea pass: failure world -> small-case pattern guess -> central object -> proof kernel -> central lemma -> verification hook. Use `pattern_miner.py` only when the small cases produce a useful exact sequence. If the same obstruction remains, do bottleneck surgery: shrink to the smallest local lemma, flip to the negation, try a certificate or alternate representation, then retrieve or repair before drafting again.
