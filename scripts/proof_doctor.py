@@ -124,7 +124,7 @@ STATE_ACTIONS = {
         "Fill Route Decision Check in WORKSTREAMS.md: continue, repair, re-decompose, retrieve, tool-falsify, or stop-report.",
         "Rank next moves by decision value: kernel proof/refutation, counterexample, missing assumption, certificate, retrieval, representation change, or theorem repair.",
         "If a proposed move leaves the proof state unchanged, add a Failed-State Notebook entry in WORKSTREAMS.md before retrying.",
-        "If a step-level challenge stalls, choose one verdict before more prose: challenge, trace-back, re-decompose, re-plan, switch to pure reasoning on tool artifacts, or stop/report.",
+        "If a step-level challenge stalls, check challenge/replan budget and choose one verdict before more prose: challenge, trace-back, re-decompose, re-plan, switch to pure reasoning on tool artifacts, or stop/report.",
         "If no construction is visible, mine small cases for a pattern; use pattern_miner.py for exact sequences and test one holdout case before promoting the guess.",
         "Classify the current gap as good or bad; bad gaps require splitting, retrieval, falsification, or theorem repair.",
         "Use compact repair state for the bottleneck: statement, dependencies, previous attempt signature, previous feedback, and suggested fix.",

@@ -83,6 +83,7 @@ def main() -> int:
     print("\nStep challenge loop")
     print("- For multi-step proofs, tag fragile steps as tool-verified, easy-to-check, or hard-to-check.")
     print("- Accept a step only if it passes both the declared-goal gate and the logic gate.")
+    print("- Set a small challenge-round and replan cap before the loop starts.")
     print("- If it fails, choose challenge, trace-back, re-decompose, re-plan, pure-reasoning over tool artifacts, or stop/report before continuing.")
 
     print("\nFormal and graph discipline")

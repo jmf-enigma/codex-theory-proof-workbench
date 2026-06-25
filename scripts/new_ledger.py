@@ -106,6 +106,9 @@ Use OR nodes for alternative routes and AND nodes for required child lemmas. Mer
 - verification tag: tool-verified / easy-to-check / hard-to-check
 - goal gate:
 - logic gate:
+- challenge rounds used / cap:
+- replans used / cap:
+- time or token budget status:
 - verdict: accept / challenge / trace-back / re-decompose / re-plan / stop
 - trace-back target:
 - re-plan directive:

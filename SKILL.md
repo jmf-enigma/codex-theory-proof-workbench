@@ -60,7 +60,7 @@ Use these as light control rules, not a mandatory checklist.
 - **Formal-status honesty**: Lean compilation, API output, or local tool success is not enough if the main theorem still has `sorry`, unresolved obligations, or unverified global bookkeeping.
 - **Multi-agent only with a dispatch contract**: use actual parallel agents only when the user explicitly asks or approves; each role must have a disjoint artifact, stop rule, and no-overlap instruction.
 - **Control separate from reasoning**: for hard projects, let the coordinator/ledger own state, stop rules, trace-back, and route choice. Do not let the same proof attempt both argue and certify itself.
-- **Challenge-step-replan loop**: review fragile steps through a goal gate and a logic gate, then choose accept, challenge, trace back to an earlier step, re-decompose, or re-plan.
+- **Budgeted challenge-step-replan loop**: review fragile steps through a goal gate and a logic gate, then choose accept, challenge, trace back to an earlier step, re-decompose, or re-plan. Put a small cap on challenge rounds and replans before starting.
 - **Tool-use brake**: if tool calls, code, or algebra loops consume budget without shrinking the proof state, switch to pure reasoning on the accumulated artifact, retrieval, theorem repair, or stop/report.
 - **Structured forfeit**: when a route runs out of budget, write diagnosis, forensic analysis, and suggested fix before the next attempt.
 

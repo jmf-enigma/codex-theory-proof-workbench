@@ -75,6 +75,9 @@ PLACEHOLDER_PATTERNS = [
     r"verification tag:[ \t]*tool-verified / easy-to-check / hard-to-check[ \t]*$",
     r"goal gate:[ \t]*$",
     r"logic gate:[ \t]*$",
+    r"challenge rounds used / cap:[ \t]*$",
+    r"replans used / cap:[ \t]*$",
+    r"time or token budget status:[ \t]*$",
     r"verdict:[ \t]*accept / challenge / trace-back / re-decompose / re-plan / stop[ \t]*$",
     r"tool-use brake needed:[ \t]*$",
 ]

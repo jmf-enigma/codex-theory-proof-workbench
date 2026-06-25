@@ -115,6 +115,9 @@ Use this after a stalemate, timeout, repeated failed state, or tool-heavy branch
 - overused tool or route:
 - accepted artifacts to preserve:
 - failed plan family to forbid or retire:
+- challenge rounds used / cap:
+- replans used / cap:
+- time or token budget status:
 - directive: continue / challenge / trace-back / re-decompose / re-plan / pure-reasoning mode / stop-report
 - reason:
 
@@ -157,6 +160,7 @@ Use this when several proof sketches are plausible. Keep it small and retire rep
 ## Step Challenge Board
 
 Use this for multi-step proof plans. Each fragile step needs both gates before it can become part of the final proof.
+Set a small cap before starting, such as 1-2 challenge rounds per step and 1 re-plan per route unless the user explicitly grants a larger budget.
 
 | step | declared goal | verification tag | goal gate | logic gate | verdict | trace-back or re-plan note |
 | --- | --- | --- | --- | --- | --- | --- |
