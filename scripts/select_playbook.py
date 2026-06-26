@@ -54,8 +54,10 @@ PLAYBOOKS = {
     ],
     "probabilistic-method-playbook.md": [
         "probabilistic method", "probability method", "random construction", "random coloring", "bad event",
-        "bad events", "lovasz local lemma", "lovasz lemma", "local lemma", "lll", "moser tardos",
-        "dependency graph", "lopsided", "alteration", "union bound too loose",
+        "bad events", "lovasz local lemma", "lovasz lemma", "lll", "moser tardos",
+        # Keep these specific: "local lemma" and "dependency graph" are generic proof-workbench phrases.
+        "bad event dependency graph", "event dependency graph", "lll dependency graph",
+        "lopsided", "alteration", "union bound too loose",
         "hypergraph coloring", "erdos lovasz", "erdos lovas", "erdos-faber-lovasz",
         "satisfiability", "resampling", "monochromatic", "latin transversal",
     ],
