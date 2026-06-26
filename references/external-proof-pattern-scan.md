@@ -111,6 +111,7 @@ Use these as importable proof-search mechanisms:
 - Learning/bandits: `uniform confidence event regret proof`, `elliptical potential lemma`, `self-normalized concentration`, `online convex optimization potential proof`.
 - OR/optimization: `KKT sufficiency proof`, `primal dual certificate`, `exchange argument proof`, `subgradient optimality certificate`.
 - Lower bounds: `two point testing lower bound`, `Fano Assouad proof`, `change of measure bandit lower bound`, `KL TV reduction`.
+- Probabilistic method: `Lovasz Local Lemma bad events dependency graph`, `Moser Tardos resampling algorithmic local lemma`, `lopsided local lemma proof`.
 - Formal/prover: `Lean formalization theorem name`, `mathlib lemma`, `Draft Sketch Prove`, `retrieval augmented theorem proving`, `compiler guided proof repair`.
 - Recent proof agents: `STAR PolyaMath meta strategist challenge trace back replan`, `Goedel Architect blueprint refinement`, `LeanMarathon dynamic proof DAG`, `LeanArchitect blueprint metadata`, `cost quality Lean theorem prover routing`, `MerLean Prover recursive proof plan`, `Rethlas Archon informal formal proof`, `MA-LoT Lean feedback correction`, `Ax-Prover multi-agent Lean MCP`, `AlphaProof Nexus good gap bad gap`, `OProver feedback refinement`, `APOLLO proof repair`, `LEAP AND OR proof DAG`.
 

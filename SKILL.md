@@ -1,11 +1,11 @@
 ---
 name: theory-proof-workbench
-description: "Use for hard theoretical proofs, proof debugging, failed proof recovery, and judgment-guided proof projects in OR/MS, mechanism design, econ theory, learning theory, bandits, online learning, optimization, games, regret, IC/IR, and lower bounds."
+description: "Use for hard theoretical proofs, proof debugging, failed proof recovery, and judgment-guided proof projects in OR/MS, mechanism design, econ theory, learning theory, bandits, online learning, optimization, games, regret, IC/IR, lower bounds, probabilistic method, random constructions, and Lovasz Local Lemma."
 ---
 
 # Theory Proof Workbench
 
-Use this skill when a proof is nontrivial, has failed before, or belongs to OR/MS, mechanism design, economic theory, learning theory, bandits, online learning, optimization, games, or lower bounds.
+Use this skill when a proof is nontrivial, has failed before, or belongs to OR/MS, mechanism design, economic theory, learning theory, bandits, online learning, optimization, games, lower bounds, probabilistic method, random constructions, or Lovasz Local Lemma.
 
 This is a proof-control workflow, not a theorem encyclopedia. The goal is to stop restarting from scratch and force proof attempts through classification, assumption audit, counterexample search, lemma decomposition, verification gates, and persistent failure notes.
 
@@ -153,6 +153,7 @@ Branch playbooks:
 - Learning theory: [references/learning-theory-playbook.md](references/learning-theory-playbook.md).
 - Bandits and online learning: [references/bandits-oco-playbook.md](references/bandits-oco-playbook.md).
 - Lower bounds: [references/lower-bounds-playbook.md](references/lower-bounds-playbook.md).
+- Probabilistic method and Lovasz Local Lemma: [references/probabilistic-method-playbook.md](references/probabilistic-method-playbook.md).
 11. If stuck, name the obstruction using [references/obstruction-taxonomy.md](references/obstruction-taxonomy.md) before changing routes. If the block is about model meaning, promising structure, or domain taste, surface a short steering question to the user. If the obstruction repeats, escalate through counterexample search, tools, retrieval, local formalization, or theorem repair with [references/proof-escalation-protocol.md](references/proof-escalation-protocol.md).
 12. Apply the proof-status and review gates in [references/verification-gate.md](references/verification-gate.md).
 13. Use `math-tools` for local checks: Wolfram for algebra/conditions, Python/CVXPy/OR-Tools/Z3 for finite or numeric checks, Sage for discrete structures, Lean for local formalizable lemmas. For proof-critical checks, first decide the expected artifact: counterexample, condition, exact identity, KKT/dual certificate, SMT model/unsat result, or Lean lemma.

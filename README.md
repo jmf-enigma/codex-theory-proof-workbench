@@ -10,6 +10,7 @@ It helps Codex stop looping on the same missing lemma. The workbench preserves t
 - Mechanism design, economic theory, IC/IR, envelope, and cyclic-monotonicity arguments.
 - Dynamic programming, MDPs, threshold policies, and Bellman certificates.
 - Learning theory, bandits, online learning, regret, and lower bounds.
+- Probabilistic method, random constructions, Lovasz Local Lemma, bad-event/dependency-graph existence proofs.
 - Proofs that have already failed once and need memory rather than another restart.
 
 For polishing, rewriting, LaTeX cleanup, or making an already complete proof easier to read, use a proof-writing skill instead. This repository is about proof discovery and proof control.
@@ -233,6 +234,7 @@ MIT License. See [LICENSE](LICENSE).
 - 机制设计、经济理论、IC/IR、envelope、cyclic monotonicity。
 - DP、MDP、threshold policy、Bellman certificate。
 - Learning theory、bandits、online learning、regret、lower bounds。
+- Probabilistic method、random construction、Lovasz Local Lemma、bad-event/dependency-graph existence proof。
 - 已经失败过的证明，需要记忆、拆解和恢复，而不是从头再试。
 
 如果核心证明已经完成，只需要润色、改写、LaTeX 化或提升可读性，应使用 proof-writing skill。这个仓库关注的是证明发现和证明控制。

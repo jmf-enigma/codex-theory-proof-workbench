@@ -769,6 +769,54 @@ PLAYBOOK_GUIDES = {
             ),
         ],
     },
+    "probabilistic-method-playbook.md": {
+        "attacks": [
+            (
+                "Lovasz Local Lemma route",
+                "define bad events, build a valid dependency graph, and check the symmetric or asymmetric LLL condition",
+                "bad events too likely, hidden shared randomness, invalid dependency graph, constants fail",
+                "Python/NetworkX for dependency degree; SymPy/Wolfram for LLL inequalities",
+            ),
+            (
+                "alteration route",
+                "sample a random object, bound the number of violations, then repair or delete them",
+                "repair creates new violations, deletes too much, or breaks model constraints",
+                "Python for small random instances; algebra tools for expectation and tail bounds",
+            ),
+            (
+                "algorithmic LLL route",
+                "identify variables, bad events, and a Moser-Tardos resampling step that terminates under LLL hypotheses",
+                "events not variable-determined, resampling changes unrelated constraints, nonconstructive proof claimed as algorithmic",
+                "small resampling simulations for sanity only; proof needs LLL hypotheses",
+            ),
+        ],
+        "lemmas": [
+            "The random object distribution satisfies all hard constraints before bad-event avoidance.",
+            "The bad events exactly cover failure of the desired property.",
+            "Each bad-event probability and dependency degree/asymmetric witness bound is correct.",
+            "Avoiding all bad events implies exactly the theorem statement, including constants and boundary cases.",
+        ],
+        "ideas": [
+            (
+                "bad-event family",
+                "some forbidden local configuration survives",
+                "random object, local obstruction definition, finite dependency neighborhood",
+                "dependency graph count plus LLL inequality check",
+            ),
+            (
+                "dependency graph",
+                "union bound is too loose because there are too many events",
+                "limited overlap of random variables or justified lopsided dependence",
+                "NetworkX overlap enumeration and symbolic `e p (d+1)` check",
+            ),
+            (
+                "alteration repair",
+                "random sample has a small number of violations rather than none",
+                "expected violation bound, repair does not destroy target size/value",
+                "finite simulations plus expectation/tail algebra",
+            ),
+        ],
+    },
 }
 
 GENERIC_ATTACKS = [

@@ -51,6 +51,13 @@ PLAYBOOKS = {
         "packing", "covering", "oracle lower bound", "resisting oracle",
         "information bottleneck", "bretagnolle", "bayes risk",
     ],
+    "probabilistic-method-playbook.md": [
+        "probabilistic method", "random construction", "random coloring", "bad event",
+        "bad events", "lovasz local lemma", "local lemma", "lll", "moser tardos",
+        "dependency graph", "lopsided", "alteration", "union bound too loose",
+        "hypergraph coloring", "erdos lovasz", "erdos-faber-lovasz",
+        "satisfiability", "resampling", "monochromatic", "latin transversal",
+    ],
 }
 
 

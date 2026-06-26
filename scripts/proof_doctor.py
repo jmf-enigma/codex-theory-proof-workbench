@@ -43,6 +43,11 @@ PATTERN_QUERIES = {
         "Fano Assouad minimax lower bound proof",
         "change of measure bandit lower bound KL proof",
     ],
+    "probabilistic-method-playbook.md": [
+        "Lovasz Local Lemma bad events dependency graph proof",
+        "Moser Tardos resampling algorithmic Lovasz Local Lemma proof",
+        "lopsided Lovasz Local Lemma dependency graph proof",
+    ],
 }
 
 

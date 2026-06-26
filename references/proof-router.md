@@ -16,6 +16,7 @@ Use this file to classify a hard proof before attempting it.
 - Linear/contextual bandit: ridge confidence ellipsoid, self-normalized martingale, elliptical potential.
 - Adversarial bandit/OCO: potential argument, exponential weights, FTRL/OMD, Bregman divergence.
 - Lower bound: Le Cam, Fano, Assouad, change of measure, KL decomposition, hard instance construction.
+- Probabilistic existence: random construction, bad-event family, union bound, alteration, Lovasz Local Lemma, dependency graph, lopsided LLL, Moser-Tardos resampling.
 
 ## Stuck Signal To Next Move
 
@@ -25,6 +26,7 @@ Use this file to classify a hard proof before attempting it.
 - IC proof has many pairwise constraints: try envelope theorem for one-dimensional types or cyclic monotonicity for multidimensional types.
 - Regret proof loses a log or dimension factor: isolate confidence event, decomposition, and summation lemma.
 - Lower bound has no hard instance: choose two nearby instances and compute KL; if multi-hypothesis, try Fano/Assouad.
+- Union bound too loose in an existence proof: define bad events and a dependency graph; try Lovasz Local Lemma, lopsided LLL, or alteration.
 - Equilibrium existence proof handwaves continuity/compactness: audit correspondence properties and apply the correct fixed point theorem.
 
 ## Source Map
@@ -35,3 +37,4 @@ Use this file to classify a hard proof before attempting it.
 - Learning theory: Shalev-Shwartz and Ben-David, Understanding Machine Learning.
 - Bandits: Lattimore-Szepesvari, Bandit Algorithms; Bubeck-Cesa-Bianchi, Regret Analysis.
 - Online learning/OCO: Hazan, Introduction to Online Convex Optimization.
+- Probabilistic method: Alon-Spencer, The Probabilistic Method; Moser-Tardos constructive Lovasz Local Lemma.
