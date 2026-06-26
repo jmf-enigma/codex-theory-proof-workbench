@@ -1,6 +1,7 @@
 import argparse
 import json
 import re
+import unicodedata
 
 
 PLAYBOOKS = {
@@ -52,19 +53,27 @@ PLAYBOOKS = {
         "information bottleneck", "bretagnolle", "bayes risk",
     ],
     "probabilistic-method-playbook.md": [
-        "probabilistic method", "random construction", "random coloring", "bad event",
-        "bad events", "lovasz local lemma", "local lemma", "lll", "moser tardos",
+        "probabilistic method", "probability method", "random construction", "random coloring", "bad event",
+        "bad events", "lovasz local lemma", "lovasz lemma", "local lemma", "lll", "moser tardos",
         "dependency graph", "lopsided", "alteration", "union bound too loose",
-        "hypergraph coloring", "erdos lovasz", "erdos-faber-lovasz",
+        "hypergraph coloring", "erdos lovasz", "erdos lovas", "erdos-faber-lovasz",
         "satisfiability", "resampling", "monochromatic", "latin transversal",
     ],
 }
 
 
+def normalize_text(text: str) -> str:
+    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    words = re.sub(r"[^A-Za-z0-9]+", " ", ascii_text.lower())
+    return re.sub(r"\s+", " ", words).strip()
+
+
 def score(text: str, keywords: list[str]) -> int:
+    text = normalize_text(text)
     total = 0
     for kw in keywords:
-        if re.search(r"\b" + re.escape(kw) + r"\b", text):
+        kw = normalize_text(kw)
+        if kw and re.search(r"(?<![a-z0-9])" + re.escape(kw) + r"(?![a-z0-9])", text):
             total += 2 if " " in kw else 1
     return total
 
@@ -73,7 +82,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Suggest theory proof workbench playbooks.")
     parser.add_argument("claim", nargs="+", help="Claim or topic text")
     args = parser.parse_args()
-    text = " ".join(args.claim).lower()
+    text = " ".join(args.claim)
     ranked = sorted(
         [(name, score(text, kws)) for name, kws in PLAYBOOKS.items()],
         key=lambda item: item[1],
