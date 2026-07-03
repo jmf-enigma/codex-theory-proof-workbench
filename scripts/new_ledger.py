@@ -106,6 +106,10 @@ Use OR nodes for alternative routes and AND nodes for required child lemmas. Mer
 - verification tag: tool-verified / easy-to-check / hard-to-check
 - goal gate:
 - logic gate:
+- prover move if using PV:
+- verifier verdict if using PV:
+- soundness probe if using PV:
+- coordinator decision if using PV:
 - challenge rounds used / cap:
 - replans used / cap:
 - time or token budget status:

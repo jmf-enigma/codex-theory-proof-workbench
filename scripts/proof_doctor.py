@@ -101,6 +101,7 @@ STATE_ACTIONS = {
         "If a skeleton is right but a block fails, preserve the skeleton and isolate the bad block as a named lemma.",
         "For the hardest unresolved lemma, run bottleneck surgery: shrink, flip, change representation, then certify/falsify/retrieve/repair.",
         "For the hardest fragile lemma, use one-step moves: current subgoal, proposed move, expected new subgoal, check result, proof-state delta.",
+        "If the local move is fragile or repeated, fill the Prover-Verifier Move Contract: prover move, verifier verdict, soundness probe, proof-state delta, and coordinator decision.",
         "For multi-step plans, tag fragile steps as tool-verified/easy-to-check/hard-to-check and run goal and logic gates before accepting them.",
         "Promote the single hardest missing step to its own lemma card.",
     ],
@@ -129,6 +130,7 @@ STATE_ACTIONS = {
         "Fill Route Decision Check in WORKSTREAMS.md: continue, repair, re-decompose, retrieve, tool-falsify, or stop-report.",
         "Rank next moves by decision value: kernel proof/refutation, counterexample, missing assumption, certificate, retrieval, representation change, or theorem repair.",
         "If a proposed move leaves the proof state unchanged, add a Failed-State Notebook entry in WORKSTREAMS.md before retrying.",
+        "If a local move has been challenged or repeated, run the Prover-Verifier Move Contract before another proof paragraph.",
         "If a step-level challenge stalls, check challenge/replan budget and choose one verdict before more prose: challenge, trace-back, re-decompose, re-plan, switch to pure reasoning on tool artifacts, or stop/report.",
         "If no construction is visible, mine small cases for a pattern; use pattern_miner.py for exact sequences and test one holdout case before promoting the guess.",
         "Classify the current gap as good or bad; bad gaps require splitting, retrieval, falsification, or theorem repair.",
@@ -326,6 +328,13 @@ def progress_evidence_summary(project: Path) -> dict:
         "missing assumption",
         "verified trick",
         "formalization",
+        "verifier verdict",
+        "coordinator decision",
+        "soundness probe",
+        "prover move if using PV",
+        "verifier verdict if using PV",
+        "soundness probe if using PV",
+        "coordinator decision if using PV",
     ]:
         evidence += sum(1 for value in filled_field_values(text, field) if not looks_like_template_choice(value))
     return {
@@ -334,6 +343,53 @@ def progress_evidence_summary(project: Path) -> dict:
         "blocked_retries": blocked,
         "evidence_markers": evidence,
         "no_progress_threshold_met": unchanged >= 2 or blocked >= 1,
+    }
+
+
+def prover_verifier_summary(project: Path) -> dict:
+    chunks = []
+    has_contract = False
+    for name in ["WORKSTREAMS.md", "LEDGER.md"]:
+        path = project / name
+        if path.exists():
+            text = path.read_text(encoding="utf-8")
+            has_contract = has_contract or "Prover-Verifier Move Contract" in text or "prover move if using PV" in text
+            chunks.append(text)
+    text = "\n".join(chunks)
+    verdicts = [
+        value
+        for field in ["verifier verdict", "verifier verdict if using PV"]
+        for value in filled_field_values(text, field)
+        if not looks_like_template_choice(value)
+    ]
+    soundness = [
+        value
+        for field in ["soundness probe", "soundness probe if using PV"]
+        for value in filled_field_values(text, field)
+        if not looks_like_template_choice(value)
+    ]
+    decisions = [
+        value
+        for field in ["coordinator decision", "coordinator decision if using PV"]
+        for value in filled_field_values(text, field)
+        if not looks_like_template_choice(value)
+    ]
+    table_entries = 0
+    for line in text.splitlines():
+        if not line.startswith("|") or "---" in line or "move id" in line.lower():
+            continue
+        if "PV1" in line and re.search(r"\|\s*PV1\s*\|\s*\|\s*\|", line):
+            continue
+        if "soundness" in line.lower() or "coordinator" in line.lower():
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if cells and cells[0].upper().startswith("PV") and sum(bool(cell) for cell in cells[1:]) >= 3:
+            table_entries += 1
+    count = max(table_entries, len(verdicts), len(soundness), len(decisions))
+    return {
+        "has_contract": has_contract,
+        "count": count,
+        "has_real_entries": count > 0,
     }
 
 
@@ -461,6 +517,7 @@ def diagnose(project: Path) -> dict:
     pattern_scan = pattern_scan_need(project, state, selected, text)
     fingerprints = attempt_fingerprint_summary(project)
     progress = progress_evidence_summary(project)
+    prover_verifier = prover_verifier_summary(project)
     route_decision = route_decision_summary(state, progress, fingerprints, idea_map, pattern_scan)
 
     actions = []
@@ -478,6 +535,11 @@ def diagnose(project: Path) -> dict:
         actions.append("No-progress threshold met: do not retry prose. Switch to counterexample search, tools, retrieval, local formalization, theorem repair, or user steering.")
     if state in {"S4-lemma-graph", "S5-local-certification", "S9-stuck"}:
         actions.append(f"Route decision: {route_decision['decision']}; expected artifact: {route_decision['next_artifact']}.")
+    if (
+        state in {"S4-lemma-graph", "S5-local-certification", "S9-stuck"}
+        or progress["no_progress_threshold_met"]
+    ) and not prover_verifier["has_real_entries"]:
+        actions.append("Fill the Prover-Verifier Move Contract for the fragile move before another prose retry.")
     actions.extend(STATE_ACTIONS.get(state, STATE_ACTIONS["S9-stuck"]))
     if idea_map["needed"] and state in {"S1-classify", "S2-stress-test", "S2b-idea-map", "S3-route-portfolio", "S9-stuck"}:
         actions.append("Use IDEA_MAP.md as an optional idea pass: failure world, pattern guess, central object, proof kernel, central lemma, verification hook.")
@@ -527,6 +589,7 @@ def diagnose(project: Path) -> dict:
         },
         "attempt_fingerprints": fingerprints,
         "progress_evidence": progress,
+        "prover_verifier": prover_verifier,
         "route_decision": route_decision,
         "audit": audit,
     }
@@ -568,6 +631,10 @@ def print_human(result: dict) -> None:
     print(f"- smaller_moves: {progress['smaller_moves']}")
     print(f"- blocked_retries: {progress['blocked_retries']}")
     print(f"- evidence_markers: {progress['evidence_markers']}")
+    pv = result["prover_verifier"]
+    print("prover-verifier:")
+    print(f"- contract_available: {pv['has_contract']}")
+    print(f"- recorded_moves: {pv['count']}")
     route = result["route_decision"]
     print("route decision:")
     print(f"- decision: {route['decision']}")

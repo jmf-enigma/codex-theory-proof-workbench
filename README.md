@@ -68,6 +68,7 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 | Tools produce numbers but not proof | Artifact-first tool plans |
 | Formal output proves helpers but not the theorem | `sorry`/obligation and assembly audits |
 | Several agents repeat the same route | Artifact-based role dispatch and single integrator |
+| A fragile step looks plausible but may hide a gap | Prover-verifier move contract with goal, logic, delta, and soundness checks |
 | The proof gets stuck after several tries | Route decision: continue, repair, re-decompose, retrieve, tool-check, or stop |
 
 ## Core Workflow
@@ -83,7 +84,7 @@ The default spine is deliberately small:
 7. Build an AND/OR blueprint lemma graph with statement deps, proof deps, downstream use, and node statuses.
 8. Merge equivalent proof states and prove bottleneck required children before expanding more routes.
 9. Preserve proved helper lemmas and revise only unproved or false nodes.
-10. After repeated local failure, make a route decision before another attempt.
+10. For fragile or repeated local moves, separate prover, verifier, and coordinator roles before another attempt.
 11. Assemble, audit any formal artifact for unresolved obligations, adversarially review, and report the final proof status.
 
 ## Multi-Agent Use

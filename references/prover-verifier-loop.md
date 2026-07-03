@@ -4,11 +4,24 @@ Use this when a proof attempt needs step-level checking, adversarial review, Lea
 
 ## Map
 
+- Activation: use only when a local move is fragile, repeated, challenged, or tool/Lean feedback is involved.
 - Role contract: separate proposal, verification, coordination, and memory.
 - Move protocol: make one local move, verify declared goal and logic, then record proof-state delta.
 - Repair protocol: preserve good skeletons, isolate bad blocks, and revise only the failed subgraph.
 - Literature lessons: import checkability, blueprints, correction, trace-back, and retrieval as methods.
 - Stop rule: stop or reroute when the loop produces no new artifact.
+
+## Activation
+
+Use this loop when one of these holds:
+
+- the same local lemma or construction has failed once already;
+- a proof step is hard-to-check, algebraically delicate, boundary-sensitive, or assumption-sensitive;
+- tool, Lean, or reviewer feedback rejected a block;
+- a plausible proof skeleton exists but one block is suspect;
+- the verifier must distinguish a true local step from a plausible false one.
+
+Skip it for routine direct proofs, standard theorem applications with matched assumptions, and steps that already have a short explicit derivation.
 
 ## Role Contract
 
