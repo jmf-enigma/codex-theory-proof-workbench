@@ -24,7 +24,7 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 6. Pattern gate: if a formula, construction, active set, potential, or algebra normal form was guessed from examples, check a holdout case or independent certificate before using it as a lemma.
 7. Lemma gate: every non-obvious proof step must point to a named lemma, theorem pattern, tool check, or explicit derivation.
 8. Proof-state gate: for fragile kernels, record the current subgoal, one proposed move, check result, and whether the remaining subgoal became smaller.
-9. Step-verdict gate: for multi-step plans, tag each step as tool-verified, easy-to-check, or hard-to-check; then record goal gate, logic gate, challenge/replan budget, and verdict: accept, challenge, trace-back, re-decompose, re-plan, or stop.
+9. Step-verdict gate: for multi-step plans, tag each step as tool-verified, easy-to-check, or hard-to-check; then record goal gate, logic gate, challenge/replan budget, and verdict: accept, challenge, trace-back, re-decompose, re-plan, or stop. For prover-verifier loops, also record the prover move, verifier verdict, soundness probe, proof-state delta, and coordinator decision.
 10. Quantifier gate: check whether the claim is pointwise, uniform, in expectation, high probability, almost surely, asymptotic, or finite-sample.
 11. Boundary gate: check zero denominators, inactive/active constraints, ties, support endpoints, nonunique optimizers, and event complements.
 12. Assembly gate: verify the proved lemmas imply exactly the user claim, not a nearby weaker/stronger statement.
@@ -48,6 +48,7 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 - Did the proof retry the same missing lemma with only different notation or a stronger unsupported claim?
 - Did the hardest algebra step have a sign, equality case, certificate, or alternate representation?
 - Did a local step prove its declared goal, or only prove something true but irrelevant?
+- Did the verifier only approve a local-looking argument without checking goal match, proof-state delta, soundness probe, and final assembly?
 - Did a formal artifact verify only local helper lemmas while leaving the main theorem, counting step, or global assembly obligation open?
 - Did two routes reach equivalent proof states under different notation or variable names?
 

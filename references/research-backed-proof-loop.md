@@ -7,6 +7,7 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - Imported patterns: use proof-agent and formalization lessons as light control rules.
 - Loop: run statement audit, retrieval, workstream assignment, local proof, repair, and review in order.
 - Stop budgets: stop or reroute when the proof state is unchanged, not merely when prose runs out.
+- Prover-verifier loop: use one-move contracts, verifier verdicts, trace-back, and repair when local steps are fragile.
 - Paper-inspired heuristics: turn outside sources into route structure, artifacts, and verification hooks.
 - Source log: track where each imported workflow pattern came from.
 
@@ -27,6 +28,8 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - STAR-PolyaMath pattern: separate control from inference. The coordinator owns state, stop rules, trace-back, re-plan, and tool-use limits; the proof attempt supplies evidence and arguments, not control authority.
 - Persistent meta-strategist pattern: keep cross-attempt memory of chronic failures, overused tools, failed plan families, and promising auxiliary routes. Use it to issue light guidance or mandatory route changes when a loop repeats.
 - Reasoner-Verifier challenge pattern: review each fragile step with a goal gate and a logic gate. A step can be accepted, challenged, traced back to an earlier step, or sent to re-plan. Set a small challenge-round and replan cap before the loop starts.
+- Prover-Verifier Game pattern: optimize for checkability under adversarial scrutiny. Ask whether a plausible but false version of the same local move could fool the verifier.
+- Structure-consistency pattern: final proofs should use accepted subgoals or explicitly retire them; do not let a successful local proof drift away from the blueprint it was supposed to close.
 - Rethlas/Archon pattern: separate informal strategy discovery from formal verification. The informal agent proposes routes and candidate proofs; the formal agent decomposes, formalizes, checks, and returns precise gaps.
 - MA-LoT pattern: separate whole-proof generation from error-analysis/correction. Use one role to produce a coherent proof sketch and another role to read compiler/tool feedback and repair only the failing block.
 - Ax-Prover pattern: tool-equipped agents can operate autonomously or with human experts, but formal correctness must come from Lean/tool feedback rather than role confidence.
@@ -63,7 +66,7 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 11. Sketch: convert the draft into a blueprint dependency graph. Each node gets statement dependencies, proof dependencies, downstream use, likely proof route, tool check, statement status, proof status, failure mode, gap grade, and compact repair state. Independent branches should stay independent.
 12. Graph search discipline: mark OR nodes for alternative routes, constructions, or tactics; mark AND nodes for required subgoals. Before expanding a new OR branch, check whether an existing AND child is the bottleneck and should be proved, refuted, split, retrieved, or repaired first.
 13. State/action dedupe: compare a new proof move against prior states and fingerprints. If the goal, local assumptions, central object, failure witness, and expected artifact match a prior attempt, treat it as the same state/action unless there is a real new premise or certificate.
-14. Prove locally: solve the smallest ready leaf on the current assembly path first. Work one move at a time when fragile: proposed move, expected new subgoal, check, proof-state delta. Tag the move as tool-verified, easy-to-check, or hard-to-check; accept it only if it passes both the declared-goal gate and the logic gate. Use Wolfram/SymPy for algebra, Python/Z3/CVXPy/Sage for finite or optimization checks, and Lean for local formalizable lemmas. If a top-level assembly can be checked conditionally using assumed lemmas, use that to identify which lemmas are actually needed before proving side lemmas.
+14. Prove locally: solve the smallest ready leaf on the current assembly path first. Work one move at a time when fragile: proposed move, expected new subgoal, check, proof-state delta. Tag the move as tool-verified, easy-to-check, or hard-to-check; accept it only if it passes both the declared-goal gate and the logic gate. For repeated or adversarially fragile moves, use `prover-verifier-loop.md` to record the prover move, verifier verdict, soundness probe, proof-state delta, and coordinator decision. Use Wolfram/SymPy for algebra, Python/Z3/CVXPy/Sage for finite or optimization checks, and Lean for local formalizable lemmas. If a top-level assembly can be checked conditionally using assumed lemmas, use that to identify which lemmas are actually needed before proving side lemmas.
 15. Bottleneck surgery: if the same lemma remains unresolved, shrink it, flip to the negation, change representation, then certify/falsify/retrieve/repair before another prose proof.
 16. Gap review: accept a missing lemma only if it is a good gap, meaning smaller, non-circular, assumption-explicit, and checkable. If it is a bad gap, split, retrieve, falsify, or change route.
 17. Repair: if a lemma fails, determine whether the issue is false claim, missing assumption, quantifier mismatch, boundary case, or proof technique mismatch.
@@ -98,6 +101,7 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - For multi-agent runs, keep the coordinator/integrator single-threaded. Parallel agents produce evidence; they do not vote the proof true. The integrator chooses the route and records why.
 - Good multi-agent split: Planner finds lemma graph and route options; Falsifier searches small failures; Retriever imports theorem patterns; Formalizer/Tool-Checker checks one local lemma; Reviewer attacks final assembly. Bad split: several agents all write the same full proof.
 - For long step plans, use STAR-PolyaMath-style verdicts: accept if both gates pass, challenge if the local fix is plausible, trace back if an earlier step caused the failure, re-plan if the plan family is broken, and stop/report if challenge, replan, time, or token budgets are exhausted.
+- For adversarial local checks, use PVG-style sneaky proof review: try to make the same step look true while hiding the weakest counterexample, boundary case, or missing assumption.
 - If computation or CAS use dominates without a shrinking proof state, switch to pure mathematical analysis of the tool artifacts or retire the route. Tools should decide kernels, not replace strategy.
 - For formalizable fragments, Lean-style checking is strongest on local lemmas, not necessarily on the full research theorem.
 - For empirical or simulation support, route to `empirical-tools`; simulations can refute or sanity-check but do not prove the theorem.
@@ -142,5 +146,8 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 - Wang et al. 2025, MA-LoT: model collaboration separates whole-proof generation from Lean-feedback error analysis and correction.
 - Li, Zhu, Ren 2026, MerLean-Prover: three focused roles, Planning, Check, and Lean, recursively revise the proof plan and replace `sorry` with kernel-checkable proof.
 - Breen et al. 2025/2026, Ax-Prover: multi-agent Lean proving via tool-equipped LLMs and MCP, supporting autonomous operation and human collaboration.
+- Kirchner et al. 2024, Prover-Verifier Games: helpful and sneaky provers expose whether explanations are checkable; completeness, soundness, and legibility costs are useful proxies for proof-step robustness.
+- DeepSeek-Prover-V2 (2025): recursive subgoal decomposition, `have`-structured lemma consistency, verifier-approved traces, and decomposition faithfulness matter as much as local proof success.
+- Leanabell-Prover-V2 (2025): multi-turn verifier feedback can improve proof trajectories, but the final artifact still needs independent checking and feedback should target the failed local step.
 - Harmonic Aristotle technical report (Achim et al., 2025): Lean proof search with Monte Carlo Graph Search, policy/value guidance, lemma-based informal reasoning, formal feedback, solved-lemma preservation, and test-time learning from failed traces.
 - Lau 2026 Aristotle API case study: verified local Lean helper lemmas do not establish a theorem when the main theorem remains closed by `sorry` or the global counting/assembly obligation is not encoded.

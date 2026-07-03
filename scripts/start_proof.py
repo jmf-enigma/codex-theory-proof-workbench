@@ -166,6 +166,16 @@ Set a small cap before starting, such as 1-2 challenge rounds per step and 1 re-
 | --- | --- | --- | --- | --- | --- | --- |
 | S1 |  | tool-verified / easy-to-check / hard-to-check | pass / fail | pass / fail | accept / challenge / trace-back / re-decompose / re-plan / stop |  |
 
+## Prover-Verifier Move Contract
+
+Use this for fragile local moves, especially after a failed attempt, tool feedback, Lean feedback, or a possible hidden assumption.
+
+| move id | current subgoal | prover move | expected artifact | verifier verdict | soundness probe | proof-state delta | coordinator decision |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| PV1 |  |  | proof / counterexample / condition / certificate / repaired statement | accept / challenge / trace-back / re-decompose / retrieve / tool-check / statement-repair / stop-report |  | smaller / unchanged / larger / refuted |  |
+
+The verifier is read-only unless explicitly assigned a proof role. If the same move is challenged twice without a new artifact, route to `Route Decision Check`.
+
 ## Proof-State Equivalence
 
 Use this before retrying a route. Merge states or actions that differ only by notation.
@@ -1220,6 +1230,7 @@ def strategy_text(selected: list[tuple[str, int]]) -> str:
 - graph-search rule: mark OR alternatives and AND required subgoals; work the bottleneck required child before expanding another route
 - state/action dedupe rule: same goal, assumptions, central object, and failure witness means the same proof state unless there is a real new artifact
 - step-challenge rule: tag fragile steps by verification level, run goal and logic gates, then accept/challenge/trace-back/re-decompose/re-plan/stop
+- prover-verifier rule: for fragile local moves, keep proposer/checker/coordinator roles separate and record soundness probes plus proof-state delta
 - meta-strategy rule: if a route or tool loop repeats, let the coordinator choose a directive before another attempt
 - route decision rule: after two local failures, choose continue / repair / re-decompose / retrieve / tool-falsify / stop-report before another attempt
 - used-node rule: prove ready leaves on the current assembly path before side lemmas
@@ -1298,20 +1309,21 @@ def triage_text(title: str, claim: str, selected: list[tuple[str, int]]) -> str:
 7. If the proof needs an unknown construction, threshold, potential, hard instance, coefficient, or exact answer, run discovery and holdout checks before proving.
 8. For a fragile kernel, fill the one-step proof move queue before writing a long proof.
 9. For a multi-step plan, use the Step Challenge Board in `WORKSTREAMS.md`: tag each fragile step as tool-verified, easy-to-check, or hard-to-check, then run goal and logic gates.
-10. If several branches are needed, fill goal-based cards in `WORKSTREAMS.md`. Do not create cards for routine direct proofs. Each active card must pass the `Look At How Others Do It Gate` or record a skip reason before heavy execution.
-11. If the route is unfamiliar or repeatedly stuck, fill `PATTERN_SCAN.md` from prior papers, local drafts, appendices, formalization projects, or proof-agent skills.
-12. Read `ATTACK_MATRIX.md` and choose one proof route plus one falsification route.
-13. Write the negation and smallest toy model in `counterexamples.md`.
-14. Turn `LEMMA_QUEUE.md` into a blueprint DAG in `LEDGER.md`: nodes, statement deps, proof deps, downstream use, statuses, gap grades, failure diagnoses, compact repair states, and suggested fixes.
-15. Mark OR alternatives and AND required child lemmas; work the bottleneck required child before expanding another route.
-16. Before retrying, check whether the new move is equivalent to a prior state/action under different notation.
-17. Prove ready leaves that feed the current assembly path first. Postpone orphan lemmas unless they falsify, repair, or unlock the route.
-18. If a node fails twice, fill the Route Decision Check in `WORKSTREAMS.md` before another attempt.
-19. If a step needs tools or Lean/API help, fill `TOOL_PLAN.md` with the expected artifact before running commands.
-20. If tool use or code loops without proof-state shrinkage, fill the Meta-Strategy Checkpoint and choose trace-back, re-plan, pure-reasoning mode, theorem repair, or stop/report.
-21. If a formal artifact is produced, audit for `sorry`, admitted axioms, unresolved obligations, and verified-helper-to-main-theorem assembly.
-22. If two routes fail or the same obstruction repeats, follow `ESCALATION.md` before another prose proof attempt.
-23. Run `proof_doctor.py .` when stuck and `audit_ledger.py LEDGER.md` before claiming a final proof.
+10. For a fragile local move, use the Prover-Verifier Move Contract in `WORKSTREAMS.md` and the skill reference `prover-verifier-loop.md`: record the prover move, verifier verdict, soundness probe, proof-state delta, and coordinator decision.
+11. If several branches are needed, fill goal-based cards in `WORKSTREAMS.md`. Do not create cards for routine direct proofs. Each active card must pass the `Look At How Others Do It Gate` or record a skip reason before heavy execution.
+12. If the route is unfamiliar or repeatedly stuck, fill `PATTERN_SCAN.md` from prior papers, local drafts, appendices, formalization projects, or proof-agent skills.
+13. Read `ATTACK_MATRIX.md` and choose one proof route plus one falsification route.
+14. Write the negation and smallest toy model in `counterexamples.md`.
+15. Turn `LEMMA_QUEUE.md` into a blueprint DAG in `LEDGER.md`: nodes, statement deps, proof deps, downstream use, statuses, gap grades, failure diagnoses, compact repair states, and suggested fixes.
+16. Mark OR alternatives and AND required child lemmas; work the bottleneck required child before expanding another route.
+17. Before retrying, check whether the new move is equivalent to a prior state/action under different notation.
+18. Prove ready leaves that feed the current assembly path first. Postpone orphan lemmas unless they falsify, repair, or unlock the route.
+19. If a node fails twice, fill the Route Decision Check in `WORKSTREAMS.md` before another attempt.
+20. If a step needs tools or Lean/API help, fill `TOOL_PLAN.md` with the expected artifact before running commands.
+21. If tool use or code loops without proof-state shrinkage, fill the Meta-Strategy Checkpoint and choose trace-back, re-plan, pure-reasoning mode, theorem repair, or stop/report.
+22. If a formal artifact is produced, audit for `sorry`, admitted axioms, unresolved obligations, and verified-helper-to-main-theorem assembly.
+23. If two routes fail or the same obstruction repeats, follow `ESCALATION.md` before another prose proof attempt.
+24. Run `proof_doctor.py .` when stuck and `audit_ledger.py LEDGER.md` before claiming a final proof.
 
 ## Do Not
 
