@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""Create a routed workspace for a hard theory-proof project."""
+
+from __future__ import annotations
+
 import argparse
 import json
 import re
@@ -30,38 +35,11 @@ CLAIM_TEMPLATE = """# Claim
 """
 
 
-NOTES_TEMPLATE = """# Proof Notes
-
-## Current Best Route
-
-## Alternative Routes
-
-## Known Theorems That Might Apply
-
-## Questions For User
-"""
-
-
 WORKSTREAMS_TEMPLATE = """# Workstreams: {title}
 
 This is a state board, not executable code. Use it only for hard, stuck, tool-assisted, or literature-dependent proof work.
 
-Workstreams are goal-based. Start from the approved research question and goals, then create only the active workstream cards needed next. Run them serially unless the user explicitly asks for parallel agents.
-
-## Activation Tiers
-
-- no workstream: direct theorem, one-page proof, simple algebra, or one local tool check is enough.
-- micro check: route is unclear but small; inspect one nearby theorem family, playbook pattern, prior ledger, or paper trick, then proceed.
-- workstream card: branch is hard, repeated, multi-lemma, tool-assisted, literature-dependent, or expensive enough to need state.
-- full project: several workstream cards, repeated obstruction, or user-facing research output is needed.
-
-## Progress Contract
-
-Before any repeated or expensive attempt, state the expected new evidence. Acceptable evidence is a proved/refuted kernel, counterexample, missing assumption, checked certificate, different central object, retrieved theorem pattern, verified trick, or theorem repair.
-
-Changing notation, adding cosmetic cases, or restating the same missing lemma is not progress. If no genuine delta exists, block the retry and record why.
-
-Prefer high decision value moves: kernel proof/refutation, counterexample, missing assumption, certificate, retrieved theorem, representation change, or theorem repair.
+Create a card only when a branch needs durable state. Before a repeated or expensive move, name the expected new artifact. Changing notation or restating the same missing lemma is not progress.
 
 ## Approved Research Question
 
@@ -107,20 +85,6 @@ Bad split: several agents independently writing the same full proof.
 
 Integrate returned artifacts by decision value: counterexample, missing assumption, verified lemma, retrieved theorem pattern, exact tool certificate, or concrete gap report. Long prose without a new artifact does not outrank a smaller checked result.
 
-## Meta-Strategy Checkpoint
-
-Use this after a stalemate, timeout, repeated failed state, or tool-heavy branch. The coordinator owns this decision; the proof attempt supplies evidence but does not certify itself.
-
-- chronic failure pattern:
-- overused tool or route:
-- accepted artifacts to preserve:
-- failed plan family to forbid or retire:
-- challenge rounds used / cap:
-- replans used / cap:
-- time or token budget status:
-- directive: continue / challenge / trace-back / re-decompose / re-plan / pure-reasoning mode / stop-report
-- reason:
-
 ## Attempt Fingerprint Index
 
 Use this table before any repeated proof route, construction, counterexample search, or tool-backed lemma attempt. The point is to identify the same failed idea under different notation.
@@ -133,15 +97,7 @@ For constructive attempts, put the construction family in `route family`. A poli
 
 ## No-Repeat Decision
 
-Before a new attempt, compare it with the index.
-
-- same route family plus same central object: likely repeat.
-- same parameterization plus same invariant or certificate: likely repeat.
-- same failure witness or missing assumption: likely repeat.
-- same target lemma with no new proof ingredient: likely repeat.
-- retry only if there is a new assumption, central object, invariant, certificate, verified trick, counterexample repair, theorem repair, or imported theorem pattern.
-
-If no genuine delta exists, block the attempt and update `LEDGER.md` with the blocked retry.
+Treat attempts with the same goal, assumptions, central object, and failure witness as one state. Retry only with a new premise, representation, certificate, counterexample repair, theorem repair, or imported theorem pattern. Otherwise block it in `LEDGER.md`.
 
 If there are several fingerprints or the match is ambiguous, run:
 
@@ -209,18 +165,6 @@ Use this after two local attempts on a node, one repeated failure signature, or 
 | N1 |  | smaller / unchanged / larger | new / same / mixed | low / medium / high | proof / counterexample / certificate / theorem pattern / repair / none | continue / repair / re-decompose / retrieve / tool-falsify / stop-report |  |
 
 Use the table to avoid repeated small edits to the same failed idea. Continue only when the next attempt has a new premise, central object, representation, certificate, counterexample, theorem repair, or a smaller proof state.
-
-## Bottleneck Surgery
-
-Use this when the same missing lemma or algebraic obstacle survives.
-
-- smallest local lemma:
-- negation or tight/equality case:
-- alternate representation to try: dual / slack / Bellman gap / envelope / deviation graph / coupling / KL bridge / potential / telescope
-- highest decision-value move:
-- expected artifact: proof / counterexample / missing assumption / certificate / theorem pattern / repaired theorem
-- result:
-- next action:
 
 ## Workstream Card Template
 
@@ -895,7 +839,7 @@ def select_playbooks(text: str) -> list[tuple[str, int]]:
         key=lambda item: item[1],
         reverse=True,
     )
-    selected = [(name, value) for name, value in ranked if value > 0]
+    selected = [(name, value) for name, value in ranked if value > 0][:3]
     if selected:
         return selected
     return [
@@ -1264,23 +1208,7 @@ If two routes fail or the obstruction does not shrink, follow `ESCALATION.md`: t
 """
 
 
-def state_text(selected: list[tuple[str, int]]) -> str:
-    return f"""# Proof State
-
-Current state: S2-stress-test
-
-## State History
-
-- S0-parse: claim captured in `claim.md`.
-- S1-classify: selected playbooks: {", ".join(name for name, _ in selected)}.
-
-## Next Transition
-
-Move to S3-route-portfolio after writing the negation, toy cases, and relaxed-assumption checks in `counterexamples.md`.
-"""
-
-
-def triage_text(title: str, claim: str, selected: list[tuple[str, int]]) -> str:
+def triage_text(title: str, claim: str, selected: list[tuple[str, int]], mode: str) -> str:
     return f"""# Proof Triage: {title}
 
 ## Claim
@@ -1293,7 +1221,7 @@ def triage_text(title: str, claim: str, selected: list[tuple[str, int]]) -> str:
 
 ## Mode Decision
 
-- mode: direct / micro-check / light-idea / project / recovery
+- mode: {mode}
 - why this mode is enough:
 - next artifact expected:
 - stop or escalation trigger:
@@ -1301,29 +1229,13 @@ def triage_text(title: str, claim: str, selected: list[tuple[str, int]]) -> str:
 ## Immediate Tasks
 
 1. Fill exact variables, domains, quantifiers, and assumptions in `claim.md`.
-2. Record the statement fence: do not change theorem statement, assumptions, quantifiers, domains, or conclusion unless marking theorem repair.
-3. Run the direct-solve check: if a named theorem, certificate, contradiction, or known decomposition proves the claim, proceed directly and verify.
-4. Run a statement-fidelity audit for model-heavy or literature-derived claims: definitions, quantifiers, boundary cases, implicit conventions, and theorem statement fence.
-5. Read `research-backed-proof-loop.md` from the skill references if the proof has failed before or looks paper-level.
-6. If the direct-solve check fails, update `IDEA_MAP.md` with a failure world, pattern guess when useful, central object, proof kernel, central lemma, and verification hook.
-7. If the proof needs an unknown construction, threshold, potential, hard instance, coefficient, or exact answer, run discovery and holdout checks before proving.
-8. For a fragile kernel, fill the one-step proof move queue before writing a long proof.
-9. For a multi-step plan, use the Step Challenge Board in `WORKSTREAMS.md`: tag each fragile step as tool-verified, easy-to-check, or hard-to-check, then run goal and logic gates.
-10. For a fragile local move, use the Prover-Verifier Move Contract in `WORKSTREAMS.md` and the skill reference `prover-verifier-loop.md`: record the prover move, verifier verdict, soundness probe, proof-state delta, and coordinator decision.
-11. If several branches are needed, fill goal-based cards in `WORKSTREAMS.md`. Do not create cards for routine direct proofs. Each active card must pass the `Look At How Others Do It Gate` or record a skip reason before heavy execution.
-12. If the route is unfamiliar or repeatedly stuck, fill `PATTERN_SCAN.md` from prior papers, local drafts, appendices, formalization projects, or proof-agent skills.
-13. Read `ATTACK_MATRIX.md` and choose one proof route plus one falsification route.
-14. Write the negation and smallest toy model in `counterexamples.md`.
-15. Turn `LEMMA_QUEUE.md` into a blueprint DAG in `LEDGER.md`: nodes, statement deps, proof deps, downstream use, statuses, gap grades, failure diagnoses, compact repair states, and suggested fixes.
-16. Mark OR alternatives and AND required child lemmas; work the bottleneck required child before expanding another route.
-17. Before retrying, check whether the new move is equivalent to a prior state/action under different notation.
-18. Prove ready leaves that feed the current assembly path first. Postpone orphan lemmas unless they falsify, repair, or unlock the route.
-19. If a node fails twice, fill the Route Decision Check in `WORKSTREAMS.md` before another attempt.
-20. If a step needs tools or Lean/API help, fill `TOOL_PLAN.md` with the expected artifact before running commands.
-21. If tool use or code loops without proof-state shrinkage, fill the Meta-Strategy Checkpoint and choose trace-back, re-plan, pure-reasoning mode, theorem repair, or stop/report.
-22. If a formal artifact is produced, audit for `sorry`, admitted axioms, unresolved obligations, and verified-helper-to-main-theorem assembly.
-23. If two routes fail or the same obstruction repeats, follow `ESCALATION.md` before another prose proof attempt.
-24. Run `proof_doctor.py .` when stuck and `audit_ledger.py LEDGER.md` before claiming a final proof.
+2. Run the direct-solve and statement-fidelity checks. Mark any changed assumption, quantifier, domain, or conclusion as theorem repair.
+3. Write the negation and smallest toy, boundary, and relaxed-assumption cases in `counterexamples.md`.
+4. Use `ATTACK_MATRIX.md` to compare one proof route, one falsification route, and one orthogonal evidence route.
+5. Open `IDEA_MAP.md` only if the central object, construction, or proof kernel is missing.
+6. Build the active AND/OR lemma graph in `LEMMA_QUEUE.md`; work the least-certain required child on the assembly path.
+7. Use `WORKSTREAMS.md`, `PATTERN_SCAN.md`, `TOOL_PLAN.md`, or the prover-verifier contract only when repetition, retrieval, tools, or fragile local checking activates them.
+8. Run `proof_doctor.py .` after a failure or state change, and `audit_ledger.py LEDGER.md` before claiming a final proof.
 
 ## Do Not
 
@@ -1394,8 +1306,8 @@ Use this file after two failed routes, one repeated obstruction, or a failed too
 """
 
 
-def ledger_text(title: str, claim: str, selected: list[tuple[str, int]]) -> str:
-    ledger = LEDGER_TEMPLATE.format(title=title, claim=claim)
+def ledger_text(title: str, claim: str, selected: list[tuple[str, int]], mode: str) -> str:
+    ledger = LEDGER_TEMPLATE.format(title=title, claim=claim, mode=mode)
     entries = "\n".join(f"- {name} (score {value})" for name, value in selected)
     ledger = ledger.replace(
         "Candidate patterns:\n\nSelected playbooks:",
@@ -1412,6 +1324,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Start a theory proof project with automatic routing.")
     parser.add_argument("--title", required=True, help="Short proof project name")
     parser.add_argument("--claim", required=True, help="Exact or provisional theorem statement")
+    parser.add_argument(
+        "--mode",
+        choices=["project", "recovery"],
+        default="project",
+        help="Use recovery when this theorem has already failed",
+    )
     parser.add_argument("--dir", default="proof_projects", help="Output base directory")
     args = parser.parse_args()
 
@@ -1424,19 +1342,17 @@ def main() -> None:
         (project / subdir).mkdir(parents=True, exist_ok=True)
 
     (project / "claim.md").write_text(CLAIM_TEMPLATE.format(claim=args.claim), encoding="utf-8")
-    (project / "TRIAGE.md").write_text(triage_text(args.title, args.claim, selected), encoding="utf-8")
-    (project / "LEDGER.md").write_text(ledger_text(args.title, args.claim, selected), encoding="utf-8")
+    (project / "TRIAGE.md").write_text(triage_text(args.title, args.claim, selected, args.mode), encoding="utf-8")
+    (project / "LEDGER.md").write_text(ledger_text(args.title, args.claim, selected, args.mode), encoding="utf-8")
     (project / "WORKSTREAMS.md").write_text(WORKSTREAMS_TEMPLATE.format(title=args.title), encoding="utf-8")
     (project / "ATTACK_MATRIX.md").write_text(attack_matrix_text(args.title, args.claim, selected), encoding="utf-8")
     (project / "LEMMA_QUEUE.md").write_text(lemma_queue_text(args.title, args.claim, selected), encoding="utf-8")
     (project / "IDEA_MAP.md").write_text(idea_map_text(args.title, args.claim, selected), encoding="utf-8")
     (project / "ESCALATION.md").write_text(escalation_text(args.title, args.claim, selected), encoding="utf-8")
-    (project / "state.md").write_text(state_text(selected), encoding="utf-8")
     (project / "PATTERN_SCAN.md").write_text(pattern_scan_text(args.title, args.claim, selected), encoding="utf-8")
     (project / "TOOL_PLAN.md").write_text(tool_plan_text(args.title, args.claim, selected), encoding="utf-8")
     (project / "strategy.md").write_text(strategy_text(selected), encoding="utf-8")
     (project / "counterexamples.md").write_text(counterexample_text(args.claim), encoding="utf-8")
-    (project / "notes.md").write_text(NOTES_TEMPLATE, encoding="utf-8")
     (project / "lean" / "LocalLemmas.lean").write_text(LEAN_TEMPLATE, encoding="utf-8")
     (project / "tool_checks" / "README.md").write_text(tool_check_readme_text(selected), encoding="utf-8")
     (project / "trick_cards" / "README.md").write_text(trick_cards_readme_text(), encoding="utf-8")
@@ -1450,16 +1366,13 @@ def main() -> None:
             {
                 "title": args.title,
                 "claim": args.claim,
+                "mode": args.mode,
                 "selected_playbooks": selected,
-                "next_files": [
+                "entry_files": [
                     "TRIAGE.md",
-                    "WORKSTREAMS.md",
                     "ATTACK_MATRIX.md",
-                    "LEMMA_QUEUE.md",
-                    "PATTERN_SCAN.md",
-                    "TOOL_PLAN.md",
                     "LEDGER.md",
-                    "ESCALATION.md",
+                    "counterexamples.md",
                 ],
             },
             indent=2,

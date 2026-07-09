@@ -1,9 +1,14 @@
+#!/usr/bin/env python3
+"""Diagnose one primary next move for a theory-proof project."""
+
+from __future__ import annotations
+
 import argparse
 import json
 import re
 from pathlib import Path
 
-from audit_ledger import PLACEHOLDER_PATTERNS, REQUIRED_HEADINGS, section_body
+from audit_ledger import audit_ledger_text, section_body
 from select_playbook import PLAYBOOKS, score
 
 
@@ -67,7 +72,7 @@ STATE_ACTIONS = {
         "Move to stress testing before drafting the final proof.",
     ],
     "S2-stress-test": [
-        "If direct solve failed, record why in IDEA_MAP.md or LEDGER.md.",
+        "If direct solve failed, record the mismatch in LEDGER.md.",
         "Write the negation and smallest toy model in counterexamples.md.",
         "Try one boundary case and one relaxed-assumption counterexample search.",
         "If no route has a pattern guess, chosen central object, or proof kernel, fill IDEA_MAP.md before drafting another proof.",
@@ -82,7 +87,7 @@ STATE_ACTIONS = {
         "Move to route portfolio only after one kernel can be proved, refuted, retrieved, tool-checked, or locally formalized.",
     ],
     "S3-route-portfolio": [
-        "Before adding another route, compare it with the Attempt Fingerprint Index in WORKSTREAMS.md; run check_attempt.py only if several fingerprints or an ambiguous match make this hard.",
+        "Confirm that candidate routes differ by central object, theorem family, certificate, failure world, or evidence source.",
         "Keep a small route candidate board: 2-4 routes scored by central object, verification hook, novelty, and gap quality.",
         "Update WORKSTREAMS.md only for branches that need durable state; each active card should include a look-at-how-others-do-it pass or a skip reason.",
         "If the user approved multi-agent work, fill the Multi-Agent Dispatch Gate with disjoint artifacts before delegation.",
@@ -90,7 +95,7 @@ STATE_ACTIONS = {
         "Pick the route whose theorem assumptions most closely match the claim.",
     ],
     "S4-lemma-graph": [
-        "Before attacking the same missing lemma again, write the route family, central object, failure witness, and new delta in WORKSTREAMS.md.",
+        "Select the least-certain ready leaf that feeds the current theorem assembly.",
         "Turn every nontrivial step into a blueprint node with statement deps, proof deps, downstream use, status, expected artifact, gap grade, failure diagnosis, and compact repair state.",
         "Mark OR alternatives and AND required child lemmas; attack the lowest-confidence required child before expanding another route.",
         "Merge equivalent proof states/actions before retrying: same goal, assumptions, central object, and failure witness means same state unless a new artifact exists.",
@@ -151,17 +156,7 @@ def read_json(path: Path) -> dict:
 
 
 def audit_text(text: str, ledger: Path) -> dict:
-    missing_headings = [h for h in REQUIRED_HEADINGS if section_body(text, h) is None]
-    empty_sections = [h for h in REQUIRED_HEADINGS if section_body(text, h) == ""]
-    placeholders = [pat for pat in PLACEHOLDER_PATTERNS if re.search(pat, text, flags=re.M)]
-    return {
-        "ledger": str(ledger),
-        "missing_headings": missing_headings,
-        "empty_sections": empty_sections,
-        "placeholder_count": len(placeholders),
-        "placeholders": placeholders,
-        "ready_for_final_proof": not missing_headings and not empty_sections and not placeholders,
-    }
+    return audit_ledger_text(text, ledger)
 
 
 def route_from_claim(claim: str) -> list[tuple[str, int]]:
@@ -170,7 +165,7 @@ def route_from_claim(claim: str) -> list[tuple[str, int]]:
         key=lambda item: item[1],
         reverse=True,
     )
-    selected = [(name, value) for name, value in ranked if value > 0]
+    selected = [(name, value) for name, value in ranked if value > 0][:3]
     return selected or [
         ("proof-router.md", 0),
         ("strategy-scheduler.md", 0),
@@ -224,16 +219,24 @@ def idea_map_need(project: Path, state: str, selected: list[tuple[str, int]], te
 
 def pattern_scan_need(project: Path, state: str, selected: list[tuple[str, int]], text: str) -> dict:
     reasons = []
-    scan_states = {"S1-classify", "S3-route-portfolio", "S9-stuck"}
-    if not (project / "PATTERN_SCAN.md").exists() and state in scan_states:
+    low_confidence = not selected or max(value for _, value in selected) == 0
+    repeated_obstruction = filled_field_count(text, "obstruction type") >= 2
+    triggered = (
+        state == "S9-stuck"
+        or repeated_obstruction
+        or (state in {"S1-classify", "S3-route-portfolio"} and low_confidence)
+    )
+    if not triggered:
+        return {"needed": False, "reasons": reasons}
+    if not (project / "PATTERN_SCAN.md").exists():
         reasons.append("PATTERN_SCAN.md is missing")
-    elif is_blank_pattern_scan(project) and state in scan_states:
+    elif is_blank_pattern_scan(project):
         reasons.append("PATTERN_SCAN.md has no imported source or route yet")
     if state == "S9-stuck":
         reasons.append("proof state is stuck")
-    if selected and max(value for _, value in selected) == 0 and state in scan_states:
+    if low_confidence:
         reasons.append("playbook routing is low-confidence")
-    if filled_field_count(text, "obstruction type") >= 2:
+    if repeated_obstruction:
         reasons.append("two or more obstruction slots are present")
     return {"needed": bool(reasons), "reasons": reasons}
 
@@ -274,7 +277,7 @@ def attempt_fingerprint_summary(project: Path) -> dict:
 def filled_field_count(text: str, field: str) -> int:
     return len(
         re.findall(
-            rf"^(?:[-*][^\S\r\n]*)?{re.escape(field)}:[^\S\r\n]*\S+",
+            rf"^[ \t]*(?:[-*][^\S\r\n]*)?{re.escape(field)}:[^\S\r\n]*\S+",
             text,
             flags=re.I | re.M,
         )
@@ -282,7 +285,7 @@ def filled_field_count(text: str, field: str) -> int:
 
 
 def filled_field_values(text: str, field: str) -> list[str]:
-    pattern = rf"^(?:[-*][^\S\r\n]*)?{re.escape(field)}:[^\S\r\n]*(?P<value>\S.*)$"
+    pattern = rf"^[ \t]*(?:[-*][^\S\r\n]*)?{re.escape(field)}:[^\S\r\n]*(?P<value>\S.*)$"
     return [match.group("value").strip() for match in re.finditer(pattern, text, flags=re.I | re.M)]
 
 
@@ -393,6 +396,35 @@ def prover_verifier_summary(project: Path) -> dict:
     }
 
 
+def prover_verifier_need(project: Path, progress: dict, summary: dict) -> dict:
+    if summary["has_real_entries"]:
+        return {"needed": False, "reasons": []}
+    chunks = []
+    for name in ["WORKSTREAMS.md", "LEDGER.md"]:
+        path = project / name
+        if path.exists():
+            chunks.append(path.read_text(encoding="utf-8"))
+    text = "\n".join(chunks)
+    reasons = []
+    if progress["no_progress_threshold_met"]:
+        reasons.append("the same local proof state has not shrunk")
+    challenged = any(
+        not looks_like_template_choice(value)
+        for field in ["verdict", "verifier verdict", "verifier verdict if using PV"]
+        for value in filled_field_values(text, field)
+        if value.lower().startswith(("challenge", "trace-back", "re-decompose", "re-plan"))
+    ) or bool(re.search(r"\|\s*(challenge|trace-back|re-decompose|re-plan)\s*\|", text, flags=re.I))
+    if challenged:
+        reasons.append("a local move has already been challenged or sent back")
+    hard_to_check = any(
+        value.strip().lower() == "hard-to-check"
+        for value in filled_field_values(text, "verification tag")
+    ) or bool(re.search(r"\|\s*hard-to-check\s*\|", text, flags=re.I))
+    if hard_to_check:
+        reasons.append("the active step is marked hard-to-check")
+    return {"needed": bool(reasons), "reasons": reasons}
+
+
 def route_decision_summary(state: str, progress: dict, fingerprints: dict, idea_map: dict, pattern_scan: dict) -> dict:
     reasons = []
     decision = "continue"
@@ -441,32 +473,10 @@ def external_pattern_queries(claim: str, selected: list[tuple[str, int]]) -> lis
     for name, _ in selected[:2]:
         queries.extend(PATTERN_QUERIES.get(name, []))
     if claim:
-        cleaned = " ".join(re.findall(r"[A-Za-z][A-Za-z0-9_-]+", claim))[:120]
+        cleaned = " ".join(re.findall(r"[A-Za-z][A-Za-z0-9_-]+", claim)[:18])
         if cleaned:
             queries.append(f"{cleaned} proof theorem assumptions")
             queries.append(f"{cleaned} counterexample missing assumption")
-    queries.extend(
-        [
-            "Aristotle IMO-level automated theorem proving Monte Carlo Graph Search Lean",
-            "Aristotle API Lean proof sorry verified helper lemmas",
-            "Rethlas Archon Matlas LeanSearch informal formal reasoning agents",
-            "MA-LoT model collaboration Lean theorem proving error analysis correction",
-            "STAR PolyaMath persistent meta strategist challenge trace back replan",
-            "MerLean Prover Planning Check Lean roles recursive proof plan",
-            "Ax-Prover multi-agent Lean theorem proving MCP",
-            "Goedel Architect blueprint refinement proof DAG",
-            "AI co-mathematician asynchronous mathematical workstreams proof",
-            "automated conjecture resolution formal verification Rethlas Archon",
-            "LeanMarathon dynamic proof DAG target fidelity",
-            "LeanArchitect blueprint metadata dependency graph",
-            "optimizing cost quality Lean agent routing failed trajectories",
-            "AlphaProof Nexus proof sketches good gap bad gap",
-            "OProver APOLLO LEAP feedback repair proof DAG",
-            "Draft Sketch Prove theorem proving proof decomposition",
-            "retrieval augmented theorem proving premise selection",
-            "compiler guided proof repair Lean",
-        ]
-    )
     out = []
     seen = set()
     for query in queries:
@@ -477,28 +487,63 @@ def external_pattern_queries(claim: str, selected: list[tuple[str, int]]) -> lis
 
 
 def recommended_files(project: Path, routing: dict, state: str) -> list[str]:
-    routing_files = list(routing.get("next_files", []))
-    if state not in {"S3-route-portfolio", "S5-local-certification", "S7-adversarial-review", "S9-stuck"}:
-        routing_files = [name for name in routing_files if name != "WORKSTREAMS.md"]
+    # Keep recommendations state-local. Older projects may contain a broad
+    # routing.json next_files list; loading it here defeats progressive disclosure.
+    _ = routing
     state_files = {
         "S0-parse": ["claim.md", "TRIAGE.md"],
-        "S1-classify": ["TRIAGE.md", "ATTACK_MATRIX.md", "PATTERN_SCAN.md", "strategy.md"],
+        "S1-classify": ["TRIAGE.md", "ATTACK_MATRIX.md", "strategy.md"],
         "S2-stress-test": ["counterexamples.md", "ATTACK_MATRIX.md", "LEDGER.md"],
         "S2b-idea-map": ["IDEA_MAP.md", "counterexamples.md", "ATTACK_MATRIX.md", "LEDGER.md"],
-        "S3-route-portfolio": ["WORKSTREAMS.md", "strategy.md", "ATTACK_MATRIX.md", "PATTERN_SCAN.md", "LEDGER.md"],
-        "S4-lemma-graph": ["LEMMA_QUEUE.md", "WORKSTREAMS.md", "LEDGER.md"],
-        "S5-local-certification": ["TOOL_PLAN.md", "tool_checks/README.md", "WORKSTREAMS.md", "LEDGER.md"],
+        "S3-route-portfolio": ["WORKSTREAMS.md", "strategy.md", "ATTACK_MATRIX.md", "LEDGER.md"],
+        "S4-lemma-graph": ["LEMMA_QUEUE.md", "LEDGER.md"],
+        "S5-local-certification": ["TOOL_PLAN.md", "tool_checks/README.md", "LEDGER.md"],
         "S6-assembly": ["LEDGER.md", "writeup"],
         "S7-adversarial-review": ["LEDGER.md", "counterexamples.md"],
         "S8-finalize": ["LEDGER.md", "writeup"],
-        "S9-stuck": ["LEDGER.md", "WORKSTREAMS.md", "IDEA_MAP.md", "counterexamples.md", "ATTACK_MATRIX.md", "PATTERN_SCAN.md", "TOOL_PLAN.md", "trick_cards/README.md", "ESCALATION.md"],
+        "S9-stuck": ["LEDGER.md", "ESCALATION.md"],
     }
-    files = state_files.get(state, ["TRIAGE.md", "LEDGER.md"]) + routing_files
+    files = state_files.get(state, ["TRIAGE.md", "LEDGER.md"])
     existing = []
     for name in files:
         if name not in existing and (project / name).exists():
             existing.append(name)
     return existing
+
+
+def primary_action_for(
+    mode: str,
+    state: str,
+    route_decision: dict,
+    progress: dict,
+    fingerprints: dict,
+    idea_map: dict,
+    pattern_scan: dict,
+    pv_need: dict,
+    audit: dict,
+) -> str:
+    if (
+        mode == "recovery"
+        and not fingerprints["has_real_entries"]
+        and progress["unchanged_or_larger_moves"] == 0
+        and progress["blocked_retries"] == 0
+    ):
+        return "Import the prior failed routes, failure witnesses, and reusable lemmas before proposing a new proof route."
+    if state == "S8-finalize" and audit["ready_for_final_proof"]:
+        return "Present the proof with its verified status and essential assumptions."
+    if state in {"S7-adversarial-review", "S8-finalize"} and not audit["ready_for_final_proof"]:
+        return "Close the blocking ledger and verification-gate gaps before presenting the proof."
+    if progress["no_progress_threshold_met"] or state == "S9-stuck":
+        return f"Execute the route decision: {route_decision['decision']}; produce {route_decision['next_artifact']}."
+    if pv_need["needed"]:
+        return "Run one Prover-Verifier Move Contract on the active fragile step before another prose attempt."
+    if idea_map["needed"]:
+        return "Identify one central object and proof kernel with a concrete verification hook."
+    if pattern_scan["needed"]:
+        return "Run one bounded pattern scan and import only a theorem pattern or hidden assumption that changes the next move."
+    if state in {"S4-lemma-graph", "S5-local-certification"}:
+        return f"Execute the route decision: {route_decision['decision']}; produce {route_decision['next_artifact']}."
+    return STATE_ACTIONS.get(state, STATE_ACTIONS["S9-stuck"])[0]
 
 
 def diagnose(project: Path) -> dict:
@@ -511,13 +556,24 @@ def diagnose(project: Path) -> dict:
     state = (section_body(text, "Proof State") or "S0-parse").splitlines()[0].strip()
     verification = (section_body(text, "Verification Status") or "conjecture").splitlines()[0].strip()
     status = (section_body(text, "Status") or "open").splitlines()[0].strip()
-    selected = routing.get("selected_playbooks") or route_from_claim(claim)
+    mode_body = section_body(text, "Mode Decision") or ""
+    mode_match = re.search(r"^[ \t]*-[ \t]*mode:[ \t]*(\S+)", mode_body, flags=re.I | re.M)
+    mode = mode_match.group(1) if mode_match else routing.get("mode", "project")
+    stored_selected = routing.get("selected_playbooks") or []
+    rerouted = route_from_claim(claim)
+    if rerouted and max(value for _, value in rerouted) > 0:
+        selected = rerouted
+    elif stored_selected and any(value > 0 for _, value in stored_selected):
+        selected = stored_selected
+    else:
+        selected = rerouted
     audit = audit_text(text, ledger)
     idea_map = idea_map_need(project, state, selected, text)
     pattern_scan = pattern_scan_need(project, state, selected, text)
     fingerprints = attempt_fingerprint_summary(project)
     progress = progress_evidence_summary(project)
     prover_verifier = prover_verifier_summary(project)
+    pv_need = prover_verifier_need(project, progress, prover_verifier)
     route_decision = route_decision_summary(state, progress, fingerprints, idea_map, pattern_scan)
 
     actions = []
@@ -527,7 +583,18 @@ def diagnose(project: Path) -> dict:
         actions.append("Create LEMMA_QUEUE.md as a blueprint DAG with nodes, statement deps, proof deps, downstream use, statuses, and failure diagnoses.")
     if not (project / "WORKSTREAMS.md").exists() and state in {"S3-route-portfolio", "S5-local-certification", "S7-adversarial-review", "S9-stuck"}:
         actions.append("Create WORKSTREAMS.md with approved goals, bounded workstream cards, and a look-at-how-others-do-it gate.")
-    if state in {"S3-route-portfolio", "S4-lemma-graph", "S9-stuck"} and fingerprints["exists"] and not fingerprints["has_real_entries"]:
+    fingerprint_recovery_needed = (
+        mode == "recovery"
+        or state == "S9-stuck"
+        or progress["no_progress_threshold_met"]
+        or filled_field_count(text, "obstruction type") > 0
+    )
+    if (
+        state in {"S3-route-portfolio", "S4-lemma-graph", "S9-stuck"}
+        and fingerprints["exists"]
+        and not fingerprints["has_real_entries"]
+        and fingerprint_recovery_needed
+    ):
         actions.append("Fill the Attempt Fingerprint Index in WORKSTREAMS.md before trying another similar route or construction.")
     elif state in {"S3-route-portfolio", "S4-lemma-graph", "S9-stuck"} and fingerprints["has_real_entries"]:
         actions.append(f"Compare the next attempt against {fingerprints['count']} recorded attempt fingerprint(s) before proceeding.")
@@ -535,10 +602,7 @@ def diagnose(project: Path) -> dict:
         actions.append("No-progress threshold met: do not retry prose. Switch to counterexample search, tools, retrieval, local formalization, theorem repair, or user steering.")
     if state in {"S4-lemma-graph", "S5-local-certification", "S9-stuck"}:
         actions.append(f"Route decision: {route_decision['decision']}; expected artifact: {route_decision['next_artifact']}.")
-    if (
-        state in {"S4-lemma-graph", "S5-local-certification", "S9-stuck"}
-        or progress["no_progress_threshold_met"]
-    ) and not prover_verifier["has_real_entries"]:
+    if pv_need["needed"]:
         actions.append("Fill the Prover-Verifier Move Contract for the fragile move before another prose retry.")
     actions.extend(STATE_ACTIONS.get(state, STATE_ACTIONS["S9-stuck"]))
     if idea_map["needed"] and state in {"S1-classify", "S2-stress-test", "S2b-idea-map", "S3-route-portfolio", "S9-stuck"}:
@@ -563,16 +627,42 @@ def diagnose(project: Path) -> dict:
     files = recommended_files(project, routing, state)
     if idea_map["needed"] and (project / "IDEA_MAP.md").exists() and "IDEA_MAP.md" not in files:
         files.insert(0, "IDEA_MAP.md")
+    if pattern_scan["needed"] and (project / "PATTERN_SCAN.md").exists() and "PATTERN_SCAN.md" not in files:
+        files.insert(0, "PATTERN_SCAN.md")
+    if (
+        pv_need["needed"]
+        or fingerprint_recovery_needed
+        or fingerprints["has_real_entries"]
+    ) and (project / "WORKSTREAMS.md").exists() and "WORKSTREAMS.md" not in files:
+        files.insert(0, "WORKSTREAMS.md")
+
+    primary_action = primary_action_for(
+        mode,
+        state,
+        route_decision,
+        progress,
+        fingerprints,
+        idea_map,
+        pattern_scan,
+        pv_need,
+        audit,
+    )
+    ordered_actions = [primary_action]
+    for action in actions:
+        if action not in ordered_actions:
+            ordered_actions.append(action)
 
     return {
         "project": str(project),
         "claim": claim,
+        "mode": mode,
         "status": status,
         "verification_status": verification,
         "proof_state": state,
         "selected_playbooks": selected,
         "recommended_files": files,
-        "next_actions": actions[:8],
+        "primary_action": primary_action,
+        "next_actions": ordered_actions[:6],
         "idea_map": idea_map,
         "external_pattern_scan": {
             **pattern_scan,
@@ -589,7 +679,7 @@ def diagnose(project: Path) -> dict:
         },
         "attempt_fingerprints": fingerprints,
         "progress_evidence": progress,
-        "prover_verifier": prover_verifier,
+        "prover_verifier": {**prover_verifier, **pv_need},
         "route_decision": route_decision,
         "audit": audit,
     }
@@ -598,6 +688,7 @@ def diagnose(project: Path) -> dict:
 def print_human(result: dict) -> None:
     print(f"project: {result['project']}")
     print(f"state: {result['proof_state']}")
+    print(f"mode: {result['mode']}")
     print(f"status: {result['status']} / {result['verification_status']}")
     print("selected playbooks:")
     for name, value in result["selected_playbooks"]:
@@ -605,8 +696,10 @@ def print_human(result: dict) -> None:
     print("recommended files:")
     for name in result["recommended_files"]:
         print(f"- {name}")
-    print("next actions:")
-    for action in result["next_actions"]:
+    print("primary action:")
+    print(f"- {result['primary_action']}")
+    print("supporting actions:")
+    for action in result["next_actions"][1:]:
         print(f"- {action}")
     idea = result["idea_map"]
     if idea["needed"]:
@@ -635,6 +728,9 @@ def print_human(result: dict) -> None:
     print("prover-verifier:")
     print(f"- contract_available: {pv['has_contract']}")
     print(f"- recorded_moves: {pv['count']}")
+    print(f"- needed_now: {pv['needed']}")
+    for reason in pv["reasons"]:
+        print(f"- reason: {reason}")
     route = result["route_decision"]
     print("route decision:")
     print(f"- decision: {route['decision']}")

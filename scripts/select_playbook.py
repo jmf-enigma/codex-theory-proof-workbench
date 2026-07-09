@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""Select the smallest useful set of proof playbooks for a claim."""
+
+from __future__ import annotations
+
 import argparse
 import json
 import re
@@ -13,6 +18,7 @@ PLAYBOOKS = {
         "post-decision", "queue", "inventory", "stochastic control",
         "bellman equation", "bellman inequality", "q-value", "q function",
         "contraction mapping", "span seminorm", "relative value", "bias function",
+        "recurrent value", "reset state", "cycle value", "renewal reward",
     ],
     "optimization-or-playbook.md": [
         "kkt", "duality", "convex", "linear program", "lp", "scheduling", "or/ms",
@@ -90,7 +96,7 @@ def main() -> None:
         key=lambda item: item[1],
         reverse=True,
     )
-    selected = [name for name, value in ranked if value > 0]
+    selected = [name for name, value in ranked if value > 0][:3]
     if not selected:
         selected = ["proof-router.md", "strategy-scheduler.md", "obstruction-taxonomy.md"]
     print(json.dumps({"selected": selected, "scores": dict(ranked)}, indent=2, sort_keys=True))

@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""Create a reusable local lemma card."""
+
+from __future__ import annotations
+
 import argparse
 import re
 from pathlib import Path

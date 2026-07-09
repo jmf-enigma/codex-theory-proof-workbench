@@ -1,6 +1,6 @@
 interface:
   display_name: "Theory Proof Workbench"
-  short_description: "Recover hard theory proofs"
-  default_prompt: "Use $theory-proof-workbench to diagnose or start a hard theory proof with statement fidelity, falsification, proof kernels, blueprint lemma graphs, no-repeat route decisions, prover-verifier local checks, tool/Lean artifacts, escalation, and verification gates."
+  short_description: "Discover and recover hard theory proofs"
+  default_prompt: "Use $theory-proof-workbench to diagnose this hard proof, preserve failed-attempt memory, and choose one checkable next move."
 policy:
   allow_implicit_invocation: true

@@ -116,38 +116,11 @@ Use this only for hard, research-level, or repeatedly failed proofs. Keep `SKILL
 
 ## Source Log
 
-- Claude Code skills documentation: thin `SKILL.md`, supporting files, lifecycle, and dynamic context ideas.
-- Lean 4 skills workflow pack: draft/formalize/prove/autoprove/review/repair cycle, explicit stop budgets, and LSP-first verification discipline.
-- Lean Copilot and LeanDojo: tactic suggestion, proof search, premise selection, and proof-state feedback are useful patterns even for informal research proofs.
-- AxProver-style loop: proposer, compiler, reviewer, and compact failed-attempt memory prevent repeated proof-state failures.
-- Draft, Sketch, and Prove: informal proofs can guide formal proof sketches and reduce proof search to easier subproblems.
-- LeanDojo/ReProver: retrieval of accessible premises is a central bottleneck and improves theorem proving.
-- APOLLO: compiler-guided repair, sublemma isolation, solver use, recombination, and controlled attempt budgets.
-- Goedel-Architect (Chung et al., 2026): blueprint generation and refinement, node-level proving with declared dependencies, negated sub-lemmas, structured forfeits, and solved-node preservation.
-- Numina-Lean-Agent (Liu et al., 2026): general agent harness, theorem retrieval, proof-state tools, informal-prover generator/verifier loop, discussion partner, and blueprint refinement.
-- OProver (Ma et al., 2026): feedback-conditioned refinement with compact state, retrieval memory of compiler-verified proofs, failed attempts, Lean feedback, and repair trajectories.
-- LEAP (2026): direct-first proving, AND/OR proof DAG, decomposition review, shared subgoal memoization, and acyclicity checks.
-- Discover and Prove (2026): separate answer/construction discovery from proof verification for hard-mode problems.
-- AlphaProof Nexus (DeepMind, 2026): evolutionary proof sketches, good-gap/bad-gap review, rater-guided route selection, and solved/refuted goal cache.
-- Formal Conjectures (DeepMind, 2026): statement-fidelity auditing, `answer(sorry)`-style separation of discovery from proof, and misformalization taxonomy.
-- MerLean-Prover (Li, Zhu, Ren, 2026): proof-plan global state, planning/proving/checking roles, faithfulness checks, mathematical-correction checks, and decomposition-driven replanning.
-- Optimizing the Cost-Quality Tradeoff of Agentic Theorem Provers in Lean (Roegnvaldsson et al., 2026): failed proof trajectories can route proving effort by estimating success probability and cost; useful natural-language signals are proof-state delta, failure diversity, proof similarity, attempt count, and expected artifact.
-- LeanArchitect (Zhu et al., 2026): blueprint metadata, dependency inference, statement/proof synchronization, and fine-grained status tracking expose inconsistent or stale proof plans.
-- LeanMarathon (Zhang et al., 2026): target-fidelity review, dynamic proof DAG leaves, local edit scopes, CI-gated acceptance, source-aware repair, and lemma-closeness checks reduce drift in long proof projects.
-- LeanSearch-style global premise retrieval: sketch-retrieve-reflect cycles help find scattered lemma sets.
-- BFS-Prover-style route search: simple best-first expansion can be useful when many subgoals compete for attention.
-- ExVerus-style counterexample repair: concrete failures can suggest the invariant or assumption needed to repair a proof.
-- Liquid Tensor/Flyspeck: large proofs need a blueprint/dependency graph and checked certificates for external computation.
-- Theorem Proving in Lean: formal checking requires every claim to be justified by definitions, axioms, or prior theorems.
-- Montana State proof guidelines: expand definitions, use prior results, test conjectures by examples, and search counterexamples to failed steps.
-- Zheng et al. 2026, AI co-mathematician: stateful mathematical workspace, asynchronous workstreams, uncertainty management, failed-exploration preservation, reviewer loops, and human steering.
-- Wu et al. 2026, STAR-PolyaMath: reasoning-free Python orchestrator, Reasoner-Verifier challenge loops, persistent Meta-Strategist memory, trace-back, re-plan, verification tags, and tool-use brakes for long-horizon math reasoning.
-- Ju et al. 2026, Automated Conjecture Resolution with Formal Verification: Rethlas informal reasoning plus Matlas retrieval explores candidate proofs, while Archon with LeanSearch decomposes and formalizes them in Lean.
-- Wang et al. 2025, MA-LoT: model collaboration separates whole-proof generation from Lean-feedback error analysis and correction.
-- Li, Zhu, Ren 2026, MerLean-Prover: three focused roles, Planning, Check, and Lean, recursively revise the proof plan and replace `sorry` with kernel-checkable proof.
-- Breen et al. 2025/2026, Ax-Prover: multi-agent Lean proving via tool-equipped LLMs and MCP, supporting autonomous operation and human collaboration.
-- Kirchner et al. 2024, Prover-Verifier Games: helpful and sneaky provers expose whether explanations are checkable; completeness, soundness, and legibility costs are useful proxies for proof-step robustness.
-- DeepSeek-Prover-V2 (2025): recursive subgoal decomposition, `have`-structured lemma consistency, verifier-approved traces, and decomposition faithfulness matter as much as local proof success.
-- Leanabell-Prover-V2 (2025): multi-turn verifier feedback can improve proof trajectories, but the final artifact still needs independent checking and feedback should target the failed local step.
-- Harmonic Aristotle technical report (Achim et al., 2025): Lean proof search with Monte Carlo Graph Search, policy/value guidance, lemma-based informal reasoning, formal feedback, solved-lemma preservation, and test-time learning from failed traces.
-- Lau 2026 Aristotle API case study: verified local Lean helper lemmas do not establish a theorem when the main theorem remains closed by `sorry` or the global counting/assembly obligation is not encoded.
+Keep provenance compact; operational rules above are the part to use.
+
+- **Blueprint and decomposition**: Draft-Sketch-Prove, Goedel-Architect, LEAP, DeepSeek-Prover-V2, LeanArchitect, and LeanMarathon motivate dependency graphs, good-gap review, dynamic leaves, and solved-node preservation.
+- **Retrieval and local repair**: LeanDojo/ReProver, LeanSearch, APOLLO, OProver, MA-LoT, and ExVerus motivate premise retrieval, compact feedback, sublemma isolation, and counterexample-guided repair.
+- **Discovery and route search**: Discover-and-Prove, AlphaProof Nexus, BFS-style search, and Aristotle motivate separating object discovery from proof, small route populations, AND/OR search, and state deduplication.
+- **Control and collaboration**: AI co-mathematician, STAR-PolyaMath, MerLean-Prover, Numina-Lean-Agent, Rethlas/Archon, and Ax-Prover motivate persistent workspaces, bounded artifact roles, trace-back, re-plan, and a single integrator.
+- **Verification**: Prover-Verifier Games, Leanabell-Prover-V2, Lean/mathlib workflows, Liquid Tensor, and Flyspeck motivate adversarial local checks, checked certificates, and independent final assembly.
+- **Fidelity and status honesty**: Formal Conjectures and formal-prover case studies motivate statement audits and the rule that verified helper lemmas do not close an unencoded or `sorry`-bearing main theorem.

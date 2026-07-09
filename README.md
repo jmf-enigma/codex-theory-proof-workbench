@@ -36,6 +36,8 @@ Lightweight idea pass:
 codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/plan_idea.py "CLAIM"
 ```
 
+The default output is compact. Add `--full` only when the central object or proof kernel is still unclear.
+
 Start a hard or repeatedly failed proof project:
 
 ```bash
@@ -44,7 +46,9 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/start_proof.py 
   --claim "Exact theorem statement"
 ```
 
-Diagnose an existing proof project:
+Add `--mode recovery` when the same theorem has already failed.
+
+Diagnose one primary next move for an existing proof project:
 
 ```bash
 codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/proof_doctor.py path/to/proof_project
@@ -118,6 +122,8 @@ For long multi-step proofs, use STAR-PolyaMath-style control without making the 
 | `TOOL_PLAN.md` | Expected artifacts before CAS, SMT, optimization, Wolfram, Python, Sage, or Lean checks |
 | `LEDGER.md` | Persistent proof state, failed routes, verification gates, and current obstruction |
 | `ESCALATION.md` | Next moves after repeated failure |
+
+These files are durable memory, not a checklist to load every time. `proof_doctor.py` recommends only the files needed by the current proof state. `IDEA_MAP.md`, `PATTERN_SCAN.md`, `TOOL_PLAN.md`, workstream cards, and the prover-verifier contract are activated only when their trigger is present.
 
 ## Route Decisions
 
@@ -205,6 +211,7 @@ Compile scripts:
 
 ```bash
 PYTHONPYCACHEPREFIX=/tmp/codex-pycache codex-math-python -m py_compile scripts/*.py
+PYTHONPYCACHEPREFIX=/tmp/codex-pycache python3 -m py_compile scripts/*.py
 ```
 
 Run a smoke test:
@@ -261,6 +268,8 @@ theory-proof-workbench
 codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/plan_idea.py "CLAIM"
 ```
 
+默认输出保持精简。只有 central object 或 proof kernel 仍不清楚时，才加入 `--full`。
+
 创建困难证明项目：
 
 ```bash
@@ -269,7 +278,9 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/start_proof.py 
   --claim "Exact theorem statement"
 ```
 
-诊断已有证明项目：
+如果同一个 theorem 已经失败过，加入 `--mode recovery`。
+
+为已有证明项目诊断一个首要 next move：
 
 ```bash
 codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/proof_doctor.py path/to/proof_project
@@ -293,6 +304,7 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 | 工具只给了数值现象 | Artifact-first tool plans |
 | Formal output 只证明了 helper lemmas | `sorry`、obligation 和 assembly audit |
 | 多个 agent 重复同一条路线 | 按 artifact 分工，并由单一 integrator 裁决 |
+| Fragile step 看起来对但可能藏着 gap | 只在需要时启用 prover-verifier contract，检查 goal、logic、delta 和 soundness |
 | 局部证明失败多次 | Route decision：继续、修复、重拆、检索、工具检查或停止 |
 
 ## 核心流程
@@ -308,7 +320,7 @@ codex-math-python ~/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py
 7. 构建 AND/OR blueprint lemma graph，区分 statement deps、proof deps、downstream use 和 node status。
 8. 合并等价 proof states，优先处理瓶颈 required child，而不是继续扩展新路线。
 9. 保留已经证明的 helper lemmas，只修复未证明或错误的节点。
-10. 局部失败重复后，先做 route decision，再决定是否继续。
+10. 对 fragile 或重复失败的 local move，先分开 prover、verifier 和 coordinator，再决定是否继续。
 11. 最后 assemble，审计 formal artifact 是否还有未闭合 obligation，再 adversarial review 并报告 proof status。
 
 ## 多 Agent 使用
@@ -342,6 +354,8 @@ Coordinator 按 proof-state delta 整合这些 artifact。不要让多个 agent 
 | `TOOL_PLAN.md` | 运行 CAS、SMT、optimization、Wolfram、Python、Sage 或 Lean 前写清 expected artifacts |
 | `LEDGER.md` | 持久化 proof state、失败路线、verification gates 和当前 obstruction |
 | `ESCALATION.md` | 重复失败后的下一步 |
+
+这些文件是持久化记忆，不是每次都要加载的 checklist。`proof_doctor.py` 只推荐当前 proof state 所需的文件；`IDEA_MAP.md`、`PATTERN_SCAN.md`、`TOOL_PLAN.md`、workstream cards 和 prover-verifier contract 都只在对应条件出现时启用。
 
 ## Route Decision
 
@@ -389,6 +403,7 @@ wmath '2+2'
 ```bash
 codex-math-python ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py .
 PYTHONPYCACHEPREFIX=/tmp/codex-pycache codex-math-python -m py_compile scripts/*.py
+PYTHONPYCACHEPREFIX=/tmp/codex-pycache python3 -m py_compile scripts/*.py
 codex-math-python scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 

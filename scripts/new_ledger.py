@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""Create a compact proof ledger."""
+
+from __future__ import annotations
+
 import argparse
 import re
 from pathlib import Path
@@ -29,7 +34,7 @@ Selected playbooks:
 
 ## Mode Decision
 
-- mode: direct / micro-check / light-idea / project / recovery
+- mode: {mode}
 - why this mode is enough:
 - next artifact expected:
 - stop or escalation trigger:
@@ -39,18 +44,20 @@ Selected playbooks:
 - Direct theorem/certificate available:
 - Direct route if yes:
 - If no, why not:
-- Paper or prior-ledger patterns to search:
+- One close theorem/paper/prior-ledger pattern to inspect if needed:
 
 ## Strategy Portfolio
 
 - Route A:
-  - reason selected:
-  - route novelty:
+  - central object or theorem family:
   - expected artifact:
   - status:
 - Route B:
-  - reason selected:
-  - route novelty:
+  - novelty relative to Route A:
+  - expected artifact:
+  - status:
+- Falsification route:
+  - smallest failure world:
   - expected artifact:
   - status:
 
@@ -83,72 +90,35 @@ Selected playbooks:
 - Review gate:
 - Progress gate:
 
+Use `not applicable` only with a short reason. Activate the detailed step or prover-verifier contract in `WORKSTREAMS.md` only for fragile, challenged, or repeated moves.
+
 ## Lemma Graph
 
-Use statement deps for mathematical meaning and proof deps for facts/tools/helper lemmas used to prove the node.
-Use OR nodes for alternative routes and AND nodes for required child lemmas. Merge equivalent states/actions before retrying the same obstruction.
+Separate statement dependencies from proof dependencies. Use AND nodes for required children and OR nodes for alternate routes.
 
 | node id | type | status | statement / role | statement deps | proof deps | used by assembly | expected artifact | gap grade | failure diagnosis |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | N1 | lemma | missing |  |  |  | yes / no / unknown | proof / tool check / counterexample / theorem pattern | good / bad / unknown |  |
 
-## Proof-State Equivalence
-
-- repeated state/action:
-- shared goal and assumptions:
-- shared central object:
-- shared failure witness:
-- decision: merge / allow-new
-
-## Step Challenge Loop
-
-- current step:
-- verification tag: tool-verified / easy-to-check / hard-to-check
-- goal gate:
-- logic gate:
-- prover move if using PV:
-- verifier verdict if using PV:
-- soundness probe if using PV:
-- coordinator decision if using PV:
-- challenge rounds used / cap:
-- replans used / cap:
-- time or token budget status:
-- verdict: accept / challenge / trace-back / re-decompose / re-plan / stop
-- trace-back target:
-- re-plan directive:
-- tool-use brake needed:
-
 ## Failed Routes
 
-- Route 1:
-  - idea:
-  - where it broke:
-  - obstruction type:
-  - proof-state delta:
-  - attempt fingerprint:
-  - new evidence expected before retry:
-  - what it taught:
+None recorded. When activated, record route, central object, failed node, failure witness, proof-state delta, and retry condition.
 
 ## Failure Escalation
 
-- trigger:
-- route decision: continue / repair / re-decompose / retrieve / tool-falsify / stop-report
-- proof-state delta and failure diversity:
-- external method used:
-- result:
-- theorem repair, if any:
+Not activated. After repetition, record the route decision, expected artifact, external method, result, and any theorem repair.
 
 ## Tool Checks
 
-- Wolfram/SymPy:
-- Python/CVXPy/Z3/OR-Tools/Sage:
-- Lean:
-- formal artifact audit: `sorry` / admitted axioms / unresolved obligations / missing assembly:
-- expected artifact before next tool call:
+- Wolfram/SymPy: not used
+- Python/CVXPy/Z3/OR-Tools/Sage: not used
+- Lean: not used
+- expected artifact before next tool call: not applicable
+- formal artifact audit: not applicable
 
 ## Current Obstruction
 
-Name the exact missing lemma or condition.
+None identified yet.
 
 ## Next Move
 
@@ -164,9 +134,15 @@ def slugify(text: str) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Create a proof ledger markdown file.")
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("title", help="Short proof name")
     parser.add_argument("--claim", default="State the exact theorem here.", help="Initial theorem statement")
+    parser.add_argument(
+        "--mode",
+        choices=["direct", "micro-check", "light-idea", "project", "recovery"],
+        default="direct",
+        help="Initial proof mode, default direct",
+    )
     parser.add_argument("--dir", default="proof_ledgers", help="Output directory")
     args = parser.parse_args()
 
@@ -175,7 +151,10 @@ def main() -> None:
     path = out_dir / f"{slugify(args.title)}.md"
     if path.exists():
         raise SystemExit(f"ledger already exists: {path}")
-    path.write_text(TEMPLATE.format(title=args.title, claim=args.claim), encoding="utf-8")
+    path.write_text(
+        TEMPLATE.format(title=args.title, claim=args.claim, mode=args.mode),
+        encoding="utf-8",
+    )
     print(path)
 
 
