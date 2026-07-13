@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -185,6 +186,12 @@ def main() -> int:
             temp_dir,
         )
         discovery_project = Path(discovery_created.stdout.strip())
+        checks.append(
+            {
+                "name": "frontier-evidence-template",
+                "ok": (discovery_project / "literature" / "frontier-evidence.json").is_file(),
+            }
+        )
         discovery_diagnosis = json.loads(
             run(str(SCRIPTS / "proof_doctor.py"), str(discovery_project), "--json").stdout
         )
@@ -220,6 +227,106 @@ def main() -> int:
         )
         idea_map.write_text(discovery_text, encoding="utf-8")
 
+        evidence_dir = discovery_project / "literature" / "evidence"
+        papers_dir = discovery_project / "literature" / "papers"
+        evidence_dir.mkdir(parents=True, exist_ok=True)
+        papers_dir.mkdir(parents=True, exist_ok=True)
+        query_one = evidence_dir / "q01.json"
+        query_two = evidence_dir / "q02.json"
+        query_one.write_text('{"query":"exact threshold policy theorem","results":["P1"]}\n', encoding="utf-8")
+        query_two.write_text('{"query":"finite MDP monotone threshold cited by","results":["P1"]}\n', encoding="utf-8")
+        paper_pdf = papers_dir / "P1.pdf"
+        paper_bytes = b"%PDF-1.4\n% synthetic smoke fixture\n%%EOF\n"
+        paper_pdf.write_bytes(paper_bytes)
+
+        def digest(path: Path) -> str:
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+
+        evidence_bundle = {
+            "schema_version": 1,
+            "claim": "Find the exact optimal threshold policy in a finite discounted MDP.",
+            "discovery": {
+                "method": "google-scholar-serpapi",
+                "queries": [
+                    {
+                        "query": "exact threshold policy theorem",
+                        "url": "https://scholar.google.com/scholar?q=exact+threshold+policy+theorem",
+                        "retrieved_at": "2026-07-13",
+                        "evidence_path": "literature/evidence/q01.json",
+                        "evidence_sha256": digest(query_one),
+                    },
+                    {
+                        "query": "finite MDP monotone threshold cited by",
+                        "url": "https://scholar.google.com/scholar?q=finite+MDP+monotone+threshold+cited+by",
+                        "retrieved_at": "2026-07-13",
+                        "evidence_path": "literature/evidence/q02.json",
+                        "evidence_sha256": digest(query_two),
+                    },
+                ],
+            },
+            "papers": [
+                {
+                    "id": "P1",
+                    "title": "A closest finite-horizon threshold theorem",
+                    "authors": ["Ada Researcher"],
+                    "year": 2026,
+                    "identifier": "arXiv:2604.15839",
+                    "verification_url": "https://arxiv.org/abs/2604.15839",
+                    "fulltext": {
+                        "status": "proof-read",
+                        "path": "literature/papers/P1.pdf",
+                        "source_url": "https://arxiv.org/pdf/2604.15839",
+                        "retrieved_at": "2026-07-13",
+                        "sha256": digest(paper_pdf),
+                        "bytes": len(paper_bytes),
+                        "version": "preprint",
+                        "access": "open-access",
+                        "license": "test fixture",
+                    },
+                    "statement_anchor": "Theorem 2, p. 7, source block S042",
+                    "proof_anchor": "Proof of Theorem 2, pp. 18-20, source blocks S131-S149",
+                    "result": "A threshold policy is optimal under finite horizon and stronger monotonicity.",
+                    "assumptions": "Finite horizon, ordered states, submodular one-step costs.",
+                    "gap_to_claim": "The user's infinite-horizon formula is not established.",
+                    "solution_card": {
+                        "central_object": "Bellman action-difference function",
+                        "proof_decomposition": "preserve increasing differences, then invoke single crossing",
+                        "key_nonroutine_step": "couple continuation values to keep the action difference monotone",
+                        "transplantable_move": "reuse the action-difference representation",
+                        "new_bridge_lemma": "prove discounted Bellman iteration preserves the required single crossing",
+                        "falsifier_or_evaluator": "exact Bellman inequalities on every state and action",
+                    },
+                }
+            ],
+            "activity": {
+                "queries": ["2025..2026 cited-by and author-project search for P1"],
+                "signals": [],
+                "none_found_note": "No exact public project was visible under the recorded query by 2026-07-13.",
+            },
+            "frontier": {
+                "status": "apparently-open",
+                "closest_paper_ids": ["P1"],
+                "exact_gap": "infinite-horizon threshold formula without the stronger monotonicity assumption",
+                "assessment": "Two bounded Scholar queries and a proof-read closest source found only the stronger finite-horizon result.",
+            },
+            "limitations": ["Bounded search does not prove novelty."],
+        }
+        (discovery_project / "literature" / "frontier-evidence.json").write_text(
+            json.dumps(evidence_bundle, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        evidence_validation = json.loads(
+            run(str(SCRIPTS / "frontier_evidence.py"), "validate", str(discovery_project)).stdout
+        )
+        checks.append(
+            {
+                "name": "frontier-evidence-validation",
+                "ok": evidence_validation["ok"]
+                and evidence_validation["counts"]["proof_read"] == 1
+                and evidence_validation["counts"]["queries"] == 2,
+            }
+        )
+
         setup_replacements = {
             "- frontier scan status: not run / completed": "- frontier scan status: completed",
             "- search cutoff date:": "- search cutoff date: 2026-07-13",
@@ -252,6 +359,22 @@ def main() -> int:
                 ),
             }
         )
+
+        paper_pdf.write_bytes(paper_bytes + b"tampered")
+        tampered_diagnosis = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(discovery_project), "--json").stdout
+        )
+        checks.append(
+            {
+                "name": "frontier-hash-tamper-gate",
+                "ok": tampered_diagnosis["novel_problem"]["frontier_scan_needed"]
+                and any(
+                    "sha256 mismatch" in item
+                    for item in tampered_diagnosis["novel_problem"]["frontier_missing"]
+                ),
+            }
+        )
+        paper_pdf.write_bytes(paper_bytes)
 
         promoted = idea_map.read_text(encoding="utf-8").replace(
             "- holdout cases:",
@@ -299,6 +422,9 @@ def main() -> int:
     discovery_text = (ROOT / "references" / "novel-problem-discovery.md").read_text(
         encoding="utf-8"
     )
+    frontier_text = (ROOT / "references" / "full-text-frontier-evidence.md").read_text(
+        encoding="utf-8"
+    )
     template_text = (SCRIPTS / "start_proof.py").read_text(encoding="utf-8")
     checks.append(
         {
@@ -318,6 +444,9 @@ def main() -> int:
             and "jointly sufficient premise bundle" in template_text
             and "Discover-To-Prove Handoff" in discovery_text
             and "Google Scholar-backed discovery" in discovery_text
+            and "SHA-256" in frontier_text
+            and "solution card" in frontier_text
+            and "no_authorized_pdf_found" in frontier_text
             and "PatternBoost" in discovery_text
             and "Self-supervised theorem discovery" in discovery_text,
         }

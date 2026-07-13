@@ -8,6 +8,7 @@ import json
 import re
 from pathlib import Path
 
+from frontier_evidence import write_frontier_template
 from new_ledger import TEMPLATE as LEDGER_TEMPLATE
 from select_playbook import PLAYBOOKS, score
 
@@ -1422,6 +1423,8 @@ def main() -> None:
     (project / "trick_cards" / ".gitkeep").write_text("", encoding="utf-8")
     (project / "literature" / ".gitkeep").write_text("", encoding="utf-8")
     (project / "writeup" / ".gitkeep").write_text("", encoding="utf-8")
+    if args.mode == "discovery":
+        write_frontier_template(project, args.claim)
     (project / "routing.json").write_text(
         json.dumps(
             {

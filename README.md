@@ -48,7 +48,7 @@ Restart Codex or refresh skill discovery. To update later:
 git -C "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench" pull --ff-only
 ```
 
-The skill itself needs no Python packages. Its helper scripts support Python 3.9 or newer. Wolfram, Lean, Sage, Z3, CVXPy, and other mathematical backends are optional and are not bundled with this repository.
+The skill itself needs no Python packages. Its helper scripts support Python 3.10 or newer. Wolfram, Lean, Sage, Z3, CVXPy, and other mathematical backends are optional and are not bundled with this repository.
 
 ## Use It In Codex
 
@@ -71,9 +71,9 @@ For a problem whose answer or extremal object is not yet known:
 
 ```text
 Use $theory-proof-workbench in discovery mode. Treat model memory as unverified.
-Search Scholar and recent public work, verify exact source anchors, identify the
-closest result and unresolved gap, then define an evaluator and freeze one
-supported candidate before trying to prove it.
+Search Scholar and recent public work, retrieve a lawful closest full text,
+record exact theorem and proof anchors plus a transferable solution card, then
+identify the unresolved gap and freeze one supported candidate before proof.
 ```
 
 For strategy without a full proof project:
@@ -123,6 +123,8 @@ Use `--json` for machine-readable output. Before presenting a final proof, audit
 python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
 ```
 
+Discovery projects also create `literature/frontier-evidence.json`. The lightweight `frontier_evidence.py` helper can register executed Scholar evidence, fetch lawful open PDFs, hash local copies, record exact proof anchors, and validate the bundle. See [Full-Text Frontier Evidence](references/full-text-frontier-evidence.md).
+
 Other focused helpers include:
 
 | Script | Purpose |
@@ -132,6 +134,7 @@ Other focused helpers include:
 | `pattern_miner.py` | Guess exact patterns from small-case sequences |
 | `new_lemma_card.py` | Save a reusable local lemma |
 | `new_trick_card.py` | Save a validated paper or proof trick |
+| `frontier_evidence.py` | Fetch, anchor, hash, and validate frontier literature evidence |
 
 If a configured mathematical environment provides `codex-math-python`, it can replace `python3`. It is not required by this repository.
 
@@ -153,7 +156,7 @@ For hard proofs, the core loop is:
 1. Freeze the exact statement, assumptions, domains, and quantifiers.
 2. Check direct theorems and try to falsify the claim on small and boundary cases.
 3. Identify the failure world, central object, and smallest decisive proof kernel.
-4. If the answer may be unknown, search exact and neighboring results, recent cited-by work, and public active projects; verify sources and state the precise frontier gap.
+4. If the answer may be unknown, search exact and neighboring results, preserve executed Scholar evidence, proof-read a lawful closest full text, and state the precise frontier gap.
 5. Then define the candidate representation, exact validity gate, evaluator, simplification ladder, holdouts, and promotion rule before broad search.
 6. Freeze a promoted candidate as a fixed theorem target; otherwise compare a small number of genuinely different proof routes, each with a cheap decisive evaluator.
 7. Build an AND/OR lemma graph and work the least-certain required child.
@@ -177,6 +180,7 @@ For hard proofs, the core loop is:
 | `TOOL_PLAN.md` | Expected artifacts before computation or formalization |
 | `LEDGER.md` | Persistent claim, evidence, failures, and verification status |
 | `ESCALATION.md` | Legal next moves after repeated failure |
+| `literature/frontier-evidence.json` | Hashed Scholar/full-text evidence, exact anchors, solution cards, and frontier status in discovery mode |
 
 The idea map, literature scan, prover-verifier loop, formal checks, and multi-agent roles activate only when the current proof needs them.
 
@@ -335,7 +339,7 @@ git clone https://github.com/jmf-enigma/codex-theory-proof-workbench.git \
 git -C "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench" pull --ff-only
 ```
 
-Skill 本身不需要额外 Python package，辅助脚本支持 Python 3.9 及以上版本。Wolfram、Lean、Sage、Z3、CVXPy 等数学后端都是可选项，本仓库不会自动安装。
+Skill 本身不需要额外 Python package，辅助脚本支持 Python 3.10 及以上版本。Wolfram、Lean、Sage、Z3、CVXPy 等数学后端都是可选项，本仓库不会自动安装。
 
 ## 在 Codex 中调用
 
@@ -357,8 +361,8 @@ Codex 遇到困难或重复失败的证明时可以隐式触发这个 skill。�
 
 ```text
 使用 $theory-proof-workbench 的 discovery mode。先把模型记忆视为 unverified，
-检索 Scholar、近期 cited-by 工作和公开项目，核验来源并找出最接近结果与精确 gap，
-再定义 evaluator，把通过检查的候选固定下来，然后进入证明。
+检索 Scholar、近期 cited-by 工作和公开项目，合法获取最接近论文的全文，记录精确
+theorem/proof anchor 和可迁移的 solution card，再找出精确 gap 并固定候选。
 ```
 
 只想寻找思路而不创建完整项目时：
@@ -408,6 +412,8 @@ python3 scripts/proof_doctor.py path/to/proof_project
 python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
 ```
 
+Discovery project 还会生成 `literature/frontier-evidence.json`。轻量的 `frontier_evidence.py` 可以登记真实执行过的 Scholar 证据、下载合法开放 PDF、计算本地文件哈希、记录精确证明位置并验证整个 evidence bundle。细节见 [全文 Frontier 证据](references/full-text-frontier-evidence.md)。
+
 其他辅助脚本：
 
 | Script | 用途 |
@@ -417,6 +423,7 @@ python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
 | `pattern_miner.py` | 从小规模精确序列中猜测规律 |
 | `new_lemma_card.py` | 保存可复用的 local lemma |
 | `new_trick_card.py` | 保存经过验证的论文或证明 trick |
+| `frontier_evidence.py` | 下载、定位、哈希并验证 frontier 文献证据 |
 
 如果本机数学环境提供 `codex-math-python`，可以用它替换 `python3`；本仓库不依赖这个 wrapper。
 
@@ -438,7 +445,7 @@ Workbench 会选择足够解决当前问题的最轻模式。高级流程是条�
 1. 固定精确命题、assumptions、domains 和 quantifiers。
 2. 检查直接定理，并在小例子和边界情形上尝试反驳。
 3. 找到 failure world、central object 和最小的决定性 proof kernel。
-4. 如果答案可能未知，先检索 exact/neighboring result、近期 cited-by 工作和公开项目，核验来源并写出精确 frontier gap。
+4. 如果答案可能未知，先检索 exact/neighboring result，保存真实 Scholar 查询证据，精读合法获取的最近全文，并写出精确 frontier gap。
 5. 再定义 candidate representation、exact validity gate、evaluator、simplification ladder、holdout 和 promotion rule。
 6. 通过 promotion gate 后把 candidate 固定成 theorem target；否则只比较少量但真正不同的证明路线。
 7. 构建 AND/OR lemma graph，优先处理最不确定的 required child。
@@ -462,6 +469,7 @@ Workbench 会选择足够解决当前问题的最轻模式。高级流程是条�
 | `TOOL_PLAN.md` | 计算或 formalization 之前声明 expected artifact |
 | `LEDGER.md` | 持久化 claim、证据、失败记录和 verification status |
 | `ESCALATION.md` | 重复失败后允许采取的下一步 |
+| `literature/frontier-evidence.json` | Discovery mode 下带哈希的 Scholar/全文证据、精确 anchor、solution card 和 frontier status |
 
 Idea map、文献扫描、prover-verifier、formal check 和多 Agent 分工都只在当前证明确实需要时启用。
 

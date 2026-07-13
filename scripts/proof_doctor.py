@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 
 from audit_ledger import audit_ledger_text, section_body
+from frontier_evidence import validate_frontier_bundle
 from select_playbook import PLAYBOOKS, score
 
 
@@ -310,20 +311,28 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
                 return value
         return ""
 
-    raw_status = concrete("known-solution status")
-    lower = raw_status.lower()
-    if "genuinely new" in lower or lower in {"new", "novel", "new problem"}:
-        status = "genuinely-new"
-    elif "apparently open" in lower or lower == "open":
-        status = "apparently-open"
-    elif "unknown answer" in lower or "unknown-answer" in lower:
-        status = "unknown-answer"
-    elif "likely known" in lower:
-        status = "likely-known"
-    elif lower == "known":
-        status = "known"
-    else:
-        status = None
+    def normalize_status(raw: str) -> str | None:
+        lower = raw.lower()
+        if "genuinely new" in lower or lower in {"new", "novel", "new problem"}:
+            return "genuinely-new"
+        if "apparently open" in lower or lower == "open":
+            return "apparently-open"
+        if "unknown answer" in lower or "unknown-answer" in lower:
+            return "unknown-answer"
+        if "likely known" in lower or lower == "likely-known":
+            return "likely-known"
+        if lower == "known":
+            return "known"
+        return None
+
+    idea_status = normalize_status(concrete("known-solution status"))
+    evidence_path = project / "literature" / "frontier-evidence.json"
+    evidence_exists = evidence_path.exists()
+    evidence_data = read_json(evidence_path)
+    manifest_status = normalize_status(
+        str((evidence_data.get("frontier") or {}).get("status") or "")
+    )
+    status = manifest_status or idea_status
 
     fields = {
         "frontier scan status": concrete("frontier scan status"),
@@ -346,35 +355,30 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
         "fixed proof handoff": concrete("fixed proof handoff"),
     }
 
-    frontier_required = mode == "discovery" or status is not None
-    frontier_missing = []
-    scan_status = fields["frontier scan status"].strip().lower()
-    if frontier_required and scan_status not in {"completed", "complete", "done", "verified"}:
-        frontier_missing.append("frontier scan status")
-    for field in [
-        "search cutoff date",
-        "Scholar queries",
-        "verified source anchors",
-        "closest known result",
-        "active-work signals",
-        "current frontier gap",
-    ]:
-        if frontier_required and not fields[field]:
-            frontier_missing.append(field)
-    source_anchor = fields["verified source anchors"]
-    if source_anchor and not re.search(
-        r"https?://|\bdoi\b|\barxiv\b|\b10\.\d{4,9}/",
-        source_anchor,
-        flags=re.I,
-    ):
-        frontier_missing.append("verified source anchors with DOI, arXiv ID, or official URL")
-    if frontier_required and status is None:
-        frontier_missing.append("known-solution status")
-    if frontier_required and status is not None and not fields["status evidence"]:
-        frontier_missing.append("status evidence")
-
-    frontier_scan_needed = frontier_required and bool(frontier_missing)
-    frontier_verified = frontier_required and not frontier_missing
+    frontier_required = mode == "discovery" or idea_status is not None or evidence_exists
+    if frontier_required:
+        evidence = validate_frontier_bundle(project)
+        evidence_errors = list(evidence["errors"])
+        routing_claim = str(read_json(project / "routing.json").get("claim") or "").strip()
+        evidence_claim = str(evidence_data.get("claim") or "").strip()
+        if routing_claim and evidence_claim and routing_claim != evidence_claim:
+            evidence_errors.append("frontier evidence claim does not match the project claim")
+        if idea_status and manifest_status and idea_status != manifest_status:
+            evidence_errors.append("IDEA_MAP.md status conflicts with frontier-evidence.json")
+        evidence["errors"] = evidence_errors
+        evidence["ok"] = bool(evidence["ok"] and not evidence_errors)
+    else:
+        evidence = {
+            "ok": False,
+            "path": str(evidence_path),
+            "errors": [],
+            "warnings": [],
+            "frontier_status": None,
+            "counts": {"queries": 0, "papers": 0, "proof_read": 0, "solution_cards": 0},
+        }
+    frontier_missing = evidence["errors"] if frontier_required else []
+    frontier_verified = bool(frontier_required and evidence["ok"] and status)
+    frontier_scan_needed = bool(frontier_required and not frontier_verified)
     activated = status in {"apparently-open", "genuinely-new", "unknown-answer"} or (
         mode == "discovery" and status not in {"known", "likely-known"}
     )
@@ -383,7 +387,8 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
         if frontier_scan_needed:
             action = (
                 "Run an external frontier scan before accepting a known/open classification: use Scholar-backed "
-                "queries, verify source anchors, inspect recent cited-by and public active work, and state the exact gap."
+                "queries, retrieve and proof-read a lawful full text, save exact anchors and hashes in "
+                "literature/frontier-evidence.json, inspect recent public work, and state the exact gap."
             )
         elif status in {"known", "likely-known"}:
             action = "Use the verified closest result for bounded premise retrieval, then continue with the ordinary proof loop."
@@ -395,6 +400,7 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
             "frontier_scan_needed": frontier_scan_needed,
             "frontier_verified": frontier_verified,
             "frontier_missing": frontier_missing,
+            "frontier_evidence": evidence,
             "missing_setup": [],
             "ready_for_search": False,
             "candidate_found": bool(fields["discovered candidate"]),
@@ -426,7 +432,8 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
     if frontier_scan_needed:
         action = (
             "Run an external frontier scan before accepting a known/open classification: use Scholar-backed "
-            "queries, verify source anchors, inspect recent cited-by and public active work, and state the exact gap."
+            "queries, retrieve and proof-read a lawful full text, save exact anchors and hashes in "
+            "literature/frontier-evidence.json, inspect recent public work, and state the exact gap."
         )
     elif missing:
         action = (
@@ -457,6 +464,7 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
         "frontier_scan_needed": frontier_scan_needed,
         "frontier_verified": frontier_verified,
         "frontier_missing": frontier_missing,
+        "frontier_evidence": evidence,
         "missing_setup": missing,
         "ready_for_search": frontier_verified and not missing,
         "candidate_found": candidate_found,

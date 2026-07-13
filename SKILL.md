@@ -19,6 +19,7 @@ Use `math-proof-writing` after the mathematical argument is complete. Use `math-
 - Preserve solved lemmas. Repair only the failed node and affected dependents.
 - Do not accept a missing lemma that restates the theorem, hides the construction, is circular, or lacks a verification hook.
 - Treat model memory as `unverified`, never as evidence that a result is known or open. Before frontier classification, search external literature and verify source anchors against DOI/publisher, arXiv, proceedings, or another official page.
+- For a known/open/new classification, require `literature/frontier-evidence.json`: executed Scholar evidence, a hashed lawful full text, exact theorem/proof anchors, and one proof-derived solution card. Hand-written status fields are not verification.
 - Report `lemma-conditional` or `still open` when the kernel remains unproved.
 
 ## Mode Router
@@ -88,12 +89,14 @@ codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scr
 
 Use `pattern_miner.py` only for an exact small-case sequence. Use `new_lemma_card.py` and `new_trick_card.py` only after a lemma or trick has proved useful in a real route.
 
+For discovery evidence, read [full-text-frontier-evidence.md](references/full-text-frontier-evidence.md) and use `frontier_evidence.py`; `proof_doctor.py` validates the bundle before candidate search.
+
 ## Reference Router
 
 Read only files needed by the current decision.
 
 - For classification, read [proof-router.md](references/proof-router.md). For project state and legal transitions, read [proof-state-machine.md](references/proof-state-machine.md).
-- When routes compete, read [strategy-scheduler.md](references/strategy-scheduler.md). When the central object or construction is missing, read [proof-idea-generator.md](references/proof-idea-generator.md). When the answer, object, or concept may be unknown or open, read [novel-problem-discovery.md](references/novel-problem-discovery.md); use `citation-tools` when available for Scholar-backed discovery and authoritative source verification.
+- When routes compete, read [strategy-scheduler.md](references/strategy-scheduler.md). When the central object or construction is missing, read [proof-idea-generator.md](references/proof-idea-generator.md). When the answer, object, or concept may be unknown or open, read [novel-problem-discovery.md](references/novel-problem-discovery.md), then [full-text-frontier-evidence.md](references/full-text-frontier-evidence.md) only for the evidence pass; use `citation-tools` for Scholar-backed discovery and authoritative metadata.
 - For a hard or repeatedly failed research proof, or when adapting AI-assisted proof-search methods, read [research-backed-proof-loop.md](references/research-backed-proof-loop.md). For unfamiliar theorem families or missing standard tricks, read [external-proof-pattern-scan.md](references/external-proof-pattern-scan.md).
 - When stuck, first classify the block with [obstruction-taxonomy.md](references/obstruction-taxonomy.md), then use [proof-escalation-protocol.md](references/proof-escalation-protocol.md).
 - For a challenged, repeated, or hard-to-check local move, read [prover-verifier-loop.md](references/prover-verifier-loop.md).
