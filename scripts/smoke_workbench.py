@@ -531,6 +531,17 @@ def main() -> int:
             and "Stop after the first block" in peppy_text
             and "A small floating residual is not an exact certificate" in peppy_text
             and all(
+                source in peppy_text
+                for source in [
+                    "10.1007/s10107-013-0653-0",
+                    "10.1007/s10107-016-1009-3",
+                    "10.1137/16M108104X",
+                    "proceedings.mlr.press/v80/taylor18a.html",
+                    "openreview.net/forum?id=tJqsZZBmmB",
+                    "github.com/pepflow-lib/PEPFlow",
+                ]
+            )
+            and all(
                 block in peppy_text
                 for block in [
                     "pep-implement",

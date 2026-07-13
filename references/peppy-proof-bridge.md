@@ -73,3 +73,12 @@ For no-repeat memory, identify a Peppy attempt by the recurrence, class, metric,
 ## Structural Analogy
 
 Completed examples may suggest a nearby certificate shape. Compare recurrence type, oracle/class assumptions, objective, active interpolation constraints, rank profile, and boundary terms before borrowing a pattern. An analogous example is an idea source, never a premise. If the borrowed structure survives a holdout horizon and exact identity check, promote only that verified structure.
+
+## Research Basis And Credit
+
+- [Drori and Teboulle (2014)](https://doi.org/10.1007/s10107-013-0653-0) introduced performance estimation for worst-case analysis of first-order methods.
+- [Taylor, Hendrickx, and Glineur (2017)](https://doi.org/10.1007/s10107-016-1009-3) supplied necessary and sufficient smooth strongly convex interpolation conditions and an exact finite-dimensional SDP representation; their [composite convex extension](https://doi.org/10.1137/16M108104X) covers a broader oracle model.
+- [Taylor, Van Scoy, and Lessard (2018)](https://proceedings.mlr.press/v80/taylor18a.html) developed automated tight quadratic Lyapunov analyses for first-order methods.
+- [Suh, Ying, Jiang, and Nguyen (2025)](https://openreview.net/forum?id=tJqsZZBmmB) describe PEPFlow's workflow from primal/dual PEP formulation through dual-pattern inspection and symbolic proof verification.
+
+The companion `peppy` skill orchestrates the separate [PEPFlow project](https://github.com/pepflow-lib/PEPFlow); it does not rebrand the PEP framework or PEPFlow. In research output, cite PEPFlow plus the methodology source matching the encoded class. Cite PEPit or another implementation only when it was actually used.

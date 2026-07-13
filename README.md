@@ -209,7 +209,11 @@ If the companion `math-tools` setup provides `wmath` or `codex-wmath`, the workb
 
 ### Optional Peppy / PEPFlow Support
 
-When the companion `peppy` skill and a PEPFlow checkout are installed, the workbench can route an exactly encoded fixed-algorithm performance problem through rate discovery, dual-certificate extraction, Lyapunov structure, and closed-form verification. The route is conditional: it starts only after the algorithm, function or operator class, normalization, metric, and horizon pass the [Peppy proof bridge](references/peppy-proof-bridge.md). Numerical sweeps remain conjecture evidence, and the workflow stops as soon as the next block would not improve the proof status.
+When the companion `peppy` skill and a [PEPFlow](https://github.com/pepflow-lib/PEPFlow) checkout are installed, the workbench can route an exactly encoded fixed-algorithm performance problem through rate discovery, dual-certificate extraction, Lyapunov structure, and closed-form verification. The route is conditional: it starts only after the algorithm, function or operator class, normalization, metric, and horizon pass the [Peppy proof bridge](references/peppy-proof-bridge.md). Numerical sweeps remain conjecture evidence, and the workflow stops as soon as the next block would not improve the proof status.
+
+The attribution chain is explicit. The underlying performance-estimation framework was introduced by [Drori and Teboulle (2014)](https://doi.org/10.1007/s10107-013-0653-0). Exact finite-dimensional SDP formulations use interpolation results developed by [Taylor, Hendrickx, and Glineur (2017)](https://doi.org/10.1007/s10107-016-1009-3), with the composite-oracle extension in their [SIAM Journal on Optimization paper](https://doi.org/10.1137/16M108104X). The automated Lyapunov route is methodologically related to [Taylor, Van Scoy, and Lessard (2018)](https://proceedings.mlr.press/v80/taylor18a.html). The concrete third-party backend and numerical-to-symbolic workflow are described by [Suh, Ying, Jiang, and Nguyen (2025)](https://openreview.net/forum?id=tJqsZZBmmB); PEPFlow remains a separate [Apache-2.0 project](https://github.com/pepflow-lib/PEPFlow/blob/main/LICENSE).
+
+For a research paper that materially uses this route, cite PEPFlow and the PEP/interpolation paper matching the encoded problem class. Cite another implementation such as PEPit only if it was actually used. The local `peppy` skill is an orchestration layer and does not claim authorship of PEP, interpolation theory, or PEPFlow.
 
 ## Multi-Agent Use
 
@@ -503,7 +507,11 @@ wolframscript -code '2+2'
 
 ### 可选 Peppy / PEPFlow 支持
 
-当本机已经安装配套的 `peppy` skill 和 PEPFlow checkout 时，workbench 可以把精确编码的固定算法性能问题交给 Peppy，依次完成 rate discovery、dual certificate 提取、Lyapunov 结构识别和 closed-form verification。这个分支只有在算法、函数或算子类、normalization、metric 与 horizon 通过 [Peppy 证明桥接规则](references/peppy-proof-bridge.md) 后才会启动。数值 sweep 仍只算 conjecture evidence，一旦下一 block 不再提升证明状态就会停止。
+当本机已经安装配套的 `peppy` skill 和 [PEPFlow](https://github.com/pepflow-lib/PEPFlow) checkout 时，workbench 可以把精确编码的固定算法性能问题交给 Peppy，依次完成 rate discovery、dual certificate 提取、Lyapunov 结构识别和 closed-form verification。这个分支只有在算法、函数或算子类、normalization、metric 与 horizon 通过 [Peppy 证明桥接规则](references/peppy-proof-bridge.md) 后才会启动。数值 sweep 仍只算 conjecture evidence，一旦下一 block 不再提升证明状态就会停止。
+
+这里的归属关系是明确的。Performance Estimation Problem 框架由 [Drori 和 Teboulle（2014）](https://doi.org/10.1007/s10107-013-0653-0)提出；精确的有限维 SDP 表示依赖 [Taylor、Hendrickx 和 Glineur（2017）](https://doi.org/10.1007/s10107-016-1009-3)的 interpolation 结果，其 composite-oracle 扩展见三位作者发表在 [SIAM Journal on Optimization 的论文](https://doi.org/10.1137/16M108104X)；自动 Lyapunov 分析的方法与 [Taylor、Van Scoy 和 Lessard（2018）](https://proceedings.mlr.press/v80/taylor18a.html)直接相关。实际使用的第三方后端及其从数值结果走向符号证明的流程由 [Suh、Ying、Jiang 和 Nguyen（2025）](https://openreview.net/forum?id=tJqsZZBmmB)说明，PEPFlow 仍是独立的 [Apache-2.0 项目](https://github.com/pepflow-lib/PEPFlow/blob/main/LICENSE)。
+
+如果论文中的结果实质使用了这条路线，应引用 PEPFlow，并根据所编码的问题类引用对应的 PEP/interpolation 原始论文。只有实际使用了 PEPit 等其他实现时才应引用它们。本地 `peppy` skill 只是调度层，不主张 PEP、interpolation theory 或 PEPFlow 的原创归属。
 
 ## 多 Agent 使用
 
