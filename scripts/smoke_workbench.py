@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import subprocess
 import sys
@@ -26,6 +27,57 @@ def run(*args: str) -> subprocess.CompletedProcess[str]:
 
 def main() -> int:
     checks: list[dict[str, object]] = []
+
+    frontier_spec = importlib.util.spec_from_file_location(
+        "frontier_evidence_smoke",
+        SCRIPTS / "frontier_evidence.py",
+    )
+    if frontier_spec is None or frontier_spec.loader is None:
+        raise RuntimeError("could not load frontier_evidence.py")
+    frontier_module = importlib.util.module_from_spec(frontier_spec)
+    frontier_spec.loader.exec_module(frontier_module)
+    signed_fixture = (
+        "https://download.ssrn.com/20/07/29/"
+        "ssrn_id3663420_code2380208.pdf?"
+        "X-Amz-Date=20260710T072615Z&X-Amz-Expires=300&abstractId=3395992"
+    )
+    signed_expired = False
+    try:
+        frontier_module.validate_ssrn_signed_url(signed_fixture, "3395992")
+    except ValueError as exc:
+        signed_expired = "expired" in str(exc)
+    fallback_args = frontier_module.build_parser().parse_args(
+        [
+            "fetch",
+            "/tmp/project",
+            "--paper-id",
+            "P1",
+            "--doi",
+            "10.1287/example",
+            "--fallback-url",
+            "https://example.edu/paper.pdf",
+        ]
+    )
+    checks.append(
+        {
+            "name": "ssrn-version-and-expiry-guard",
+            "ok": frontier_module.normalize_ssrn_id(signed_fixture) == "3395992"
+            and frontier_module.normalize_ssrn_id("https://doi.org/10.2139/ssrn.3395992")
+            == "3395992"
+            and signed_expired
+            and frontier_module.automatic_pdf_url(
+                "https://www.econstor.eu/bitstream/10419/1/paper.pdf"
+            )
+            and not frontier_module.automatic_pdf_url(
+                "https://download.ssrn.com/temporary.pdf"
+            )
+            and frontier_module.same_work(
+                {"title": "Mechanism Design and Intentions", "authors": ["Bierbrauer, Felix"]},
+                {"title": "Mechanism Design & Intentions", "authors": ["Felix Bierbrauer"]},
+            )
+            and fallback_args.fallback_url == "https://example.edu/paper.pdf",
+        }
+    )
 
     idea = run(
         str(SCRIPTS / "plan_idea.py"),

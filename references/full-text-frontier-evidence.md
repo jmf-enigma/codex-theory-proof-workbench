@@ -6,7 +6,7 @@ Use this only when a claim is being classified as known, open, or new, or when a
 
 1. Discover candidates through Google Scholar. Model memory may suggest search terms but is not a search result.
 2. Verify metadata through DOI, arXiv, proceedings, or another official record.
-3. Retrieve a lawful full text. Prefer arXiv, publisher open access, Unpaywall, Semantic Scholar `openAccessPdf`, an author copy, or the user's authorized local copy.
+3. Retrieve a lawful full text. Prefer arXiv, publisher open access, Unpaywall, OpenAlex, Semantic Scholar `openAccessPdf`, an author copy, or the user's authorized local copy.
 4. Verify the artifact before reading: local path, `%PDF` signature when applicable, byte count, source URL, version, access status, and SHA-256.
 5. Read the exact theorem statement and proof. Record stable statement and proof anchors rather than citing the paper generally.
 6. Extract a solution card that says what mathematical move transfers and what new bridge remains.
@@ -33,7 +33,7 @@ Useful query families are the exact claim, equivalent terminology, central objec
 
 ## Lawful Full Text
 
-`frontier_evidence.py fetch` supports three compact routes:
+`frontier_evidence.py fetch` supports four compact routes:
 
 ```bash
 # arXiv PDF; add --include-source when LaTeX source helps locate exact mathematics
@@ -45,12 +45,45 @@ python3 scripts/frontier_evidence.py fetch PROJECT \
 python3 scripts/frontier_evidence.py fetch PROJECT \
   --paper-id P2 --doi 10.xxxx/xxxxx --mailto you@example.edu
 
+# SSRN abstract ID or URL: derive doi:10.2139/ssrn.ID, verify metadata,
+# and resolve a non-SSRN open copy through the DOI resolver chain
+python3 scripts/frontier_evidence.py fetch PROJECT \
+  --paper-id P3 --ssrn 3395992
+
 # Known lawful PDF URL with explicit official metadata
 python3 scripts/frontier_evidence.py fetch PROJECT \
-  --paper-id P3 --url "OPEN_PDF_URL" \
+  --paper-id P4 --url "OPEN_PDF_URL" \
   --title "TITLE" --authors "AUTHOR" --year 2025 \
   --identifier "official:ID" --verification-url "OFFICIAL_RECORD_URL"
 ```
+
+Set `UNPAYWALL_EMAIL` once instead of passing `--mailto` repeatedly. Optional `OPENALEX_API_KEY` and `SEMANTIC_SCHOLAR_API_KEY` values improve rate limits; never commit them to the skill or a proof project.
+
+## SSRN And INFORMS
+
+For an SSRN record, use the abstract ID as the stable identity and derive `10.2139/ssrn.ID`. Do not try to construct a `download.ssrn.com` URL from the DOI. Those URLs contain AWS session credentials and signatures issued by SSRN, typically expire within minutes, and may use a document-version ID different from the abstract ID.
+
+Run `fetch --ssrn` first. It queries Unpaywall, OpenAlex, and Semantic Scholar, rejects candidates that merely point back to SSRN, and uses exact-title plus author matching for alternate records. If that chain has no PDF, automatically search the exact title and one author for an institutional repository, author manuscript, RePEc-linked copy, EconStor, NBER, HAL, arXiv, Optimization Online, or another lawful repository. Do this bounded mirror scan before asking the user to handle SSRN. Verify the PDF first page against title and authors, then anchor metadata at the SSRN DOI.
+
+If Crossref reveals a published DOI and the bounded web search supplies an author-hosted PDF, keep metadata automatic:
+
+```bash
+python3 scripts/frontier_evidence.py fetch PROJECT \
+  --paper-id P3 --doi 10.xxxx/published-doi \
+  --fallback-url "VERIFIED_AUTHOR_OR_REPOSITORY_PDF" \
+  --version "accepted or submitted manuscript"
+```
+
+If a real authorized browser session produces a fresh signed SSRN URL, consume it immediately without storing the token:
+
+```bash
+python3 scripts/frontier_evidence.py fetch PROJECT \
+  --paper-id P3 --ssrn 3395992 --ssrn-signed-url "FRESH_DOWNLOAD_URL"
+```
+
+The helper checks `download.ssrn.com`, the abstract ID, and the AWS expiry, stores only the stable SSRN landing page plus the downloaded artifact hash, and discards the temporary credential. Prefer a browser-native download followed by `register-local` when the browser controller cannot safely expose the URL. Reuse the authorized browser profile; stop only when SSRN presents a new CAPTCHA, OTP, paywall, or account challenge.
+
+For an INFORMS paper, start from its published DOI and run the ordinary DOI route. If the version of record is unavailable, search the exact title and authors for an SSRN working paper or accepted manuscript. Treat it as a proof source only after comparing theorem statements, assumptions, appendix/supplement structure, and revision dates against the published record; theorem numbering and proofs can differ across versions.
 
 For a user-provided or institution-authorized local copy:
 

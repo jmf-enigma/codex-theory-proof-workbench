@@ -6,15 +6,17 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import sys
 import tempfile
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -390,8 +392,15 @@ def safe_name(value: str) -> str:
     return cleaned[:80] or "paper"
 
 
-def request_json(url: str, *, timeout: int = 45) -> dict[str, Any]:
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})
+def request_json(
+    url: str,
+    *,
+    timeout: int = 45,
+    headers: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    request_headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+    request_headers.update(headers or {})
+    request = urllib.request.Request(url, headers=request_headers)
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
 
@@ -437,6 +446,95 @@ def normalize_arxiv_id(value: str) -> str:
     return f"{match.group(1)}{match.group(2) or ''}"
 
 
+def normalize_ssrn_id(value: str) -> str:
+    parsed = urllib.parse.urlparse(value)
+    for key, values in urllib.parse.parse_qs(parsed.query).items():
+        if key.casefold().replace("_", "") == "abstractid" and values:
+            if re.fullmatch(r"\d{4,10}", values[0]):
+                return values[0]
+    explicit = re.search(r"abstract(?:[_-]?id)?=(\d{4,10})", value, flags=re.I)
+    if explicit:
+        return explicit.group(1)
+    doi_match = re.search(r"10\.2139/ssrn\.(\d{4,10})", value, flags=re.I)
+    if doi_match:
+        return doi_match.group(1)
+    label_match = re.search(r"ssrn(?:_id|[.:/_-])(\d{4,10})(?:\D|$)", value, flags=re.I)
+    if label_match:
+        return label_match.group(1)
+    if re.fullmatch(r"\d{4,10}", value.strip()):
+        return value.strip()
+    raise ValueError(f"invalid SSRN abstract id: {value}")
+
+
+def validate_ssrn_signed_url(url: str, ssrn_id: str) -> None:
+    parsed = urllib.parse.urlparse(url)
+    if (parsed.hostname or "").casefold() != "download.ssrn.com":
+        raise ValueError("--ssrn-signed-url must use download.ssrn.com")
+    query = {key.casefold(): values for key, values in urllib.parse.parse_qs(parsed.query).items()}
+    abstract_ids = query.get("abstractid") or []
+    if not abstract_ids:
+        raise ValueError("signed URL is missing abstractId")
+    if abstract_ids[0] != ssrn_id:
+        raise ValueError("signed URL abstractId does not match --ssrn")
+    dates = query.get("x-amz-date") or []
+    expiries = query.get("x-amz-expires") or []
+    if not dates or not expiries:
+        raise ValueError("signed URL is missing AWS expiry fields")
+    issued = datetime.strptime(dates[0], "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+    expires_at = issued.timestamp() + int(expiries[0])
+    if datetime.now(timezone.utc).timestamp() >= expires_at:
+        raise ValueError("SSRN signed URL has expired; request a fresh browser download link")
+
+
+def normalized_words(value: str) -> str:
+    ascii_value = unicodedata.normalize("NFKD", value.replace("&", " and ")).encode("ascii", "ignore").decode("ascii")
+    return " ".join(re.findall(r"[a-z0-9]+", ascii_value.casefold()))
+
+
+def author_surnames(authors: list[str]) -> set[str]:
+    surnames: set[str] = set()
+    for author in authors:
+        if "," in author:
+            words = normalized_words(author.split(",", 1)[0]).split()
+        else:
+            words = normalized_words(author).split()
+        if words:
+            surnames.add(words[-1])
+    return surnames
+
+
+def same_work(candidate: dict[str, Any], metadata: dict[str, Any]) -> bool:
+    if normalized_words(str(candidate.get("title") or "")) != normalized_words(str(metadata.get("title") or "")):
+        return False
+    expected_authors = author_surnames(list(metadata.get("authors") or []))
+    candidate_authors = author_surnames(list(candidate.get("authors") or []))
+    return not expected_authors or not candidate_authors or bool(expected_authors & candidate_authors)
+
+
+def automatic_pdf_url(value: Any) -> str:
+    if not valid_url(value):
+        return ""
+    url = str(value)
+    host = (urllib.parse.urlparse(url).hostname or "").casefold()
+    if (
+        host == "ssrn.com"
+        or host.endswith(".ssrn.com")
+        or host in {"doi.org", "dx.doi.org", "hdl.handle.net"}
+    ):
+        return ""
+    return url
+
+
+def probe_pdf_url(url: str) -> None:
+    request = urllib.request.Request(
+        url,
+        headers={"User-Agent": USER_AGENT, "Accept": "application/pdf,*/*;q=0.8"},
+    )
+    with urllib.request.urlopen(request, timeout=45) as response:
+        if response.read(5) != b"%PDF-":
+            raise ValueError("candidate response is not a PDF")
+
+
 def arxiv_metadata(arxiv_id: str) -> dict[str, Any]:
     url = "https://export.arxiv.org/api/query?" + urllib.parse.urlencode({"id_list": arxiv_id, "max_results": 1})
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
@@ -455,47 +553,244 @@ def arxiv_metadata(arxiv_id: str) -> dict[str, Any]:
     return {"title": title, "authors": authors, "year": int(published[:4])}
 
 
-def crossref_metadata(doi: str) -> dict[str, Any]:
-    encoded = urllib.parse.quote(doi, safe="")
-    message = request_json(f"https://api.crossref.org/works/{encoded}").get("message", {})
+def crossref_item_metadata(message: dict[str, Any]) -> dict[str, Any]:
     titles = message.get("title") or []
     authors = []
     for author in message.get("author") or []:
         name = " ".join(part for part in [author.get("given", ""), author.get("family", "")] if part).strip()
         if name:
             authors.append(name)
-    parts = ((message.get("published-print") or message.get("published-online") or {}).get("date-parts") or [[]])[0]
-    return {"title": titles[0] if titles else "", "authors": authors, "year": int(parts[0]) if parts else 0}
+    year = 0
+    for field in ["posted", "published-print", "published-online", "published", "issued", "created"]:
+        date_value = message.get(field) or {}
+        parts = (date_value.get("date-parts") or [[]])[0]
+        if parts:
+            year = int(parts[0])
+            break
+        date_time = str(date_value.get("date-time") or "")
+        if re.match(r"^\d{4}", date_time):
+            year = int(date_time[:4])
+            break
+    return {
+        "doi": str(message.get("DOI") or ""),
+        "title": titles[0] if titles else "",
+        "authors": authors,
+        "year": year,
+    }
 
 
-def doi_open_access(doi: str, mailto: str = "") -> dict[str, Any]:
-    if mailto:
-        encoded = urllib.parse.quote(doi, safe="")
-        query = urllib.parse.urlencode({"email": mailto})
-        data = request_json(f"https://api.unpaywall.org/v2/{encoded}?{query}")
-        location = data.get("best_oa_location") or {}
-        pdf_url = location.get("url_for_pdf")
-        if pdf_url:
+def crossref_metadata(doi: str) -> dict[str, Any]:
+    encoded = urllib.parse.quote(doi, safe="")
+    message = request_json(f"https://api.crossref.org/works/{encoded}").get("message", {})
+    metadata = crossref_item_metadata(message)
+    metadata["doi"] = metadata["doi"] or doi
+    return metadata
+
+
+def crossref_related_works(metadata: dict[str, Any], exclude_doi: str) -> list[dict[str, Any]]:
+    query: dict[str, Any] = {
+        "query.title": metadata.get("title") or "",
+        "rows": 10,
+    }
+    authors = list(metadata.get("authors") or [])
+    if authors:
+        query["query.author"] = authors[0]
+    data = request_json(f"https://api.crossref.org/works?{urllib.parse.urlencode(query)}")
+    related: list[dict[str, Any]] = []
+    seen: set[str] = {exclude_doi.casefold()}
+    for item in (data.get("message") or {}).get("items") or []:
+        candidate = crossref_item_metadata(item)
+        doi = str(candidate.get("doi") or "")
+        if not doi or doi.casefold() in seen or doi.casefold().startswith("10.2139/ssrn."):
+            continue
+        if same_work(candidate, metadata):
+            seen.add(doi.casefold())
+            related.append(candidate)
+    return related
+
+
+def unpaywall_open_access(doi: str, mailto: str) -> dict[str, Any]:
+    if not mailto:
+        raise ValueError("UNPAYWALL_EMAIL is not configured")
+    encoded = urllib.parse.quote(doi, safe="")
+    query = urllib.parse.urlencode({"email": mailto})
+    data = request_json(f"https://api.unpaywall.org/v2/{encoded}?{query}")
+    location = data.get("best_oa_location") or {}
+    pdf_url = automatic_pdf_url(location.get("url_for_pdf"))
+    if not pdf_url:
+        raise ValueError("no non-SSRN open PDF")
+    return {
+        "url": pdf_url,
+        "version": location.get("version") or "unknown",
+        "access": "open-access",
+        "license": location.get("license") or "unknown",
+        "resolver": "unpaywall",
+    }
+
+
+def openalex_location(data: dict[str, Any]) -> dict[str, Any]:
+    locations = [data.get("best_oa_location") or {}, *(data.get("locations") or [])]
+    for location in locations:
+        pdf_url = automatic_pdf_url(location.get("pdf_url"))
+        if location.get("is_oa") and pdf_url:
+            source = location.get("source") or {}
             return {
                 "url": pdf_url,
-                "version": location.get("version") or "unknown",
+                "version": location.get("version") or "open-access copy",
                 "access": "open-access",
                 "license": location.get("license") or "unknown",
-                "resolver": "unpaywall",
+                "resolver": f"openalex:{source.get('display_name') or 'location'}",
             }
-    fields = "title,authors,year,externalIds,openAccessPdf,url"
-    encoded = urllib.parse.quote(f"DOI:{doi}", safe="")
-    data = request_json(f"https://api.semanticscholar.org/graph/v1/paper/{encoded}?fields={fields}")
+    raise ValueError("no non-SSRN open PDF")
+
+
+def openalex_open_access(doi: str, metadata: dict[str, Any], api_key: str = "") -> dict[str, Any]:
+    query = {"select": "title,authorships,publication_year,best_oa_location,locations"}
+    if api_key:
+        query["api_key"] = api_key
+    encoded = urllib.parse.quote(f"doi:{doi}", safe="")
+    try:
+        data = request_json(f"https://api.openalex.org/works/{encoded}?{urllib.parse.urlencode(query)}")
+        return openalex_location(data)
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError):
+        pass
+
+    search_query = {
+        "search": metadata.get("title") or "",
+        "per-page": 10,
+        "select": "title,authorships,publication_year,best_oa_location,locations",
+    }
+    if api_key:
+        search_query["api_key"] = api_key
+    data = request_json(f"https://api.openalex.org/works?{urllib.parse.urlencode(search_query)}")
+    for item in data.get("results") or []:
+        candidate = {
+            "title": item.get("title") or "",
+            "authors": [
+                ((authorship.get("author") or {}).get("display_name") or "")
+                for authorship in item.get("authorships") or []
+            ],
+        }
+        if same_work(candidate, metadata):
+            try:
+                return openalex_location(item)
+            except ValueError:
+                continue
+    raise ValueError("no exact-title non-SSRN open PDF")
+
+
+def semantic_scholar_pdf(data: dict[str, Any]) -> dict[str, Any]:
     pdf = data.get("openAccessPdf") or {}
-    if not pdf.get("url"):
-        raise ValueError("no_authorized_pdf_found: no lawful open PDF was returned")
+    pdf_url = automatic_pdf_url(pdf.get("url"))
+    if not pdf_url:
+        raise ValueError("no non-SSRN open PDF")
     return {
-        "url": pdf["url"],
+        "url": pdf_url,
         "version": "open-access copy",
         "access": "open-access",
-        "license": pdf.get("license") or "unknown",
+        "license": pdf.get("license") or pdf.get("status") or "unknown",
         "resolver": "semantic-scholar-openAccessPdf",
     }
+
+
+def semantic_scholar_open_access(
+    doi: str,
+    metadata: dict[str, Any],
+    api_key: str = "",
+) -> dict[str, Any]:
+    fields = "title,authors,year,externalIds,openAccessPdf,url"
+    headers = {"x-api-key": api_key} if api_key else {}
+    encoded = urllib.parse.quote(f"DOI:{doi}", safe="")
+    try:
+        data = request_json(
+            f"https://api.semanticscholar.org/graph/v1/paper/{encoded}?fields={fields}",
+            headers=headers,
+        )
+        return semantic_scholar_pdf(data)
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError):
+        pass
+
+    query = urllib.parse.urlencode(
+        {"query": metadata.get("title") or "", "limit": 10, "fields": fields}
+    )
+    data = request_json(
+        f"https://api.semanticscholar.org/graph/v1/paper/search?{query}",
+        headers=headers,
+    )
+    for item in data.get("data") or []:
+        candidate = {
+            "title": item.get("title") or "",
+            "authors": [author.get("name") or "" for author in item.get("authors") or []],
+        }
+        if same_work(candidate, metadata):
+            try:
+                return semantic_scholar_pdf(item)
+            except ValueError:
+                continue
+    raise ValueError("no exact-title non-SSRN open PDF")
+
+
+def doi_open_access(
+    doi: str,
+    mailto: str = "",
+    metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    metadata = metadata or crossref_metadata(doi)
+    resolvers = [
+        (
+            "unpaywall",
+            lambda: unpaywall_open_access(doi, mailto or os.environ.get("UNPAYWALL_EMAIL", "")),
+        ),
+        (
+            "openalex",
+            lambda: openalex_open_access(doi, metadata, os.environ.get("OPENALEX_API_KEY", "")),
+        ),
+        (
+            "semantic-scholar",
+            lambda: semantic_scholar_open_access(
+                doi,
+                metadata,
+                os.environ.get("SEMANTIC_SCHOLAR_API_KEY", ""),
+            ),
+        ),
+    ]
+    failures: list[str] = []
+    for name, resolver in resolvers:
+        try:
+            candidate = resolver()
+            probe_pdf_url(candidate["url"])
+            return candidate
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
+            failures.append(f"{name}={exc}")
+    raise ValueError("no_authorized_pdf_found: " + "; ".join(failures))
+
+
+def ssrn_open_access(
+    doi: str,
+    mailto: str,
+    metadata: dict[str, Any],
+) -> dict[str, Any]:
+    failures: list[str] = []
+    try:
+        resolved = doi_open_access(doi, mailto, metadata)
+        resolved.update({"identity_doi": doi, "identity_metadata": metadata})
+        return resolved
+    except ValueError as exc:
+        failures.append(f"preprint={exc}")
+
+    try:
+        related = crossref_related_works(metadata, doi)
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
+        raise ValueError("no_authorized_pdf_found: " + "; ".join([*failures, f"related-doi={exc}"])) from exc
+    for item in related:
+        related_doi = str(item["doi"])
+        try:
+            resolved = doi_open_access(related_doi, mailto, item)
+            resolved.update({"identity_doi": related_doi, "identity_metadata": item})
+            return resolved
+        except ValueError as exc:
+            failures.append(f"doi:{related_doi}={exc}")
+    raise ValueError("no_authorized_pdf_found: " + "; ".join(failures))
 
 
 def upsert_paper(bundle: dict[str, Any], paper: dict[str, Any]) -> None:
@@ -614,10 +909,20 @@ def cmd_register_local(args: argparse.Namespace) -> None:
 
 def cmd_fetch(args: argparse.Namespace) -> None:
     project = Path(args.project).resolve()
-    if sum(bool(value) for value in [args.arxiv, args.doi, args.url]) != 1:
-        raise ValueError("choose exactly one of --arxiv, --doi, or --url")
+    if sum(bool(value) for value in [args.arxiv, args.doi, args.ssrn, args.url]) != 1:
+        raise ValueError("choose exactly one of --arxiv, --doi, --ssrn, or --url")
+    if args.ssrn_signed_url and not args.ssrn:
+        raise ValueError("--ssrn-signed-url requires --ssrn")
+    if args.fallback_url and not (args.doi or args.ssrn):
+        raise ValueError("--fallback-url requires --doi or --ssrn")
+    if args.fallback_url and args.ssrn_signed_url:
+        raise ValueError("choose --fallback-url or --ssrn-signed-url, not both")
+    if args.fallback_url and not automatic_pdf_url(args.fallback_url):
+        raise ValueError("--fallback-url must be a non-SSRN direct HTTP(S) candidate")
 
     license_value = args.license
+    resolver_name = ""
+    related_identifiers: list[str] = []
     if args.arxiv:
         arxiv_id = normalize_arxiv_id(args.arxiv)
         metadata = arxiv_metadata(arxiv_id)
@@ -627,22 +932,81 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         identifier = f"arXiv:{arxiv_id}"
         verification_url = f"https://arxiv.org/abs/{arxiv_id}"
         source_url = f"https://arxiv.org/pdf/{arxiv_id}"
+        download_url = source_url
+        resolver_name = "arxiv"
         version = args.version or "preprint"
         access = "open-access"
         license_value = license_value or "see arXiv record"
     elif args.doi:
         doi = args.doi.strip().removeprefix("https://doi.org/").removeprefix("doi:")
         metadata = crossref_metadata(doi)
-        resolved = doi_open_access(doi, args.mailto or "")
         title = args.title or metadata["title"]
         authors = args.authors or metadata["authors"]
         year = args.year or metadata["year"]
         identifier = f"doi:{doi}"
         verification_url = f"https://doi.org/{doi}"
-        source_url = resolved["url"]
-        version = args.version or resolved["version"]
-        access = resolved["access"]
-        license_value = license_value or resolved["license"]
+        if args.fallback_url:
+            source_url = args.fallback_url
+            download_url = source_url
+            resolver_name = "verified-web-candidate"
+            version = args.version or "open copy"
+            access = "open-access"
+            license_value = license_value or "verify at source"
+        else:
+            resolved = doi_open_access(doi, args.mailto or "", metadata)
+            source_url = resolved["url"]
+            download_url = source_url
+            resolver_name = resolved["resolver"]
+            version = args.version or resolved["version"]
+            access = resolved["access"]
+            license_value = license_value or resolved["license"]
+    elif args.ssrn:
+        ssrn_id = normalize_ssrn_id(args.ssrn)
+        if args.ssrn_signed_url:
+            validate_ssrn_signed_url(args.ssrn_signed_url, ssrn_id)
+        doi = f"10.2139/ssrn.{ssrn_id}"
+        metadata = crossref_metadata(doi)
+        if args.ssrn_signed_url:
+            title = args.title or metadata["title"]
+            authors = args.authors or metadata["authors"]
+            year = args.year or metadata["year"]
+            identifier = f"doi:{doi}"
+            verification_url = f"https://doi.org/{doi}"
+            source_url = f"https://papers.ssrn.com/sol3/papers.cfm?abstract_id={ssrn_id}"
+            download_url = args.ssrn_signed_url
+            resolver_name = "ssrn-browser-presigned"
+            version = args.version or "SSRN preprint"
+            access = "open-access"
+            license_value = license_value or "see SSRN record"
+        elif args.fallback_url:
+            title = args.title or metadata["title"]
+            authors = args.authors or metadata["authors"]
+            year = args.year or metadata["year"]
+            identifier = f"doi:{doi}"
+            verification_url = f"https://doi.org/{doi}"
+            source_url = args.fallback_url
+            download_url = source_url
+            resolver_name = "verified-web-candidate"
+            version = args.version or "open copy"
+            access = "open-access"
+            license_value = license_value or "verify at source"
+        else:
+            resolved = ssrn_open_access(doi, args.mailto or "", metadata)
+            identity_doi = str(resolved["identity_doi"])
+            identity_metadata = resolved["identity_metadata"]
+            title = args.title or identity_metadata["title"]
+            authors = args.authors or identity_metadata["authors"]
+            year = args.year or identity_metadata["year"]
+            identifier = f"doi:{identity_doi}"
+            verification_url = f"https://doi.org/{identity_doi}"
+            if identity_doi.casefold() != doi.casefold():
+                related_identifiers.append(f"doi:{doi}")
+            source_url = resolved["url"]
+            download_url = source_url
+            resolver_name = resolved["resolver"]
+            version = args.version or resolved["version"]
+            access = resolved["access"]
+            license_value = license_value or resolved["license"]
     else:
         if not all([args.title, args.authors, args.year, args.identifier, args.verification_url]):
             raise ValueError("--url requires --title, --authors, --year, --identifier, and --verification-url")
@@ -652,12 +1016,18 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         identifier = args.identifier
         verification_url = args.verification_url
         source_url = args.url
+        download_url = source_url
+        resolver_name = "direct-open-url"
         version = args.version or "open copy"
         access = args.access
         license_value = license_value or "unknown"
 
     destination = project / "literature" / "papers" / f"{safe_name(args.paper_id)}.pdf"
-    result = download_file(source_url, destination, require_pdf=True)
+    try:
+        result = download_file(download_url, destination, require_pdf=True)
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
+        host = urllib.parse.urlparse(download_url).hostname or "unknown host"
+        raise ValueError(f"{resolver_name} failed at {host}: {exc}") from exc
     fulltext = {
         "status": "downloaded",
         "path": relative_to_project(project, destination),
@@ -668,6 +1038,7 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         "version": version,
         "access": access,
         "license": license_value,
+        "resolver": resolver_name,
     }
     if args.include_source and args.arxiv:
         source_destination = project / "literature" / "papers" / f"{safe_name(args.paper_id)}-source.tar"
@@ -683,6 +1054,8 @@ def cmd_fetch(args: argparse.Namespace) -> None:
             "bytes": source_result["bytes"],
         }
     paper = base_paper(paper_id=args.paper_id, title=title, authors=authors, year=year, identifier=identifier, verification_url=verification_url, fulltext=fulltext)
+    if related_identifiers:
+        paper["related_identifiers"] = related_identifiers
     bundle = load_bundle(project)
     upsert_paper(bundle, paper)
     save_bundle(project, bundle)
@@ -802,8 +1175,17 @@ def build_parser() -> argparse.ArgumentParser:
     fetch.add_argument("project")
     fetch.add_argument("--arxiv")
     fetch.add_argument("--doi")
+    fetch.add_argument("--ssrn", help="SSRN abstract id or URL; resolves a non-SSRN lawful copy")
+    fetch.add_argument(
+        "--ssrn-signed-url",
+        help="fresh browser-issued download.ssrn.com URL; valid only with --ssrn and never persisted",
+    )
+    fetch.add_argument(
+        "--fallback-url",
+        help="verified non-SSRN PDF candidate found by a bounded exact-title web search",
+    )
     fetch.add_argument("--url")
-    fetch.add_argument("--mailto", help="email required for the Unpaywall DOI resolver")
+    fetch.add_argument("--mailto", help="Unpaywall email; defaults to UNPAYWALL_EMAIL")
     fetch.add_argument("--include-source", action="store_true", help="also download the arXiv source archive")
     add_paper_metadata(fetch)
     fetch.set_defaults(func=cmd_fetch)

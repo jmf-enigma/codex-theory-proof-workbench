@@ -89,7 +89,7 @@ codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scr
 
 Use `pattern_miner.py` only for an exact small-case sequence. Use `new_lemma_card.py` and `new_trick_card.py` only after a lemma or trick has proved useful in a real route.
 
-For discovery evidence, read [full-text-frontier-evidence.md](references/full-text-frontier-evidence.md) and use `frontier_evidence.py`; `proof_doctor.py` validates the bundle before candidate search.
+For discovery evidence, read [full-text-frontier-evidence.md](references/full-text-frontier-evidence.md) and use `frontier_evidence.py`; `proof_doctor.py` validates the bundle before candidate search. Treat INFORMS and SSRN pages as identity/version anchors first: resolve DOI and lawful mirrors automatically before asking for browser authentication.
 
 ## Reference Router
 

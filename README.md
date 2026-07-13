@@ -123,7 +123,7 @@ Use `--json` for machine-readable output. Before presenting a final proof, audit
 python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
 ```
 
-Discovery projects also create `literature/frontier-evidence.json`. The lightweight `frontier_evidence.py` helper can register executed Scholar evidence, fetch lawful open PDFs, hash local copies, record exact proof anchors, and validate the bundle. See [Full-Text Frontier Evidence](references/full-text-frontier-evidence.md).
+Discovery projects also create `literature/frontier-evidence.json`. The lightweight `frontier_evidence.py` helper can register executed Scholar evidence, fetch lawful open PDFs, hash local copies, record exact proof anchors, and validate the bundle. Its SSRN route derives `10.2139/ssrn.ID`, discovers same-work publisher DOIs, and searches verified open mirrors before browser access. It can also consume a fresh browser-issued signed URL without persisting its temporary credential. The DOI route serves INFORMS papers and checks alternate working-paper versions against the published record. See [Full-Text Frontier Evidence](references/full-text-frontier-evidence.md).
 
 Other focused helpers include:
 
@@ -412,7 +412,7 @@ python3 scripts/proof_doctor.py path/to/proof_project
 python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
 ```
 
-Discovery project 还会生成 `literature/frontier-evidence.json`。轻量的 `frontier_evidence.py` 可以登记真实执行过的 Scholar 证据、下载合法开放 PDF、计算本地文件哈希、记录精确证明位置并验证整个 evidence bundle。细节见 [全文 Frontier 证据](references/full-text-frontier-evidence.md)。
+Discovery project 还会生成 `literature/frontier-evidence.json`。轻量的 `frontier_evidence.py` 可以登记真实执行过的 Scholar 证据、下载合法开放 PDF、计算本地文件哈希、记录精确证明位置并验证整个 evidence bundle。SSRN 路由会由 abstract ID 推出 `10.2139/ssrn.ID`，自动发现同一工作的正式发表 DOI，并优先寻找经过核验的开放镜像；浏览器已经取得新鲜临时链接时，也能即时使用而不保存其中的临时凭证。INFORMS 论文走 DOI 路由，并将工作论文版本与正式发表记录逐项比对。细节见 [全文 Frontier 证据](references/full-text-frontier-evidence.md)。
 
 其他辅助脚本：
 
