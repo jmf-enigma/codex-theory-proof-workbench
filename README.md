@@ -77,6 +77,7 @@ It is most useful when a central lemma, construction, certificate, or even the a
 | Common failure | Workbench response |
 | --- | --- |
 | The argument silently changes the claim | Freeze variables, assumptions, domains, quantifiers, and conclusion in a theorem fence |
+| A nearby special case is mistaken for completion | Record an acceptance contract with required edge cases and near-misses that do not count |
 | The same route returns under different notation | Compare attempt fingerprints and merge equivalent proof states |
 | The central construction is missing | Search small and tight cases, mine exact patterns, and reserve holdout checks |
 | The answer may be new or open | Separate candidate discovery from proof and require verified frontier evidence |
@@ -103,11 +104,11 @@ Advanced machinery is conditional. A routine proof does not create a project, ru
 
 ## Proof Loop
 
-1. Freeze the exact statement and list every object, domain, assumption, quantifier, and requested conclusion.
+1. Freeze the exact statement and write its acceptance contract, including required edge cases and nearby outcomes that do not count.
 2. Check direct theorems and certificates, then write the negation and test small, symmetric, boundary, or relaxed-assumption cases.
 3. Identify the failure world, central object, and smallest proof kernel that decides the current route.
 4. If the answer may be unknown, verify the nearest literature frontier before candidate search. Define a representation, evaluator, holdout set, and promotion rule, then freeze one supported candidate.
-5. Compare a small number of genuinely different routes. Build an AND/OR lemma graph and work on the least-certain required child along the current assembly path.
+5. Seed a small number of routes independently, then group them by mathematical approach family before choosing a favorite. Build an AND/OR lemma graph and work on the least-certain required child along the current assembly path.
 6. Give every fragile tool or proof move an expected artifact. After failure, preserve valid nodes and repair the first broken dependency. Two unchanged attempts trigger a route change, retrieval, theorem repair, or stop decision.
 7. Reassemble the original theorem, run an adversarial review, and assign the strongest proof status supported by the evidence.
 
@@ -234,6 +235,8 @@ PEPFlow remains a separate [Apache-2.0 project](https://github.com/pepflow-lib/P
 ## Multi-Agent Work
 
 Parallel agents are opt-in. When requested, split them by artifact: planner, falsifier, retriever, local tool-checker or formalizer, and reviewer. One integrator remains responsible for statement fidelity, route choice, and final proof status. Several agents should not produce competing prose versions of the same route.
+
+For open-ended strategy search, independent scouts may instead return one compact route card each. They receive the same theorem fence but not the current favorite or one another's narratives. The integrator groups cards by mathematical mechanism, redirects saturated families, and shares ideas only after each live family has exposed a concrete artifact or exact gap.
 
 ## Repository Layout
 
@@ -369,6 +372,7 @@ Codex 可以隐式触发这个 skill，但显式写出 skill 名称最稳定。W
 | 常见失败 | Workbench 的处理方式 |
 | --- | --- |
 | 推导过程中悄悄改变了命题 | 用 theorem fence 固定变量、假设、domain、quantifier 和结论 |
+| 把相近 special case 当成完整结论 | 写出 acceptance contract，列明必须覆盖的边界情形以及哪些近似结果不算完成 |
 | 同一路线换符号后再次出现 | 比较 attempt fingerprint，合并等价 proof state |
 | 缺少核心构造 | 检查小例子和 tight case，寻找精确规律，并保留 holdout 验证 |
 | 答案可能是新的或仍然 open | 把 candidate discovery 与 proof 分开，并要求可核验的 frontier evidence |
@@ -395,11 +399,11 @@ Workbench 会选择足以产生下一个决定性 artifact 的最轻模式。
 
 ## 证明循环
 
-1. 固定精确命题，列出所有对象、domain、假设、quantifier 和目标结论。
+1. 固定精确命题并写出 acceptance contract，包括必须覆盖的边界情形，以及哪些相近结论不算完成。
 2. 检查直接 theorem 与 certificate，再写出命题的否定，并测试小规模、对称、边界和放松假设的情形。
 3. 找出 failure world、central object，以及能够决定当前路线的最小 proof kernel。
 4. 如果答案可能未知，先核查最近的文献 frontier。随后定义 candidate representation、evaluator、holdout 和 promotion rule，再固定一个有证据支持的 candidate。
-5. 只比较少量但真正不同的路线。建立 AND/OR lemma graph，优先处理当前 assembly path 上最不确定的 required child。
+5. 先独立生成少量路线，再按数学机制归入 approach family，之后才选择当前主路线。建立 AND/OR lemma graph，优先处理当前 assembly path 上最不确定的 required child。
 6. 每个脆弱的工具调用或证明动作都必须声明 expected artifact。失败后保留有效节点，只修复第一处损坏的 dependency。两次尝试都没有改变 proof state 时，必须更换路线、检索、修正命题或停止。
 7. 最后重新组装原 theorem，进行 adversarial review，并给出证据能够支持的最强 proof status。
 
@@ -526,6 +530,8 @@ PEPFlow 是独立的 [Apache-2.0 项目](https://github.com/pepflow-lib/PEPFlow/
 ## 多 Agent 工作
 
 并行 Agent 只在用户要求时启用。合理分工按照 artifact 划分，包括 planner、falsifier、retriever、local tool-checker 或 formalizer、reviewer。始终由一个 integrator 负责 statement fidelity、route choice 和最终 proof status。多个 Agent 不应同时为同一路线撰写互相竞争的 prose 版本。
+
+开放式策略搜索可以改用 independent scout。每个 scout 只返回一张紧凑的 route card，拿到相同 theorem fence，但不会看到当前 favorite 或其他 scout 的叙述。Integrator 先按数学机制合并同 family 路线，把新增搜索转向尚未充分探索的 family，等每条 live family 都给出具体 artifact 或精确 gap 后再交流思路。
 
 ## 仓库结构
 

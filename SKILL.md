@@ -12,6 +12,7 @@ Use `math-proof-writing` after the mathematical argument is complete. Use `math-
 ## Nonnegotiable Rules
 
 - Preserve variables, domains, assumptions, quantifiers, and conclusion. Mark any change as theorem repair.
+- At the theorem fence, define an acceptance contract: exact success criterion, admissible objects or operations, required edge cases, and tempting near-misses that do not count.
 - Try to refute before investing in a long proof: negate the claim, inspect boundaries, and test the smallest nontrivial case.
 - Identify a proof kernel: the smallest lemma, certificate, construction, or counterexample barrier that decides the route.
 - Count only evidence as progress: a proved/refuted kernel, smaller subgoal, counterexample, missing assumption, checked certificate, retrieved theorem pattern, new central object, or repaired theorem.
@@ -39,17 +40,17 @@ Do not open a full project for routine algebra or a standard theorem application
 
 ## Core Loop
 
-1. State the theorem fence: exact claim, objects, domains, assumptions, quantifiers, and conclusion.
+1. State the theorem fence and acceptance contract: exact claim, objects, domains, assumptions, quantifiers, conclusion, required edge cases, and excluded near-misses.
 2. Run a direct-solve check and match every theorem assumption explicitly.
 3. Write the negation and test the smallest finite, scalar, boundary, symmetric, or relaxed-assumption case.
 4. If the route is unclear, find the failure world, central object, proof kernel, and verification hook. If the answer or object may be unknown, first run an external frontier scan for exact and neighboring results, recent cited-by work, and active public projects. Then separate discovery from proof: define what generates candidates, how they are evaluated, and what evidence freezes one candidate as the theorem target.
-5. For a hard proof, keep two to four genuinely different routes. Give each route one expected artifact and its cheapest decisive evaluator, then expand the route with the best decision value and assembly relevance.
+5. For a hard proof, seed two to four routes independently before naming a favorite. Register them by mathematical mechanism rather than wording, give each one expected artifact and its cheapest decisive evaluator, then compare and expand the route with the best decision value and assembly relevance.
 6. Build an AND/OR lemma graph. Admit a decomposition only when the children conditionally imply the parent, are strictly simpler, acyclic, faithful, and locally repairable. Work the least-certain required child on the current assembly path.
 7. For each fragile move, name the current subgoal, proposed move, expected artifact, check, and proof-state delta. Use the prover-verifier loop only after challenge, repetition, or hard-to-check feedback.
 8. On failure, locate the first invalid step, preserve the verified prefix and independent helper lemmas, then classify the failure as strategy, decomposition, premise retrieval, local proof, assembly, fidelity, or library coverage before repairing that layer.
-9. After two unchanged local attempts, choose exactly one action: repair, re-decompose, retrieve, tool-falsify, formalize locally, repair the theorem, or stop/report.
+9. After two unchanged local attempts, choose exactly one action: repair, re-decompose, retrieve, tool-falsify, formalize locally, repair the theorem, or stop/report. Block a route that merely moves the theorem into a theorem-strength missing lemma; reopen it only with a materially new mechanism, invariant, construction, representation, or premise.
 10. Assemble only proved, checked, known, or explicitly conditional nodes into the original theorem.
-11. Run adversarial review and assign an honest proof status.
+11. Derive a problem-specific audit checklist from the definitions and reductions, run adversarial review, and assign an honest proof status.
 
 ## Commands
 

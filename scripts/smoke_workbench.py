@@ -156,6 +156,17 @@ def main() -> int:
                 "ok": project.is_dir() and all((project / name).is_file() for name in required),
             }
         )
+        claim_template = (project / "claim.md").read_text(encoding="utf-8")
+        workstreams_template = (project / "WORKSTREAMS.md").read_text(encoding="utf-8")
+        checks.append(
+            {
+                "name": "acceptance-and-route-family-control",
+                "ok": "## Acceptance Contract" in claim_template
+                and "## Approach Family Registry" in workstreams_template
+                and "not the current favorite" in workstreams_template
+                and "new mechanism / invariant / construction" in workstreams_template,
+            }
+        )
 
         diagnosis = run(str(SCRIPTS / "proof_doctor.py"), str(project), "--json")
         diagnosed = json.loads(diagnosis.stdout)
@@ -507,6 +518,7 @@ def main() -> int:
                     "Frontier choice",
                     "First-error and stage pass",
                     "Decomposition admission",
+                    "Independent-route seeding lesson",
                     "LeanSearch v2",
                     "Goedel-Prover-V2",
                     "Aletheia",

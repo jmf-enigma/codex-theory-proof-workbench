@@ -6,6 +6,7 @@ Use this file to choose the next proof route after classification or failure.
 
 - Normalize first: make objects, quantifiers, and the smallest nontrivial case explicit.
 - Portfolio routes: choose genuinely different proof architectures before converging.
+- Diversity control: seed routes independently, register mathematical families, and redirect saturated search.
 - Search discipline: retrieve, guess, kernelize, verify, and repair locally.
 - Decomposition admission: accept a lemma split only when it is sufficient, simpler, acyclic, faithful, and locally repairable.
 - Frontier control: compare a few non-equivalent next moves by decision value, check cost, and assembly relevance.
@@ -33,6 +34,19 @@ Run at least two routes for a hard proof unless one route cleanly proves or refu
 - Potential route: define a potential/log-partition/Bregman term and telescope.
 - Martingale route: define filtration, increments, variance proxy, then apply concentration.
 - Information route: choose hard instances, compute KL/TV/mutual information, transfer to error/regret.
+
+## Diversity Control
+
+For a hard problem, separate independent route seeding from later synthesis.
+
+- Give each initial seed only the theorem fence, allowed prior results, and output contract. Do not preload the current favorite, a persuasive failed sketch, or another seed's narrative.
+- Require one compact route card from each seed: mathematical mechanism, central object, proof kernel, expected artifact, and cheapest falsifier or evaluator.
+- Register an approach family by proof architecture, central object, certificate type, and failure world. Merge routes that differ only in terminology, notation, parameterization, or presentation.
+- Mark a family saturated when independent seeds reach the same kernel or failure witness without a new artifact. Redirect the next search toward an underexplored family instead of adding attempts to the crowded one.
+- End the independence phase once each live family has produced one concrete artifact or exact gap. Only then cross-pollinate useful lemmas, constructions, or counterexamples.
+- A route ending at a lemma comparable in strength to the theorem is blocked, not nearly solved. Reopen it only when a new mechanism, invariant, construction, representation, premise bundle, or verification hook makes that lemma genuinely more tractable.
+
+Keep the live frontier small. Independent serial passes can supply diversity; agent count is not a progress metric.
 
 ## Search Discipline
 

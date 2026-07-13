@@ -33,6 +33,13 @@ CLAIM_TEMPLATE = """# Claim
 
 - User prompt:
 - Related files:
+
+## Acceptance Contract
+
+- exact success criterion:
+- admissible objects or operations:
+- required edge and boundary cases:
+- near-misses that do not count:
 """
 
 
@@ -74,6 +81,8 @@ Good role split:
 
 Bad split: several agents independently writing the same full proof.
 
+For open-ended route discovery, independent scouts may each return one compact route card rather than a full proof. Give them the theorem fence and allowed prior results, but not the current favorite or other scouts' narratives. Deduplicate their cards by mathematical approach family before allocating proof budget.
+
 | role | assigned artifact | input files | exclusions / do not touch | stop rule | status |
 | --- | --- | --- | --- | --- | --- |
 | Planner | lemma graph / route decision | claim.md, LEDGER.md | no tool runs, no final proof | one route board or one bottleneck | planned |
@@ -85,6 +94,14 @@ Bad split: several agents independently writing the same full proof.
 ## Integration Rule
 
 Integrate returned artifacts by decision value: counterexample, missing assumption, verified lemma, retrieved theorem pattern, exact tool certificate, or concrete gap report. Long prose without a new artifact does not outrank a smaller checked result.
+
+## Approach Family Registry
+
+Use this only when several routes are live. Classify by mathematical mechanism, not route names or prose. A family that reaches the same theorem-strength gap without new evidence is blocked until its reopen condition is met.
+
+| family | proof architecture | central object / certificate | independent seed artifact | kernel or failure witness | status | reopen only with |
+| --- | --- | --- | --- | --- | --- | --- |
+| F1 |  |  |  |  | live / saturated / blocked / retired | new mechanism / invariant / construction / representation / premise / verifier |
 
 ## Attempt Fingerprint Index
 
@@ -275,6 +292,7 @@ This page is optional. Fill it only when the proof route is unclear, the theorem
 ## Divergence Before Convergence
 
 For hard or previously failed proofs, fill three short candidates before choosing a long route. They must differ by central object, certificate, failure world, or evidence source.
+Develop the candidates independently before comparing them; do not let the current favorite become the premise of every lane.
 
 | lane | candidate route | central object | evidence or check | why not a repeat |
 | --- | --- | --- | --- | --- |
