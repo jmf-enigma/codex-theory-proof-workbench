@@ -19,6 +19,7 @@ Use a minimal scan first. For a small unclear proof, inspect one close theorem f
 - Tool use is possible, but it is unclear which artifact would help.
 - The user asks to learn from papers, proof assistants, or existing skills.
 - The pre-solve gate says the claim is not directly solvable from the current assumptions and a micro pattern check is not enough.
+- The answer is claimed to be new or open; the scan must distinguish unknown-to-us from a genuine frontier and identify the closest solved neighbors.
 
 ## What To Search
 
@@ -29,6 +30,7 @@ Use a minimal scan first. For a small unclear proof, inspect one close theorem f
 - Agent skills/workflows: Lean proof skills, proof-review skills, proof-memory systems, formalization workflows.
 - Recent proof-agent methods: blueprint refinement, compact feedback repair, AND/OR proof DAGs, answer-discovery before proof, evolutionary proof sketches, structured forfeits, and statement-fidelity audits.
 - Long-horizon harness methods: target-fidelity review, dynamic DAG leaves, local repair scopes, cost-aware route decisions, and used-lemma filters.
+- For a novel problem, search exact formulations, best known bounds, solved restrictions, counterexamples, benchmark instances, evaluator code, and dates. Record status evidence separately from proof inspiration.
 
 ## Extraction Card
 
@@ -90,6 +92,9 @@ Use these as importable proof-search mechanisms:
 
 - **Formal Conjectures**: audit the statement before proof. Look for translation errors, implicit conventions, underspecified source claims, zero/boundary behavior, and wrong quantifier scope.
 - **Discover-and-Prove**: if an answer or object is hidden, separate discovery from proof. Self-check the discovered answer on holdout cases before turning it into a theorem.
+- **PatternBoost/FunSearch/AlphaEvolve**: use candidate evolution only when validity and scoring are executable. Keep structurally diverse elites and alternate global proposals with local improvement.
+- **Self-supervised theorem discovery**: salvage reached intermediate theorems from failed searches, but promote only checked, general, hard-to-rederive lemmas that reduce future search.
+- **QED/frontier audits**: verify the exact problem statement, citations, and novelty before claiming an open problem is solved. Keep the verifier independent from the proposal context.
 - **OProver/APOLLO**: use tool/compiler feedback as a local repair signal. Preserve the skeleton, isolate the bad block, and retry only the failed lemma with compact feedback.
 - **LEAP/Goedel-Architect**: after direct failure, create a DAG of lemmas with declared dependencies. Review acyclicity, parent sufficiency, and whether each child lemma is simpler than its parent; semantic review matters even when a sketch type-checks.
 - **LeanSearch v2**: retrieve a global premise set through sketch-retrieve-reflect. Treat empty or insufficient retrieval as feedback to revise the proof sketch, not as permission to invent a theorem.

@@ -115,6 +115,8 @@ For a research-level stuck proof, keep a small candidate frontier after the firs
 - rank routes qualitatively by decision value, evaluator cost, assembly relevance, novelty, and circularity risk;
 - retire any route whose compact failure state matches an earlier fingerprint.
 
+If the answer or construction is genuinely unknown, schedule discovery before proof. Require a candidate representation, validity gate, evaluator, simplification ladder, holdout set, promotion rule, and budget. Keep best-per-family candidates rather than a single scalar winner. After local stagnation, inspect another branch; after global stagnation, change representation, audit the evaluator, revise the frontier ladder, or stop. Once a candidate passes promotion, freeze it and return to the ordinary proof scheduler.
+
 When several initial sketches exist, refine the one with the smallest substantive error surface and strongest conditional assembly, not the most polished prose. Raw compiler-error count can be a useful proxy, but one deep mathematical gap can dominate many syntax errors.
 
 Expand one route at a time. Prefer the route whose next artifact can prove, refute, or sharply re-decompose the kernel. Keep a lower-ranked route alive only when it explores a genuinely different proof state. Do not average several weak sketches into one proof.

@@ -24,6 +24,7 @@ Use a proof-writing skill instead when the mathematical argument is already comp
 | The proof silently changes the claim | Statement-fidelity and theorem-repair gates |
 | The same idea returns under new notation | Attempt fingerprints and proof-state deduplication |
 | The central construction is unknown | Small-case discovery, tight-case search, and pattern mining |
+| The answer itself is new or apparently open | A separate discovery contract, evaluator-backed candidate search, holdouts, and a fixed proof handoff |
 | A missing lemma hides the entire theorem | Proof-kernel and good-gap/bad-gap checks |
 | Tools return data but no proof | Artifact-first tool plans and proof translation |
 | A plausible local step may contain a gap | Conditional prover-verifier review |
@@ -66,6 +67,14 @@ Use $theory-proof-workbench in recovery mode. Read the existing ledger first,
 identify what is genuinely new, and do not retry an equivalent construction.
 ```
 
+For a problem whose answer or extremal object is not yet known:
+
+```text
+Use $theory-proof-workbench in discovery mode. First check whether the problem
+is actually open, define an exact evaluator and simplification ladder, then
+freeze one supported candidate before trying to prove it.
+```
+
 For strategy without a full proof project:
 
 ```text
@@ -99,7 +108,7 @@ python3 scripts/start_proof.py \
   --claim "Exact theorem statement"
 ```
 
-Use `--mode recovery` when the same theorem has already failed.
+Use `--mode recovery` when the same theorem has already failed. Use `--mode discovery` when the answer or central object is unknown.
 
 Diagnose one primary next move:
 
@@ -134,6 +143,7 @@ The workbench selects the lightest useful mode. The advanced machinery is condit
 | Direct | A named theorem, certificate, or short derivation is visible | A verified proof |
 | Micro check | A small proof needs one nearby theorem pattern | A theorem match or clear mismatch |
 | Light idea | The central object or construction is unclear | A proof kernel and verification hook |
+| Discovery | The answer, extremal object, formula, or concept is unknown | A checked candidate and fixed theorem handoff |
 | Project | The proof is hard, multi-lemma, or tool-assisted | Persistent proof state and a lemma graph |
 | Recovery | The theorem has failed before | A no-repeat diagnosis and a genuinely new move |
 
@@ -142,12 +152,13 @@ For hard proofs, the core loop is:
 1. Freeze the exact statement, assumptions, domains, and quantifiers.
 2. Check direct theorems and try to falsify the claim on small and boundary cases.
 3. Identify the failure world, central object, and smallest decisive proof kernel.
-4. Compare a small number of genuinely different routes, each with a cheap decisive evaluator.
-5. Build an AND/OR lemma graph and work the least-certain required child.
-6. Use tools only for a named counterexample, condition, identity, certificate, or formal lemma.
-7. On failure, find the first invalid step, preserve the verified prefix, and repair only affected dependents.
-8. After two unchanged local attempts, repair, re-decompose, retrieve, tool-check, or stop.
-9. Assemble the original theorem and run an adversarial final review.
+4. If the answer is unknown, define the candidate representation, exact validity gate, evaluator, simplification ladder, holdouts, and promotion rule before broad search.
+5. Freeze a promoted candidate as a fixed theorem target; otherwise compare a small number of genuinely different proof routes, each with a cheap decisive evaluator.
+6. Build an AND/OR lemma graph and work the least-certain required child.
+7. Use tools only for a named counterexample, condition, identity, certificate, or formal lemma.
+8. On failure, find the first invalid step, preserve the verified prefix, and repair only affected dependents.
+9. After two unchanged local attempts, repair, re-decompose, retrieve, tool-check, or stop.
+10. Assemble the original theorem and run an adversarial final review.
 
 ## Proof Project Memory
 
@@ -239,7 +250,7 @@ python3 scripts/smoke_workbench.py
 python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 
-The smoke test checks deterministic control behavior: domain routing, recovery activation, first-error gating, verified-prefix salvage, failure-stage routing, portable paths, and the presence of research-backed rules. It does not claim a theorem-solving benchmark gain. The practical improvement is narrower and testable: fewer equivalent retries, more local repairs, and clearer separation between checked artifacts and an unfinished global proof.
+The smoke test checks deterministic control behavior: domain routing, recovery activation, novel-problem discovery gates and proof handoff, first-error gating, verified-prefix salvage, failure-stage routing, portable paths, and the presence of research-backed rules. It does not claim a theorem-solving benchmark gain. The practical improvement is narrower and testable: fewer equivalent retries, more local repairs, and clearer separation between checked artifacts and an unfinished global proof.
 
 ## Design Influences
 
@@ -254,6 +265,10 @@ The workflow translates ideas from proof-agent and formalization research into l
 - [Goedel-Prover-V2](https://arxiv.org/abs/2508.03613) and [process-verified theorem proving](https://arxiv.org/abs/2606.20068): repair from precise verifier errors and retain valid proof prefixes.
 - [Aletheia](https://arxiv.org/abs/2602.10177): separate generation, verification, and revision, including an honest failure outcome.
 - [AlphaEvolve](https://arxiv.org/abs/2506.13131): maintain diverse candidates only when automated evaluators can rank concrete artifacts.
+- [Discover and Prove](https://arxiv.org/abs/2604.15839): discover an unknown answer first, then freeze it and turn the task into a fixed formal theorem.
+- [PatternBoost](https://arxiv.org/abs/2411.00566) and [Generative Modelling for Mathematical Discovery](https://arxiv.org/abs/2503.11061): combine global pattern generation, local improvement, exact evaluators, and diverse candidate populations.
+- [AI-assisted open-problem discovery](https://arxiv.org/abs/2603.04735) and [self-supervised theorem discovery](https://arxiv.org/abs/2606.28747): search across representations, use numerical or formal feedback, and salvage useful intermediate theorems.
+- [MLEvolve](https://arxiv.org/abs/2606.06473), [QED](https://arxiv.org/abs/2604.24021), and [From Solvers to Research](https://arxiv.org/abs/2607.07779): share information across branches, use explicit stagnation triggers and independent verification, and recognize when progress requires a new concept or human judgment.
 - [LEAP](https://arxiv.org/abs/2606.03303): reject decompositions that are formally admissible but cyclic, non-simplifying, or useless to the parent assembly.
 - [LeanMarathon](https://arxiv.org/abs/2606.05400) and [MerLean-Prover](https://arxiv.org/abs/2605.26959): stabilize target fidelity, minimize repair radius, preserve source-aware repairs, and invalidate only affected dependents.
 - [LeanSearch v2](https://arxiv.org/abs/2605.13137): retrieve jointly useful premise bundles through sketch-retrieve-reflect rather than isolated semantic matches.
@@ -294,6 +309,7 @@ MIT License. See [LICENSE](LICENSE).
 | 证明过程中偷偷改了命题 | Statement-fidelity 和 theorem-repair gate |
 | 同一个想法换符号后反复出现 | Attempt fingerprint 和 proof-state 去重 |
 | 不知道关键构造是什么 | 小例子、tight case 和 pattern mining |
+| 答案本身是新的或看起来仍然 open | 单独的 discovery contract、evaluator 驱动的候选搜索、holdout 检查和固定 proof handoff |
 | Missing lemma 其实等于整个 theorem | Proof kernel 和 good-gap/bad-gap 检查 |
 | 工具只返回数字，没有形成证明 | Artifact-first tool plan 和 proof translation |
 | 某个局部步骤看起来对但可能藏着漏洞 | 条件触发的 prover-verifier review |
@@ -335,6 +351,14 @@ Codex 遇到困难或重复失败的证明时可以隐式触发这个 skill。�
 新增了什么，不要再次尝试等价构造。
 ```
 
+对于答案或 extremal object 尚未知的问题：
+
+```text
+使用 $theory-proof-workbench 的 discovery mode。先检查问题是否真的 open，
+定义精确 evaluator 和 simplification ladder，再把通过检查的候选固定下来，
+然后进入证明。
+```
+
 只想寻找思路而不创建完整项目时：
 
 ```text
@@ -368,7 +392,7 @@ python3 scripts/start_proof.py \
   --claim "Exact theorem statement"
 ```
 
-同一个 theorem 已经失败过时，加入 `--mode recovery`。
+同一个 theorem 已经失败过时，加入 `--mode recovery`。答案或 central object 未知时，加入 `--mode discovery`。
 
 诊断一个首要 next move：
 
@@ -403,6 +427,7 @@ Workbench 会选择足够解决当前问题的最轻模式。高级流程是条�
 | Direct | 已经看到标准定理、certificate 或短推导 | 经过验证的证明 |
 | Micro check | 小证明只缺一个相近 theorem pattern | 定理匹配或明确不匹配 |
 | Light idea | Central object 或构造不清楚 | Proof kernel 和 verification hook |
+| Discovery | 答案、extremal object、公式或概念未知 | 经过检查的 candidate 和固定 theorem handoff |
 | Project | 证明困难、多 lemma 或需要工具 | 持久化 proof state 和 lemma graph |
 | Recovery | 命题以前证明失败过 | No-repeat 诊断和真正的新路线 |
 
@@ -411,12 +436,13 @@ Workbench 会选择足够解决当前问题的最轻模式。高级流程是条�
 1. 固定精确命题、assumptions、domains 和 quantifiers。
 2. 检查直接定理，并在小例子和边界情形上尝试反驳。
 3. 找到 failure world、central object 和最小的决定性 proof kernel。
-4. 比较少量但真正不同的路线，并为每条路线指定一个低成本的决定性检查。
-5. 构建 AND/OR lemma graph，优先处理最不确定的 required child。
-6. 工具只能用于产生明确的反例、条件、恒等式、certificate 或 formal lemma。
-7. 失败后定位第一处无效步骤，保留已验证前缀，只修复受影响的 dependents。
-8. 两次局部尝试都没有缩小 proof state 时，必须修复、重拆、检索、工具检查或停止。
-9. 最后组装回原命题并做 adversarial review。
+4. 如果答案未知，先定义 candidate representation、exact validity gate、evaluator、simplification ladder、holdout 和 promotion rule。
+5. 通过 promotion gate 后把 candidate 固定成 theorem target；否则只比较少量但真正不同的证明路线。
+6. 构建 AND/OR lemma graph，优先处理最不确定的 required child。
+7. 工具只能用于产生明确的反例、条件、恒等式、certificate 或 formal lemma。
+8. 失败后定位第一处无效步骤，保留已验证前缀，只修复受影响的 dependents。
+9. 两次局部尝试都没有缩小 proof state 时，必须修复、重拆、检索、工具检查或停止。
+10. 最后组装回原命题并做 adversarial review。
 
 ## Proof Project 记忆
 
@@ -508,7 +534,7 @@ python3 scripts/smoke_workbench.py
 python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 
-Smoke test 检查的是确定性的控制行为，包括领域路由、recovery 激活、first-error gate、verified-prefix salvage、failure-stage routing、路径可移植性和研究规则是否完整。它并不声称已经测得 theorem-solving benchmark 的提升。能够诚实验证的改进更具体：减少等价重试，更常做局部修复，并明确区分已经检查的 artifact 与尚未闭合的全局证明。
+Smoke test 检查的是确定性的控制行为，包括领域路由、recovery 激活、新问题 discovery gate 与 proof handoff、first-error gate、verified-prefix salvage、failure-stage routing、路径可移植性和研究规则是否完整。它并不声称已经测得 theorem-solving benchmark 的提升。能够诚实验证的改进更具体：减少等价重试，更常做局部修复，并明确区分已经检查的 artifact 与尚未闭合的全局证明。
 
 ## 设计来源
 
@@ -523,6 +549,10 @@ Smoke test 检查的是确定性的控制行为，包括领域路由、recovery 
 - [Goedel-Prover-V2](https://arxiv.org/abs/2508.03613) 和 [process-verified theorem proving](https://arxiv.org/abs/2606.20068)：根据精确 verifier error 修复证明并保留有效前缀。
 - [Aletheia](https://arxiv.org/abs/2602.10177)：分离生成、验证和修订，并允许诚实地返回失败。
 - [AlphaEvolve](https://arxiv.org/abs/2506.13131)：只有在自动 evaluator 能比较具体 artifact 时，才维护多样候选。
+- [Discover and Prove](https://arxiv.org/abs/2604.15839)：先发现未知答案，再把它固定为明确的 formal theorem。
+- [PatternBoost](https://arxiv.org/abs/2411.00566) 和 [Generative Modelling for Mathematical Discovery](https://arxiv.org/abs/2503.11061)：结合 global pattern generation、local improvement、exact evaluator 和多样候选。
+- [AI-assisted open-problem discovery](https://arxiv.org/abs/2603.04735) 和 [self-supervised theorem discovery](https://arxiv.org/abs/2606.28747)：搜索不同 representation，使用数值或 formal feedback，并回收有用的中间 theorem。
+- [MLEvolve](https://arxiv.org/abs/2606.06473)、[QED](https://arxiv.org/abs/2604.24021) 和 [From Solvers to Research](https://arxiv.org/abs/2607.07779)：在不同分支间共享证据，用明确 stagnation trigger 和独立 verifier，并在需要新概念或人工判断时诚实停下来。
 - [LEAP](https://arxiv.org/abs/2606.03303)：拒绝虽然形式上可接受、但循环、没有简化或无法帮助 parent assembly 的分解。
 - [LeanMarathon](https://arxiv.org/abs/2606.05400) 和 [MerLean-Prover](https://arxiv.org/abs/2605.26959)：先稳定 target fidelity，缩小 repair radius，保留 source-aware repair，只使受影响的 dependents 失效。
 - [LeanSearch v2](https://arxiv.org/abs/2605.13137)：通过 sketch-retrieve-reflect 检索能够共同工作的 premise bundle，而不是孤立的语义相似结果。

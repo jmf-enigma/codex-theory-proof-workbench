@@ -48,6 +48,7 @@ def print_compact(claim: str, selected: list[tuple[str, int]]) -> None:
 def print_full() -> None:
     print("\nExtended search")
     print("- Discovery: if a threshold, potential, policy, hard instance, active set, coefficient, or exact answer is unknown, infer it from tiny/tight cases and reserve a holdout check.")
+    print("- Novel problem: if the answer is apparently open or genuinely new, define the candidate representation, exact evaluator, simplification ladder, promotion rule, and budget before broad search.")
     print("- Bottleneck surgery: shrink the missing lemma, negate it, change representation once, then prove, falsify, retrieve, certify, or repair it.")
     print("- Construction seeds: dual/slack, Bellman gap, envelope term, deviation graph, coupling, KL bridge, potential, benchmark, or hard instance.")
     print("- Algebra forms: add-subtract benchmark, gap/telescope, completing square, conjugate/dual, log/KL/determinant, symmetrization, or conditioning on a good event.")

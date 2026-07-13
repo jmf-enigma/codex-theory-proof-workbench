@@ -1,6 +1,6 @@
 ---
 name: theory-proof-workbench
-description: "Use for hard, blocked, suspect, or previously failed theoretical proofs and proof-strategy work in OR/MS, dynamic programming, mechanism design, economic theory, learning theory, bandits, online learning, optimization, games, lower bounds, and probabilistic constructions. Use when Codex must discover or debug the mathematics, preserve failed-attempt memory, find a construction or proof kernel, coordinate tools or literature, or report an exact obstruction. Do not use merely to polish a proof whose argument is already complete."
+description: "Use for hard, blocked, suspect, previously failed, open, or unknown-answer theoretical problems in OR/MS, dynamic programming, mechanism design, economic theory, learning theory, bandits, online learning, optimization, games, lower bounds, and probabilistic constructions. Use when Codex must discover or debug mathematics, find an unknown construction or proof kernel, preserve failed-attempt memory, coordinate tools or literature, or report an exact obstruction. Do not use merely to polish a proof whose argument is already complete."
 ---
 
 # Theory Proof Workbench
@@ -29,6 +29,7 @@ Choose the lightest mode that can produce the next decisive artifact.
 | Direct | A named theorem, certificate, contradiction, or short decomposition is visible | Prove it and run final gates |
 | Micro check | The proof is small but the route is unclear | Inspect one close theorem family, playbook pattern, prior ledger, or paper trick |
 | Light idea | A central object, construction, or kernel is missing | Run `plan_idea.py`; use `--full` only when the compact pass is insufficient |
+| Discovery | The answer, extremal object, formula, or decisive concept is genuinely unknown | Define a candidate representation, evaluator, simplification ladder, and promotion gate before proof |
 | Project | The proof is hard, multi-lemma, tool-assisted, or literature-dependent | Start a proof project and follow its current state |
 | Recovery | The theorem has failed before | Read the existing ledger and run `proof_doctor.py` before another attempt |
 
@@ -39,7 +40,7 @@ Do not open a full project for routine algebra or a standard theorem application
 1. State the theorem fence: exact claim, objects, domains, assumptions, quantifiers, and conclusion.
 2. Run a direct-solve check and match every theorem assumption explicitly.
 3. Write the negation and test the smallest finite, scalar, boundary, symmetric, or relaxed-assumption case.
-4. If the route is unclear, find the failure world, central object, proof kernel, and verification hook. Discover unknown thresholds, potentials, hard instances, coefficients, or policies before trying to prove them.
+4. If the route is unclear, find the failure world, central object, proof kernel, and verification hook. If the answer or object is genuinely unknown, separate discovery from proof: define what generates candidates, how they are evaluated, and what evidence freezes one candidate as the theorem target.
 5. For a hard proof, keep two to four genuinely different routes. Give each route one expected artifact and its cheapest decisive evaluator, then expand the route with the best decision value and assembly relevance.
 6. Build an AND/OR lemma graph. Admit a decomposition only when the children conditionally imply the parent, are strictly simpler, acyclic, faithful, and locally repairable. Work the least-certain required child on the current assembly path.
 7. For each fragile move, name the current subgoal, proposed move, expected artifact, check, and proof-state delta. Use the prover-verifier loop only after challenge, repetition, or hard-to-check feedback.
@@ -64,7 +65,7 @@ Start a hard proof project:
 codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/start_proof.py" --title "SHORT NAME" --claim "CLAIM"
 ```
 
-Add `--mode recovery` when the theorem has already failed.
+Add `--mode recovery` when the theorem has already failed. Add `--mode discovery` when the answer or central object is not yet known.
 
 Diagnose one primary next move before resuming a project:
 
@@ -91,7 +92,7 @@ Use `pattern_miner.py` only for an exact small-case sequence. Use `new_lemma_car
 Read only files needed by the current decision.
 
 - For classification, read [proof-router.md](references/proof-router.md). For project state and legal transitions, read [proof-state-machine.md](references/proof-state-machine.md).
-- When routes compete, read [strategy-scheduler.md](references/strategy-scheduler.md). When the central object or construction is missing, read [proof-idea-generator.md](references/proof-idea-generator.md).
+- When routes compete, read [strategy-scheduler.md](references/strategy-scheduler.md). When the central object or construction is missing, read [proof-idea-generator.md](references/proof-idea-generator.md). When the answer, object, or concept is genuinely unknown or apparently open, read [novel-problem-discovery.md](references/novel-problem-discovery.md).
 - For a hard or repeatedly failed research proof, or when adapting AI-assisted proof-search methods, read [research-backed-proof-loop.md](references/research-backed-proof-loop.md). For unfamiliar theorem families or missing standard tricks, read [external-proof-pattern-scan.md](references/external-proof-pattern-scan.md).
 - When stuck, first classify the block with [obstruction-taxonomy.md](references/obstruction-taxonomy.md), then use [proof-escalation-protocol.md](references/proof-escalation-protocol.md).
 - For a challenged, repeated, or hard-to-check local move, read [prover-verifier-loop.md](references/prover-verifier-loop.md).

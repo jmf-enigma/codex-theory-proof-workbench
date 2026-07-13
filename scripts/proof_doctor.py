@@ -300,6 +300,122 @@ def looks_like_template_choice(value: str) -> bool:
     return False
 
 
+def novel_problem_summary(project: Path, mode: str) -> dict:
+    path = project / "IDEA_MAP.md"
+    text = path.read_text(encoding="utf-8") if path.exists() else ""
+
+    def concrete(field: str) -> str:
+        for value in filled_field_values(text, field):
+            if not looks_like_template_choice(value):
+                return value
+        return ""
+
+    raw_status = concrete("known-solution status")
+    lower = raw_status.lower()
+    if "genuinely new" in lower or lower in {"new", "novel", "new problem"}:
+        status = "genuinely-new"
+    elif "apparently open" in lower or lower == "open":
+        status = "apparently-open"
+    elif "unknown answer" in lower or "unknown-answer" in lower:
+        status = "unknown-answer"
+    elif "likely known" in lower:
+        status = "likely-known"
+    elif lower == "known":
+        status = "known"
+    else:
+        status = None
+
+    activated = status in {"apparently-open", "genuinely-new", "unknown-answer"} or (
+        mode == "discovery" and status not in {"known", "likely-known"}
+    )
+    fields = {
+        "status evidence": concrete("status evidence"),
+        "discovery target": concrete("discovery target"),
+        "candidate representation": concrete("candidate representation"),
+        "validity gate": concrete("validity gate"),
+        "score or evaluator": concrete("score or evaluator"),
+        "simplification ladder": concrete("simplification ladder"),
+        "holdout cases": concrete("holdout cases"),
+        "promotion criterion": concrete("promotion criterion"),
+        "discovery budget": concrete("discovery budget"),
+        "discovered candidate": concrete("discovered candidate"),
+        "fixed proof handoff": concrete("fixed proof handoff"),
+    }
+
+    if not activated:
+        action = (
+            "Treat the result as known or likely known and use bounded premise retrieval before the ordinary proof loop."
+            if status in {"known", "likely-known"}
+            else "not activated"
+        )
+        return {
+            "activated": False,
+            "status": status,
+            "missing_setup": [],
+            "ready_for_search": False,
+            "candidate_found": bool(fields["discovered candidate"]),
+            "handoff_ready": bool(fields["fixed proof handoff"]),
+            "recommended_action": action,
+        }
+
+    missing = []
+    if status is None:
+        missing.append("known-solution status")
+    if status in {"apparently-open", "genuinely-new", "unknown-answer"} and not fields["status evidence"]:
+        missing.append("status evidence")
+    for field in [
+        "discovery target",
+        "candidate representation",
+        "validity gate",
+        "score or evaluator",
+        "simplification ladder",
+        "discovery budget",
+    ]:
+        if not fields[field]:
+            missing.append(field)
+
+    candidate_found = bool(fields["discovered candidate"])
+    handoff_ready = bool(
+        fields["fixed proof handoff"]
+        and candidate_found
+        and fields["holdout cases"]
+        and fields["promotion criterion"]
+        and not missing
+    )
+    if missing:
+        action = (
+            "Define the novel-problem discovery contract before broad search: status evidence, target, "
+            "candidate representation, validity gate, evaluator, simplification ladder, and budget."
+        )
+    elif not candidate_found:
+        action = (
+            "Run one bounded discovery cycle: generate structurally diverse candidates, repair locally, "
+            "evaluate exactly, and preserve elite plus informative failed families."
+        )
+    elif not fields["holdout cases"] or not fields["promotion criterion"]:
+        action = (
+            "Challenge the discovered candidate on holdout and boundary cases, then state the promotion "
+            "criterion before treating it as a theorem target."
+        )
+    elif not handoff_ready:
+        action = (
+            "Freeze the promoted candidate and rewrite the unknown-answer problem as one fixed theorem "
+            "before starting proof search."
+        )
+    else:
+        action = "Switch to the ordinary proof loop on the fixed handoff statement."
+
+    return {
+        "activated": True,
+        "status": status,
+        "missing_setup": missing,
+        "ready_for_search": not missing,
+        "candidate_found": candidate_found,
+        "handoff_ready": handoff_ready,
+        "recommended_action": action,
+    }
+
+
 def progress_evidence_summary(project: Path) -> dict:
     chunks = []
     for name in ["LEDGER.md", "IDEA_MAP.md", "WORKSTREAMS.md", "ATTACK_MATRIX.md"]:
@@ -634,6 +750,7 @@ def primary_action_for(
     route_decision: dict,
     progress: dict,
     fingerprints: dict,
+    novel_problem: dict,
     idea_map: dict,
     pattern_scan: dict,
     pv_need: dict,
@@ -652,6 +769,8 @@ def primary_action_for(
         return "Present the proof with its verified status and essential assumptions."
     if state in {"S7-adversarial-review", "S8-finalize"} and not audit["ready_for_final_proof"]:
         return "Close the blocking ledger and verification-gate gaps before presenting the proof."
+    if novel_problem["activated"] and not novel_problem["handoff_ready"]:
+        return novel_problem["recommended_action"]
     if failure_localization["needed"]:
         return "Localize the earliest failing step, freeze the verified prefix, and salvage independent artifacts before choosing another route."
     if failure_stage["needed"]:
@@ -698,6 +817,7 @@ def diagnose(project: Path) -> dict:
     else:
         selected = rerouted
     audit = audit_text(text, ledger)
+    novel_problem = novel_problem_summary(project, mode)
     idea_map = idea_map_need(project, state, selected, text)
     pattern_scan = pattern_scan_need(project, state, selected, text)
     fingerprints = attempt_fingerprint_summary(project)
@@ -713,6 +833,8 @@ def diagnose(project: Path) -> dict:
         actions.append("Create ATTACK_MATRIX.md with one proof route and one falsification route.")
     if not (project / "LEMMA_QUEUE.md").exists():
         actions.append("Create LEMMA_QUEUE.md as a blueprint DAG with nodes, statement deps, proof deps, downstream use, statuses, and failure diagnoses.")
+    if novel_problem["activated"]:
+        actions.append(f"Novel-problem discovery: {novel_problem['recommended_action']}")
     if not (project / "WORKSTREAMS.md").exists() and state in {"S3-route-portfolio", "S5-local-certification", "S7-adversarial-review", "S9-stuck"}:
         actions.append("Create WORKSTREAMS.md with approved goals, bounded workstream cards, and a look-at-how-others-do-it gate.")
     fingerprint_recovery_needed = (
@@ -765,6 +887,8 @@ def diagnose(project: Path) -> dict:
         actions.append("Name the smallest missing lemma or false condition, then switch route or repair the theorem.")
 
     files = recommended_files(project, routing, state)
+    if novel_problem["activated"] and (project / "IDEA_MAP.md").exists() and "IDEA_MAP.md" not in files:
+        files.insert(0, "IDEA_MAP.md")
     if idea_map["needed"] and (project / "IDEA_MAP.md").exists() and "IDEA_MAP.md" not in files:
         files.insert(0, "IDEA_MAP.md")
     if pattern_scan["needed"] and (project / "PATTERN_SCAN.md").exists() and "PATTERN_SCAN.md" not in files:
@@ -782,6 +906,7 @@ def diagnose(project: Path) -> dict:
         route_decision,
         progress,
         fingerprints,
+        novel_problem,
         idea_map,
         pattern_scan,
         pv_need,
@@ -805,6 +930,7 @@ def diagnose(project: Path) -> dict:
         "recommended_files": files,
         "primary_action": primary_action,
         "next_actions": ordered_actions[:6],
+        "novel_problem": novel_problem,
         "idea_map": idea_map,
         "external_pattern_scan": {
             **pattern_scan,
@@ -845,6 +971,16 @@ def print_human(result: dict) -> None:
     print("supporting actions:")
     for action in result["next_actions"][1:]:
         print(f"- {action}")
+    novel = result["novel_problem"]
+    print("novel problem discovery:")
+    print(f"- activated: {novel['activated']}")
+    print(f"- status: {novel['status']}")
+    print(f"- ready_for_search: {novel['ready_for_search']}")
+    print(f"- candidate_found: {novel['candidate_found']}")
+    print(f"- handoff_ready: {novel['handoff_ready']}")
+    for field in novel["missing_setup"]:
+        print(f"- missing: {field}")
+    print(f"- recommended_action: {novel['recommended_action']}")
     idea = result["idea_map"]
     if idea["needed"]:
         print("idea map:")

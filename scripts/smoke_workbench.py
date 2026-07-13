@@ -92,7 +92,9 @@ def main() -> int:
         checks.append(
             {
                 "name": "proof-diagnosis",
-                "ok": bool(diagnosed.get("primary_action")) and diagnosed.get("project") == str(project),
+                "ok": bool(diagnosed.get("primary_action"))
+                and diagnosed.get("project") == str(project)
+                and not diagnosed["novel_problem"]["activated"],
             }
         )
 
@@ -171,6 +173,90 @@ def main() -> int:
             }
         )
 
+        discovery_created = run(
+            str(SCRIPTS / "start_proof.py"),
+            "--title",
+            "smoke-discovery",
+            "--claim",
+            "Find the exact optimal threshold policy in a finite discounted MDP.",
+            "--mode",
+            "discovery",
+            "--dir",
+            temp_dir,
+        )
+        discovery_project = Path(discovery_created.stdout.strip())
+        discovery_diagnosis = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(discovery_project), "--json").stdout
+        )
+        checks.append(
+            {
+                "name": "novel-discovery-contract-gate",
+                "ok": discovery_diagnosis["novel_problem"]["activated"]
+                and not discovery_diagnosis["novel_problem"]["ready_for_search"]
+                and discovery_diagnosis["primary_action"].startswith(
+                    "Define the novel-problem discovery contract"
+                ),
+            }
+        )
+
+        idea_map = discovery_project / "IDEA_MAP.md"
+        discovery_text = idea_map.read_text(encoding="utf-8")
+        setup_replacements = {
+            "- known-solution status: not assessed / known / likely known / apparently open / genuinely new": "- known-solution status: apparently open",
+            "- status evidence:": "- status evidence: bounded scan found solved finite neighbors but no general threshold theorem",
+            "- discovery target: answer / threshold / formula / construction / policy / invariant / counterexample / intermediate theorem / new representation": "- discovery target: threshold formula",
+            "- candidate representation:": "- candidate representation: integer threshold as a function of model parameters",
+            "- validity gate:": "- validity gate: exact Bellman inequalities for every state and action",
+            "- score or evaluator:": "- score or evaluator: feasibility first, then Bellman slack and formula complexity",
+            "- simplification ladder:": "- simplification ladder: two states, finite horizon, then general finite discounted model",
+            "- discovery budget:": "- discovery budget: 40 candidates or two plateau cycles",
+        }
+        for old, new in setup_replacements.items():
+            discovery_text = discovery_text.replace(old, new)
+        idea_map.write_text(discovery_text, encoding="utf-8")
+        search_diagnosis = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(discovery_project), "--json").stdout
+        )
+        checks.append(
+            {
+                "name": "novel-discovery-search-routing",
+                "ok": search_diagnosis["novel_problem"]["ready_for_search"]
+                and search_diagnosis["primary_action"].startswith(
+                    "Run one bounded discovery cycle"
+                ),
+            }
+        )
+
+        promoted = idea_map.read_text(encoding="utf-8").replace(
+            "- holdout cases:",
+            "- holdout cases: larger state spaces and boundary discount factors",
+        ).replace(
+            "- promotion criterion:",
+            "- promotion criterion: exact Bellman feasibility on seeds and holdouts",
+        ).replace(
+            "- discovered candidate:",
+            "- discovered candidate: threshold tau(theta) from the fitted recurrence",
+        ).replace(
+            "- fixed proof handoff:",
+            "- fixed proof handoff: prove policy tau(theta) satisfies every Bellman inequality",
+        )
+        idea_map.write_text(promoted, encoding="utf-8")
+        handoff_diagnosis = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(discovery_project), "--json").stdout
+        )
+        checks.append(
+            {
+                "name": "novel-discovery-proof-handoff",
+                "ok": handoff_diagnosis["novel_problem"]["handoff_ready"]
+                and handoff_diagnosis["novel_problem"]["recommended_action"].startswith(
+                    "Switch to the ordinary proof loop"
+                )
+                and not handoff_diagnosis["primary_action"].startswith(
+                    "Run one bounded discovery cycle"
+                ),
+            }
+        )
+
     portable_text = (ROOT / "SKILL.md").read_text(encoding="utf-8") + (
         SCRIPTS / "start_proof.py"
     ).read_text(encoding="utf-8")
@@ -182,6 +268,9 @@ def main() -> int:
     )
 
     research_text = (ROOT / "references" / "research-backed-proof-loop.md").read_text(
+        encoding="utf-8"
+    )
+    discovery_text = (ROOT / "references" / "novel-problem-discovery.md").read_text(
         encoding="utf-8"
     )
     template_text = (SCRIPTS / "start_proof.py").read_text(encoding="utf-8")
@@ -200,7 +289,10 @@ def main() -> int:
                 ]
             )
             and "Decomposition Admission Gate" in template_text
-            and "jointly sufficient premise bundle" in template_text,
+            and "jointly sufficient premise bundle" in template_text
+            and "Discover-To-Prove Handoff" in discovery_text
+            and "PatternBoost" in discovery_text
+            and "Self-supervised theorem discovery" in discovery_text,
         }
     )
 

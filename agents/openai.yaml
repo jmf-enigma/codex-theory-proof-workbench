@@ -1,6 +1,6 @@
 interface:
   display_name: "Theory Proof Workbench"
-  short_description: "Discover and recover hard theory proofs"
-  default_prompt: "Use $theory-proof-workbench to diagnose this hard proof, preserve failed-attempt memory, and choose one checkable next move."
+  short_description: "Discover new mathematics and recover hard proofs"
+  default_prompt: "Use $theory-proof-workbench to diagnose this hard or unknown-answer problem, preserve failed-attempt memory, and choose one checkable next move."
 policy:
   allow_implicit_invocation: true
