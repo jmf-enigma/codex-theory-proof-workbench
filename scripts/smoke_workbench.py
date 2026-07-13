@@ -131,6 +131,9 @@ def main() -> int:
             "- independently rescued artifacts:\n",
             "- independently rescued artifacts: helper lemma H1\n",
         ).replace(
+            "- failure stage: strategy-discovery / decomposition / premise-retrieval / local-proof / assembly / fidelity / library-coverage\n",
+            "- failure stage: local-proof\n",
+        ).replace(
             "- next scope: local trace-back / re-decompose / route replan / statement repair / stop-report\n",
             "- next scope: local trace-back\n",
         )
@@ -150,6 +153,24 @@ def main() -> int:
             }
         )
 
+        retrieval_failure = localized.replace(
+            "- failure stage: local-proof\n",
+            "- failure stage: retrieval\n",
+        )
+        workstreams.write_text(retrieval_failure, encoding="utf-8")
+        retrieval_diagnosis = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(project), "--json").stdout
+        )
+        checks.append(
+            {
+                "name": "failure-stage-routing",
+                "ok": retrieval_diagnosis["failure_stage"]["stage"] == "premise-retrieval"
+                and retrieval_diagnosis["primary_action"].startswith(
+                    "Run sketch-retrieve-reflect"
+                ),
+            }
+        )
+
     portable_text = (ROOT / "SKILL.md").read_text(encoding="utf-8") + (
         SCRIPTS / "start_proof.py"
     ).read_text(encoding="utf-8")
@@ -163,6 +184,7 @@ def main() -> int:
     research_text = (ROOT / "references" / "research-backed-proof-loop.md").read_text(
         encoding="utf-8"
     )
+    template_text = (SCRIPTS / "start_proof.py").read_text(encoding="utf-8")
     checks.append(
         {
             "name": "research-control-rules",
@@ -170,11 +192,15 @@ def main() -> int:
                 phrase in research_text
                 for phrase in [
                     "Frontier choice",
-                    "First-error and salvage pass",
+                    "First-error and stage pass",
+                    "Decomposition admission",
+                    "LeanSearch v2",
                     "Goedel-Prover-V2",
                     "Aletheia",
                 ]
-            ),
+            )
+            and "Decomposition Admission Gate" in template_text
+            and "jointly sufficient premise bundle" in template_text,
         }
     )
 

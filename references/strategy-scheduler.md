@@ -7,6 +7,7 @@ Use this file to choose the next proof route after classification or failure.
 - Normalize first: make objects, quantifiers, and the smallest nontrivial case explicit.
 - Portfolio routes: choose genuinely different proof architectures before converging.
 - Search discipline: retrieve, guess, kernelize, verify, and repair locally.
+- Decomposition admission: accept a lemma split only when it is sufficient, simpler, acyclic, faithful, and locally repairable.
 - Frontier control: compare a few non-equivalent next moves by decision value, check cost, and assembly relevance.
 - Marginal value routing: after repeated failure, choose exactly one next action.
 - Novelty and decision value: continue only when a route changes evidence, object, or obstruction.
@@ -36,7 +37,9 @@ Run at least two routes for a hard proof unless one route cleanly proves or refu
 ## Search Discipline
 
 - Retrieval before invention: list the closest known theorem patterns, paper lemmas, textbook facts, or prior ledger lemmas before proposing a new lemma.
+- Premise-bundle retrieval: when a route needs several known results, sketch the whole route, turn its steps into subqueries, retrieve candidate premises, and judge whether the set jointly supports the route. Revise the sketch when the bundle is empty or insufficient.
 - Guess before proving when the object is hidden: compute tiny cases, infer a formula, threshold, active set, invariant, tight instance, or potential, then reserve one holdout case before promoting the guess.
+- Bottom-up lemma probes: when no global strategy is visible, generate at most two special cases or auxiliary facts from the assumptions, prove/refute them cheaply, and use their shared structure to propose the next central object. They need not appear in the final proof.
 - Kernel before long proof: state the one lemma, certificate, or counterexample barrier that would decide the route, then prove, refute, retrieve, or tool-check that kernel first.
 - Draft-Sketch-Prove: turn the intuitive proof into named subgoals before filling details; subgoals should be small enough for algebra, finite checks, Lean, or direct theorem matching.
 - Direct-first then blueprint: try a short direct route once. If it fails, build a lemma graph rather than extending the same prose proof.
@@ -49,6 +52,19 @@ Run at least two routes for a hard proof unless one route cleanly proves or refu
 - Gap reviewer: before accepting a missing lemma, classify it as a good gap or bad gap. A bad gap is equivalent to the theorem, hides the core construction, is circular, or lacks a verification hook.
 - Used-node filter: before proving side lemmas, check whether they feed the current theorem assembly. If not, postpone them unless they are being used to falsify, retrieve, or repair the theorem.
 - Dependency split: distinguish statement dependencies from proof dependencies. A theorem can structurally depend on one lemma while its proof temporarily needs a different theorem, tool certificate, or local helper.
+
+## Decomposition Admission
+
+Before committing new child lemmas to the graph, require:
+
+- **Parent sufficiency**: a conditional assembly explicitly derives the parent from the proposed children.
+- **Strict simplification**: each required child removes a quantifier, dimension, case family, unknown object, or proof technique; it is not the parent under new notation.
+- **Acyclicity**: no child depends on its parent or an equivalent ancestor state.
+- **Fidelity**: child statements preserve the source definitions, intended role, and legal assumptions.
+- **Repair radius**: if one child is false, only a small connected subgraph should need revision.
+- **Premise feasibility**: known results, tools, or a bounded retrieval query can plausibly discharge each child.
+
+Reject the decomposition when the conditional assembly is missing, a child is not easier, or the expected repair radius is broad. A formally admissible sketch can still be mathematically useless.
 
 ## Marginal Value Routing
 
@@ -98,6 +114,8 @@ For a research-level stuck proof, keep a small candidate frontier after the firs
 - attach one cheap evaluator to each route: toy counterexample, symbolic identity, premise match, local certificate, or formalizable leaf;
 - rank routes qualitatively by decision value, evaluator cost, assembly relevance, novelty, and circularity risk;
 - retire any route whose compact failure state matches an earlier fingerprint.
+
+When several initial sketches exist, refine the one with the smallest substantive error surface and strongest conditional assembly, not the most polished prose. Raw compiler-error count can be a useful proxy, but one deep mathematical gap can dominate many syntax errors.
 
 Expand one route at a time. Prefer the route whose next artifact can prove, refute, or sharply re-decompose the kernel. Keep a lower-ranked route alive only when it explores a genuinely different proof state. Do not average several weak sketches into one proof.
 

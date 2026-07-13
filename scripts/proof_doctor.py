@@ -474,6 +474,74 @@ def failure_localization_summary(project: Path, progress: dict, pv_need: dict) -
     }
 
 
+def failure_stage_summary(project: Path, progress: dict, localization: dict) -> dict:
+    chunks = []
+    for name in ["WORKSTREAMS.md", "LEDGER.md"]:
+        path = project / name
+        if path.exists():
+            chunks.append(path.read_text(encoding="utf-8"))
+    text = "\n".join(chunks)
+    values = [
+        value.strip().lower()
+        for value in filled_field_values(text, "failure stage")
+        if not looks_like_template_choice(value)
+    ]
+    stage = values[0] if values else ""
+    aliases = {
+        "strategy": "strategy-discovery",
+        "idea": "strategy-discovery",
+        "blueprint": "decomposition",
+        "retrieval": "premise-retrieval",
+        "premise": "premise-retrieval",
+        "local": "local-proof",
+        "proof": "local-proof",
+        "source": "fidelity",
+        "statement": "fidelity",
+        "formalization": "library-coverage",
+        "library": "library-coverage",
+    }
+    stage = aliases.get(stage, stage)
+    activated = bool(localization["first_failing_step"]) or progress["no_progress_threshold_met"]
+    actions = {
+        "strategy-discovery": (
+            "Run one bounded bottom-up lemma probe: prove or refute one to two special cases or "
+            "auxiliary facts, then infer a central object from their shared structure."
+        ),
+        "decomposition": (
+            "Review the decomposition before proving children: require conditional parent assembly, "
+            "strict simplification, acyclicity, source fidelity, low repair radius, and premise feasibility."
+        ),
+        "premise-retrieval": (
+            "Run sketch-retrieve-reflect for a jointly sufficient premise bundle; revise the route if "
+            "retrieval is empty, individually relevant, or insufficient for assembly."
+        ),
+        "local-proof": (
+            "Repair the first failing local inference with a distinct verifier or tool artifact while "
+            "preserving the verified prefix."
+        ),
+        "assembly": (
+            "Write the parent proof conditionally from the available children and isolate the exact "
+            "missing bridge before proving another side lemma."
+        ),
+        "fidelity": (
+            "Freeze proof search and repair the statement fence against the original source, definitions, "
+            "assumptions, domains, and quantifiers."
+        ),
+        "library-coverage": (
+            "Inventory missing prerequisite definitions and theory; build them explicitly or continue "
+            "informally without dummy objects, fake instances, or unproved axioms."
+        ),
+    }
+    needed = activated and stage not in actions and not localization["needed"]
+    return {
+        "needed": needed,
+        "stage": stage or None,
+        "recommended_action": actions.get(stage, "classify the failure stage before another attempt"),
+        "recognized": stage in actions if stage else False,
+        "allowed_stages": list(actions),
+    }
+
+
 def route_decision_summary(state: str, progress: dict, fingerprints: dict, idea_map: dict, pattern_scan: dict) -> dict:
     reasons = []
     decision = "continue"
@@ -570,6 +638,7 @@ def primary_action_for(
     pattern_scan: dict,
     pv_need: dict,
     failure_localization: dict,
+    failure_stage: dict,
     audit: dict,
 ) -> str:
     if (
@@ -585,6 +654,10 @@ def primary_action_for(
         return "Close the blocking ledger and verification-gate gaps before presenting the proof."
     if failure_localization["needed"]:
         return "Localize the earliest failing step, freeze the verified prefix, and salvage independent artifacts before choosing another route."
+    if failure_stage["needed"]:
+        return "Classify the first failure as strategy, decomposition, premise retrieval, local proof, assembly, fidelity, or library coverage before choosing a repair."
+    if failure_stage["stage"] and failure_stage["stage"] != "local-proof":
+        return failure_stage["recommended_action"]
     if failure_localization["first_failing_step"] and failure_localization["next_scope"]:
         return (
             f"Execute the localized scope: {failure_localization['next_scope'][0]}; "
@@ -632,6 +705,7 @@ def diagnose(project: Path) -> dict:
     prover_verifier = prover_verifier_summary(project)
     pv_need = prover_verifier_need(project, progress, prover_verifier)
     failure_localization = failure_localization_summary(project, progress, pv_need)
+    failure_stage = failure_stage_summary(project, progress, failure_localization)
     route_decision = route_decision_summary(state, progress, fingerprints, idea_map, pattern_scan)
 
     actions = []
@@ -666,6 +740,10 @@ def diagnose(project: Path) -> dict:
         actions.append("Fill Failure Localization And Salvage: first failing step, failure witness, verified prefix, rescued artifacts, and affected dependents.")
     elif failure_localization["first_failing_step"]:
         actions.append("Preserve the verified prefix and independently rescued artifacts; repair only the first failing node and affected dependents.")
+    if failure_stage["needed"]:
+        actions.append("Classify the failure stage before allocating another proof, retrieval, tool, or formalization attempt.")
+    elif failure_stage["stage"]:
+        actions.append(f"Failure-stage action ({failure_stage['stage']}): {failure_stage['recommended_action']}")
     actions.extend(STATE_ACTIONS.get(state, STATE_ACTIONS["S9-stuck"]))
     if idea_map["needed"] and state in {"S1-classify", "S2-stress-test", "S2b-idea-map", "S3-route-portfolio", "S9-stuck"}:
         actions.append("Use IDEA_MAP.md as an optional idea pass: failure world, pattern guess, central object, proof kernel, central lemma, verification hook.")
@@ -708,6 +786,7 @@ def diagnose(project: Path) -> dict:
         pattern_scan,
         pv_need,
         failure_localization,
+        failure_stage,
         audit,
     )
     ordered_actions = [primary_action]
@@ -744,6 +823,7 @@ def diagnose(project: Path) -> dict:
         "progress_evidence": progress,
         "prover_verifier": {**prover_verifier, **pv_need},
         "failure_localization": failure_localization,
+        "failure_stage": failure_stage,
         "route_decision": route_decision,
         "audit": audit,
     }
@@ -802,6 +882,12 @@ def print_human(result: dict) -> None:
     print(f"- verified_prefix: {localization['verified_prefix']}")
     print(f"- rescued_artifacts: {localization['rescued_artifacts']}")
     print(f"- recommended_action: {localization['recommended_action']}")
+    failure_stage = result["failure_stage"]
+    print("failure stage:")
+    print(f"- needed_now: {failure_stage['needed']}")
+    print(f"- stage: {failure_stage['stage']}")
+    print(f"- recognized: {failure_stage['recognized']}")
+    print(f"- recommended_action: {failure_stage['recommended_action']}")
     route = result["route_decision"]
     print("route decision:")
     print(f"- decision: {route['decision']}")

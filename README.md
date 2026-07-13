@@ -28,6 +28,7 @@ Use a proof-writing skill instead when the mathematical argument is already comp
 | Tools return data but no proof | Artifact-first tool plans and proof translation |
 | A plausible local step may contain a gap | Conditional prover-verifier review |
 | One bad step causes the whole attempt to be discarded | First-error localization and verified-prefix salvage |
+| A failure triggers the wrong kind of repair | Stage routing across strategy, decomposition, retrieval, local proof, assembly, fidelity, and library coverage |
 | Several attempts make no progress | Route decisions, bounded escalation, and honest stop statuses |
 
 ## Install
@@ -158,7 +159,7 @@ For hard proofs, the core loop is:
 | `ATTACK_MATRIX.md` | Proof, falsification, and orthogonal evidence routes |
 | `IDEA_MAP.md` | Central objects, constructions, kernels, and one-step moves |
 | `LEMMA_QUEUE.md` | AND/OR lemma graph and node status |
-| `WORKSTREAMS.md` | Candidate frontier, attempt fingerprints, first-error salvage, and route decisions |
+| `WORKSTREAMS.md` | Candidate frontier, attempt fingerprints, first-error salvage, failure-stage routing, and route decisions |
 | `PATTERN_SCAN.md` | Bounded extraction from papers, ledgers, or formal libraries |
 | `TOOL_PLAN.md` | Expected artifacts before computation or formalization |
 | `LEDGER.md` | Persistent claim, evidence, failures, and verification status |
@@ -238,7 +239,7 @@ python3 scripts/smoke_workbench.py
 python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 
-The smoke test checks deterministic control behavior: domain routing, recovery activation, first-error gating, verified-prefix salvage, portable paths, and the presence of research-backed rules. It does not claim a theorem-solving benchmark gain. The practical improvement is narrower and testable: fewer equivalent retries, more local repairs, and clearer separation between checked artifacts and an unfinished global proof.
+The smoke test checks deterministic control behavior: domain routing, recovery activation, first-error gating, verified-prefix salvage, failure-stage routing, portable paths, and the presence of research-backed rules. It does not claim a theorem-solving benchmark gain. The practical improvement is narrower and testable: fewer equivalent retries, more local repairs, and clearer separation between checked artifacts and an unfinished global proof.
 
 ## Design Influences
 
@@ -253,6 +254,11 @@ The workflow translates ideas from proof-agent and formalization research into l
 - [Goedel-Prover-V2](https://arxiv.org/abs/2508.03613) and [process-verified theorem proving](https://arxiv.org/abs/2606.20068): repair from precise verifier errors and retain valid proof prefixes.
 - [Aletheia](https://arxiv.org/abs/2602.10177): separate generation, verification, and revision, including an honest failure outcome.
 - [AlphaEvolve](https://arxiv.org/abs/2506.13131): maintain diverse candidates only when automated evaluators can rank concrete artifacts.
+- [LEAP](https://arxiv.org/abs/2606.03303): reject decompositions that are formally admissible but cyclic, non-simplifying, or useless to the parent assembly.
+- [LeanMarathon](https://arxiv.org/abs/2606.05400) and [MerLean-Prover](https://arxiv.org/abs/2605.26959): stabilize target fidelity, minimize repair radius, preserve source-aware repairs, and invalidate only affected dependents.
+- [LeanSearch v2](https://arxiv.org/abs/2605.13137): retrieve jointly useful premise bundles through sketch-retrieve-reflect rather than isolated semantic matches.
+- [Prover Agent](https://arxiv.org/abs/2506.19923), [Delta Prover](https://arxiv.org/abs/2507.15225), and [Hilbert](https://arxiv.org/abs/2509.22819): grow strategies from auxiliary lemmas, repair from failed subproblems, and route compute by failure stage.
+- [Scaling Generative Verifiers](https://arxiv.org/abs/2511.13027) and [Formal Conjectures](https://arxiv.org/abs/2605.13171): distinguish stylistic approval from validity and treat proofs or disproofs as statement-fidelity audits.
 
 These papers inspire the workflow. They are not treated as proof authority for a user's theorem.
 
@@ -292,6 +298,7 @@ MIT License. See [LICENSE](LICENSE).
 | 工具只返回数字，没有形成证明 | Artifact-first tool plan 和 proof translation |
 | 某个局部步骤看起来对但可能藏着漏洞 | 条件触发的 prover-verifier review |
 | 一个坏步骤导致整条尝试被全部丢弃 | 定位第一处错误并回收已验证前缀 |
+| 失败后选择了错误类型的修复 | 在策略、分解、premise retrieval、局部证明、assembly、fidelity 和 library coverage 之间分层调度 |
 | 多次尝试没有进展 | Route decision、有限升级和诚实停止 |
 
 ## 安装
@@ -421,7 +428,7 @@ Workbench 会选择足够解决当前问题的最轻模式。高级流程是条�
 | `ATTACK_MATRIX.md` | 证明、反驳和正交证据路线 |
 | `IDEA_MAP.md` | Central object、构造、kernel 和 one-step move |
 | `LEMMA_QUEUE.md` | AND/OR lemma graph 和节点状态 |
-| `WORKSTREAMS.md` | Candidate frontier、attempt fingerprint、first-error salvage 和 route decision |
+| `WORKSTREAMS.md` | Candidate frontier、attempt fingerprint、first-error salvage、failure-stage routing 和 route decision |
 | `PATTERN_SCAN.md` | 从论文、旧 ledger 或 formal library 中有限提取结构 |
 | `TOOL_PLAN.md` | 计算或 formalization 之前声明 expected artifact |
 | `LEDGER.md` | 持久化 claim、证据、失败记录和 verification status |
@@ -501,7 +508,7 @@ python3 scripts/smoke_workbench.py
 python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 
-Smoke test 检查的是确定性的控制行为，包括领域路由、recovery 激活、first-error gate、verified-prefix salvage、路径可移植性和研究规则是否完整。它并不声称已经测得 theorem-solving benchmark 的提升。能够诚实验证的改进更具体：减少等价重试，更常做局部修复，并明确区分已经检查的 artifact 与尚未闭合的全局证明。
+Smoke test 检查的是确定性的控制行为，包括领域路由、recovery 激活、first-error gate、verified-prefix salvage、failure-stage routing、路径可移植性和研究规则是否完整。它并不声称已经测得 theorem-solving benchmark 的提升。能够诚实验证的改进更具体：减少等价重试，更常做局部修复，并明确区分已经检查的 artifact 与尚未闭合的全局证明。
 
 ## 设计来源
 
@@ -516,6 +523,11 @@ Smoke test 检查的是确定性的控制行为，包括领域路由、recovery 
 - [Goedel-Prover-V2](https://arxiv.org/abs/2508.03613) 和 [process-verified theorem proving](https://arxiv.org/abs/2606.20068)：根据精确 verifier error 修复证明并保留有效前缀。
 - [Aletheia](https://arxiv.org/abs/2602.10177)：分离生成、验证和修订，并允许诚实地返回失败。
 - [AlphaEvolve](https://arxiv.org/abs/2506.13131)：只有在自动 evaluator 能比较具体 artifact 时，才维护多样候选。
+- [LEAP](https://arxiv.org/abs/2606.03303)：拒绝虽然形式上可接受、但循环、没有简化或无法帮助 parent assembly 的分解。
+- [LeanMarathon](https://arxiv.org/abs/2606.05400) 和 [MerLean-Prover](https://arxiv.org/abs/2605.26959)：先稳定 target fidelity，缩小 repair radius，保留 source-aware repair，只使受影响的 dependents 失效。
+- [LeanSearch v2](https://arxiv.org/abs/2605.13137)：通过 sketch-retrieve-reflect 检索能够共同工作的 premise bundle，而不是孤立的语义相似结果。
+- [Prover Agent](https://arxiv.org/abs/2506.19923)、[Delta Prover](https://arxiv.org/abs/2507.15225) 和 [Hilbert](https://arxiv.org/abs/2509.22819)：从辅助 lemma 生长策略，根据失败 subproblem 修复，并按失败阶段分配计算。
+- [Scaling Generative Verifiers](https://arxiv.org/abs/2511.13027) 和 [Formal Conjectures](https://arxiv.org/abs/2605.13171)：区分写得像证明与数学有效性，并把证明或反证当作 statement-fidelity audit。
 
 这些论文只提供工作流启发，不会被当成用户命题的证明依据。
 

@@ -33,6 +33,9 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 15. Novelty gate: for a repeated proof, state what changed since the last failed attempt. Acceptable changes are a new central object, theorem family, certificate, counterexample, missing assumption, verified trick, tool artifact, or theorem repair.
 16. Decision-value gate: before another long proof attempt, state the artifact it is expected to produce. If there is no expected artifact, choose counterexample search, retrieval, local formalization, theorem repair, or stop.
 17. Formal artifact gate: if Lean or a formal-proving API was used, check for `sorry`, admitted axioms, incomplete declarations, unproved theorem dependencies, and whether verified helper lemmas actually imply the original theorem.
+18. Decomposition gate: before accepting child lemmas, check parent sufficiency, strict simplification, acyclicity, source fidelity, repair radius, and premise feasibility.
+19. Verifier-diversity gate: do not upgrade confidence because similar verbal reviewers agree. Require a different evidence channel for the fragile kernel when feasible.
+20. Definition-sanity gate: when the theorem introduces custom objects or formal definitions, prove easy expected variants and boundary/API lemmas before trusting a difficult target built on them.
 
 ## Adversarial Review Checklist
 
@@ -51,6 +54,10 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 - Did the verifier only approve a local-looking argument without checking goal match, proof-state delta, soundness probe, and final assembly?
 - Did a formal artifact verify only local helper lemmas while leaving the main theorem, counting step, or global assembly obligation open?
 - Did two routes reach equivalent proof states under different notation or variable names?
+- Did a proposed child lemma actually simplify the parent, or merely unfold and refold the same statement?
+- Could one false child force a wholesale rewrite because the decomposition has a large repair radius?
+- Did retrieval produce a jointly sufficient premise set, or only individually similar theorems?
+- Did formalization invent placeholder objects because the required library theory was absent?
 
 ## Missing Lemma Search
 

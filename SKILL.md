@@ -41,9 +41,9 @@ Do not open a full project for routine algebra or a standard theorem application
 3. Write the negation and test the smallest finite, scalar, boundary, symmetric, or relaxed-assumption case.
 4. If the route is unclear, find the failure world, central object, proof kernel, and verification hook. Discover unknown thresholds, potentials, hard instances, coefficients, or policies before trying to prove them.
 5. For a hard proof, keep two to four genuinely different routes. Give each route one expected artifact and its cheapest decisive evaluator, then expand the route with the best decision value and assembly relevance.
-6. Build an AND/OR lemma graph. Mark required children as AND nodes and alternative routes as OR nodes. Work the least-certain required child on the current assembly path.
+6. Build an AND/OR lemma graph. Admit a decomposition only when the children conditionally imply the parent, are strictly simpler, acyclic, faithful, and locally repairable. Work the least-certain required child on the current assembly path.
 7. For each fragile move, name the current subgoal, proposed move, expected artifact, check, and proof-state delta. Use the prover-verifier loop only after challenge, repetition, or hard-to-check feedback.
-8. On failure, locate the first invalid step, preserve the verified prefix and independent helper lemmas, then choose local trace-back or route-level replan.
+8. On failure, locate the first invalid step, preserve the verified prefix and independent helper lemmas, then classify the failure as strategy, decomposition, premise retrieval, local proof, assembly, fidelity, or library coverage before repairing that layer.
 9. After two unchanged local attempts, choose exactly one action: repair, re-decompose, retrieve, tool-falsify, formalize locally, repair the theorem, or stop/report.
 10. Assemble only proved, checked, known, or explicitly conditional nodes into the original theorem.
 11. Run adversarial review and assign an honest proof status.
@@ -142,6 +142,7 @@ Record only compact, decision-relevant state:
 - failed attempt signature and failure witness;
 - current obstruction and proof-state delta;
 - first failing step, verified prefix, and independently rescued artifacts;
+- failure stage and its layer-specific repair;
 - accepted counterexamples, certificates, theorem patterns, and local tricks;
 - next allowed action and expected artifact.
 

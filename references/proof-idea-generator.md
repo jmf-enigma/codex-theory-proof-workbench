@@ -176,6 +176,8 @@ Keep 2-4 routes. Retire a route if its compact failure state matches a previous 
 
 Prefer routes that feed the current theorem assembly. A clever side lemma that has no downstream use is a pattern card or exploratory note, not a proof target.
 
+When no top-down route is visible, use a bounded bottom-up probe: choose at most two special cases or auxiliary facts derivable from the assumptions, prove or refute them cheaply, and ask what invariant, representation, or common strengthening explains both. These probes may reveal the strategy without appearing in the final assembly. Stop if they do not expose a shared structure or a new verification hook.
+
 ## Pre-Solve Gate
 
 Before running a full idea pass, ask whether the problem is directly solvable.

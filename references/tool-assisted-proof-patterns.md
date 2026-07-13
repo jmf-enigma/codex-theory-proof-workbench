@@ -17,11 +17,13 @@ Use this for hard proofs where computation, CAS, SMT, optimization solvers, or L
 - **CAS refutation pattern**: before simplifying a theorem, ask for a counterexample to the theorem's negation under explicit domains.
 - **Certificate pattern**: prefer certificates that can be independently checked: dual variables, KKT conditions, exact rational identities, interval bounds, SMT models/unsat cores, or Lean proof terms.
 - **Premise-retrieval pattern**: when a lemma feels standard, search for the nearest theorem pattern or library lemma before inventing a new proof.
+- **Global-premise pattern**: for a multi-step route, retrieve premises by proof-sketch subqueries and judge the set jointly. A topically similar theorem that cannot enter the assembly is not useful retrieval.
 - **Repair-loop pattern**: when a tool rejects a step, preserve the failed subgoal, extract the smallest missing lemma, then retry only that lemma.
 - **Sorrify/localize pattern**: when a skeleton is promising, replace the failed block with a named lemma, keep the good dependencies, and repair only that lemma.
 - **Compact-feedback pattern**: after a tool or Lean failure, keep the next repair input small: node statement, assumptions, dependencies, previous attempt, feedback, and proposed fix.
 - **Aristotle formal-feedback pattern**: use Lean feedback as a hard proof-state signal. Search or repair one state at a time, keep an action history, merge equivalent states, preserve verified helper lemmas, and prioritize the hardest required subgoal in an AND branch.
 - **Formal artifact audit pattern**: a Lean/API result is not a completed proof if the main theorem still contains `sorry`, admits extra axioms, or relies on an unencoded global assembly step. Treat such output as verified local components plus explicit missing obligations.
+- **Library-coverage boundary**: before heavy formal search, inventory whether the required definitions and prerequisite theory exist. Never replace missing mathematics with dummy structures, fake instances, or unproved axioms merely to make a file type-check.
 
 ## Tool Roles
 

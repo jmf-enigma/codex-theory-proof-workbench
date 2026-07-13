@@ -141,6 +141,7 @@ Fill this only after a verifier, tool, reviewer, or counterexample rejects a mul
 - failure witness or verifier error:
 - independently rescued artifacts:
 - affected dependents:
+- failure stage: strategy-discovery / decomposition / premise-retrieval / local-proof / assembly / fidelity / library-coverage
 - next scope: local trace-back / re-decompose / route replan / statement repair / stop-report
 
 Preserve only artifacts whose own dependencies were checked. Repair the first failing node and affected dependents; do not regenerate the verified prefix.
@@ -989,6 +990,21 @@ Blueprint refinement rule:
 - downstream theorem path:
 - orphan or unused nodes to postpone:
 
+## Decomposition Admission Gate
+
+Fill this only before committing a new multi-lemma decomposition, especially after failure.
+
+- parent node:
+- conditional parent assembly:
+- why each required child is strictly simpler:
+- ancestor-equivalence and cycle check:
+- source or statement-fence anchor:
+- expected repair radius if one child fails:
+- jointly sufficient premise bundle or retrieval plan:
+- reviewer verdict: admit / revise / reject
+
+Do not admit the split when the parent assembly is missing, a child merely restates an ancestor, or one failure would force a wholesale rewrite.
+
 ## Candidate Lemmas To Prove Or Refute
 
 {lemma_lines}
@@ -1074,6 +1090,10 @@ Read `external-proof-pattern-scan.md` before broad literature or skill browsing.
 - failure or repair rule:
 - route-control lesson:
 - dependency lesson:
+- premise bundle:
+- repair-radius lesson:
+- source anchor:
+- failure stage addressed:
 - good-gap / bad-gap lesson:
 - transplantable idea:
 - hidden assumptions:
@@ -1185,6 +1205,9 @@ def strategy_text(selected: list[tuple[str, int]]) -> str:
 - tool-guided repair targets: first false or unproved sublemma
 - compact repair rule: retry a failed node using only statement, dependencies, previous attempt signature, previous feedback, and suggested fix
 - graph-search rule: mark OR alternatives and AND required subgoals; work the bottleneck required child before expanding another route
+- decomposition-admission rule: require parent sufficiency, strict simplification, acyclicity, source fidelity, low repair radius, and premise feasibility
+- failure-stage rule: distinguish strategy-discovery / decomposition / premise-retrieval / local-proof / assembly / fidelity / library-coverage before spending another attempt
+- premise-bundle rule: for multi-step routes, retrieve a jointly sufficient theorem set through sketch-retrieve-reflect rather than independent similarity search
 - state/action dedupe rule: same goal, assumptions, central object, and failure witness means the same proof state unless there is a real new artifact
 - step-challenge rule: tag fragile steps by verification level, run goal and logic gates, then accept/challenge/trace-back/re-decompose/re-plan/stop
 - prover-verifier rule: for fragile local moves, keep proposer/checker/coordinator roles separate and record soundness probes plus proof-state delta

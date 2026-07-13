@@ -22,15 +22,28 @@ Use this when a proof is stuck. Name the obstruction before trying another route
 - Repeated construction: the same central object, parameterization, invariant, or failure witness has appeared under new notation. Next move: update the attempt fingerprint in `WORKSTREAMS.md`; retry only with a new assumption, invariant, certificate, verified trick, or theorem repair.
 - Repeated route without delta: the same theorem family attacks the same missing lemma with no new proof ingredient. Next move: block the retry in `LEDGER.md`, then switch route, retrieve a pattern, tool-check the obstruction, or repair the theorem.
 
+## Failure Stage Router
+
+Classify where the proof failed before choosing a repair:
+
+- `strategy-discovery`: no useful central object or route. Probe one or two special cases or auxiliary lemmas bottom-up, then ask what common invariant they reveal.
+- `decomposition`: the sketch exists, but a child is not simpler, is cyclic, or leaves a large repair radius. Review parent sufficiency, strict simplification, acyclicity, and source fidelity before proving children.
+- `premise-retrieval`: the route is plausible but the needed theorem set is missing. Decompose the route into subqueries and retrieve a jointly sufficient premise bundle, not isolated similar lemmas.
+- `local-proof`: the route and decomposition are sound but one inference fails. Use first-error localization, a verifier/tool artifact, and local repair.
+- `assembly`: child lemmas are available but do not imply the exact parent. Write the parent proof conditionally from the children and expose the missing bridge.
+- `fidelity`: a proved statement does not match the intended claim or source. Freeze proof search and repair the statement fence.
+- `library-coverage`: formalization lacks prerequisite definitions or theory. Inventory the missing foundation; build it explicitly or continue informally without fake axioms or placeholder objects.
+
 ## Stuck Protocol
 
 1. Name the obstruction in the ledger.
 2. Write the smallest version where the obstruction appears.
 3. Check whether this is a repeated route or construction by comparing against `WORKSTREAMS.md`.
-4. Rank the next move by decision value: kernel proof/refutation, counterexample, certificate, retrieval, representation change, or theorem repair.
-5. Try to refute that small version.
-6. If true, promote it to a named lemma and prove it separately.
-7. If false, repair the theorem statement before continuing.
+4. Classify the failure stage and use its legal repair class.
+5. Rank the next move by decision value: kernel proof/refutation, counterexample, certificate, retrieval, representation change, or theorem repair.
+6. Try to refute that small version.
+7. If true, promote it to a named lemma and prove it separately.
+8. If false, repair the theorem statement before continuing.
 
 ## Red Flags
 

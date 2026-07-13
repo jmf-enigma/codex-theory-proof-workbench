@@ -25,7 +25,7 @@ Use this to keep a hard proof moving instead of looping.
 - `S2 -> S3`: no counterexample found and assumptions look coherent.
 - `S2 -> S2b`: no obvious central route or the same obstruction has appeared before.
 - `S2b -> S3`: one proof kernel or candidate central lemma has a verification hook; if an unknown construction or answer is required, it has passed a holdout/self-check.
-- `S3 -> S4`: route has a decomposable proof skeleton.
+- `S3 -> S4`: route has a proof skeleton whose proposed children pass parent sufficiency, strict simplification, acyclicity, fidelity, repair-radius, and premise-feasibility checks.
 - `S4 -> S5`: all nontrivial steps are lemma candidates with statement dependencies, proof dependencies, downstream use, statuses, expected evidence artifacts, gap grades, and compact repair states for failed nodes. Fragile or repeated local moves have a named prover move and verifier target.
 - `S4 -> S4`: merge equivalent proof states or actions before retrying. Equivalent means same goal, same local assumptions, same central object, and same failure witness up to notation.
 - `S5 -> S4`: when a check fails, return to the earliest failing node, keep the verified prefix, and invalidate only affected dependents.
@@ -33,7 +33,7 @@ Use this to keep a hard proof moving instead of looping.
 - `S6 -> S7`: assembled proof matches the exact claim.
 - `S7 -> S8`: review finds no unhandled gaps.
 - any state -> `S9`: a named obstruction blocks progress.
-- `S9 -> S1/S2/S3/S4`: reclassify, search counterexample, switch route, or isolate missing lemma.
+- `S9 -> S1/S2/S3/S4/S5/S6`: classify the failure stage, then return to strategy discovery, stress testing, route choice, decomposition, local proof, or assembly at the earliest affected layer.
 
 ## Anti-Loop Rule
 
@@ -43,6 +43,7 @@ After two failed attempts, do not continue prose proof. Update the ledger with:
 - named obstruction,
 - failed routes,
 - failed proof state if the last move left the same subgoal unchanged,
+- failure stage: strategy-discovery, decomposition, premise-retrieval, local-proof, assembly, fidelity, or library-coverage,
 - route decision: continue, repair, re-decompose, retrieve, tool/falsify, or stop/report,
 - smallest toy version,
 - next experiment.
@@ -57,10 +58,11 @@ For proofs that have already failed or look paper-level, run `S3 -> S6` as a Dra
 
 - Draft: write the informal proof idea in 5-10 steps, including the theorem family each step is supposed to use.
 - Sketch: convert the draft into named subgoals/lemmas, each with inputs, output, and likely prior result.
+- Decomposition admission: write a conditional parent assembly, reject equivalent ancestors, and prefer children whose failure has a small repair radius.
 - Prove: fill or refute the subgoals one by one; for fragile kernels, try one move at a time and record whether the subgoal became smaller.
 - Verify: for challenged local moves, separate proposer, checker, and coordinator roles; record verifier verdict, soundness probe, proof-state delta, and decision before retrying.
 - First-error localization: on rejection, identify the earliest invalid step and its witness. Freeze the valid prefix and discard downstream claims that depend on the bad step.
-- Repair: when a subgoal fails, classify the exact failure, weaken the lemma or add the missing assumption, then recombine.
+- Repair: classify the failure stage first. Change only strategy, decomposition, retrieval, local proof, assembly, statement fidelity, or prerequisite coverage at the failed layer.
 - Blueprint refinement: preserve solved nodes, diagnose failed nodes as false statement or too-hard proof, then rewrite only the failed node and its dependents.
 - AND/OR proof graph: treat alternative routes as OR nodes and required child lemmas as AND nodes. A parent proof route is not solved until all required children are solved. Work the lowest-confidence required child first.
 - Action/state equivalence: if a new tactic, derivation, or construction produces the same remaining subgoal as a previous failed move, record it as the same proof state instead of counting it as a new attempt.

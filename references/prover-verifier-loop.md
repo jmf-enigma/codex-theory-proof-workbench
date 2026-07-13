@@ -52,6 +52,7 @@ Verifier checks:
 - **Delta gate**: is the remaining proof state smaller, refuted, or otherwise more decided?
 - **Soundness probe**: can a plausible sneaky version of the same move hide a counterexample, boundary failure, missing assumption, or circular step?
 - **Structure consistency**: if a proof sketch promised subgoals, does the final proof use them or explicitly retire them?
+- **Failure-stage check**: is the defect in strategy, decomposition, premise retrieval, local proof, assembly, fidelity, or formal-library coverage?
 
 Use the cheapest decisive verifier first:
 
@@ -62,6 +63,8 @@ Use the cheapest decisive verifier first:
 5. independent assembly review.
 
 When a check fails, return the earliest failing step and a witness. Do not critique later deductions as if they were independent failures.
+
+Do not treat repeated verbal approval as mathematical evidence. Use a second verifier only when it brings a different channel, such as counterexample search, source comparison, exact algebra, solver certificate, formal checking, or conditional assembly. Several similar LLM judges can share the same style bias and unsupported assumption.
 
 Allowed verdicts:
 
@@ -84,6 +87,7 @@ Allowed verdicts:
 - If a counterexample or negated sublemma is found, keep it as a diagnostic artifact and revise only affected downstream nodes.
 - If tool feedback is used, keep the exact artifact: counterexample, condition, unsat certificate, algebra identity, optimizer/KKT certificate, or Lean error/goal.
 - An incomplete proof may still yield `partial-verified` artifacts. Promote only steps whose dependencies were checked independently of the failed suffix.
+- If the failure stage is not local proof, do not spend another local-repair round. Route decomposition failures to the blueprint, retrieval failures to a premise bundle search, assembly failures to a conditional parent proof, fidelity failures to the statement fence, and library-coverage failures to prerequisite inventory.
 - After two failed repairs on the same node, use route decision: continue only with a new premise, representation, invariant, certificate, counterexample repair, or theorem pattern.
 
 ## Literature Lessons To Apply

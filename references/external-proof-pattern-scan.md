@@ -43,6 +43,10 @@ For every useful source, record:
 - failure or repair rule:
 - routing or stopping rule:
 - dependency lesson: statement dependency, proof dependency, downstream use, or orphan lemma.
+- premise bundle: which results must work together, not merely resemble the target.
+- repair-radius lesson: how much of the graph changes if this imported step fails.
+- source anchor: the exact definition, theorem, or proof passage that prevents route drift.
+- failure stage addressed: strategy-discovery / decomposition / premise-retrieval / local-proof / assembly / fidelity / library-coverage.
 - transplantable idea:
 - hidden assumptions:
 - verification hook:
@@ -67,6 +71,7 @@ Prefer a route with medium plausibility and a checkable certificate over a route
 - **Blueprint graph**: build a dependency graph of definitions, lemmas, and theorem assembly before filling proofs.
 - **Draft-Sketch-Prove**: write a short informal draft, convert it into named subgoals, then prove or repair each subgoal.
 - **Premise retrieval**: search theorem names and nearby lemmas before inventing a proof from scratch.
+- **Global premise retrieval**: sketch the route, retrieve per-step candidates, filter them, then judge whether the bundle can support a complete assembly.
 - **Compiler-guided repair**: when Lean or another checker fails, isolate the failing sublemma instead of rewriting the whole proof.
 - **Counterexample-guided repair**: use a concrete counterexample or toy failure to infer the missing invariant or missing assumption.
 - **Best-first route scheduling**: rank unresolved lemmas by plausibility, dependency value, and certificate availability.
@@ -77,6 +82,7 @@ Prefer a route with medium plausibility and a checkable certificate over a route
 - **Cost-aware route control**: treat failed attempts as data. If failures are repetitive and the proof state is not shrinking, switch action instead of spending another attempt on the same node.
 - **Target-fidelity first**: when a source paper or model motivates the theorem, check target statements and node roles before proving. A formally valid lemma that proves the wrong role is wasted.
 - **Dynamic leaf proving**: prove ready leaves on the theorem path first; postpone orphan lemmas and side machinery until they have downstream use.
+- **Repair-radius decomposition**: prefer a graph where one false child invalidates a small connected region rather than the entire argument.
 
 ## Recent Method Patterns
 
@@ -85,16 +91,21 @@ Use these as importable proof-search mechanisms:
 - **Formal Conjectures**: audit the statement before proof. Look for translation errors, implicit conventions, underspecified source claims, zero/boundary behavior, and wrong quantifier scope.
 - **Discover-and-Prove**: if an answer or object is hidden, separate discovery from proof. Self-check the discovered answer on holdout cases before turning it into a theorem.
 - **OProver/APOLLO**: use tool/compiler feedback as a local repair signal. Preserve the skeleton, isolate the bad block, and retry only the failed lemma with compact feedback.
-- **LEAP/Goedel-Architect**: after direct failure, create a DAG of lemmas with declared dependencies. Review acyclicity, parent sufficiency, and whether each child lemma is simpler than its parent.
+- **LEAP/Goedel-Architect**: after direct failure, create a DAG of lemmas with declared dependencies. Review acyclicity, parent sufficiency, and whether each child lemma is simpler than its parent; semantic review matters even when a sketch type-checks.
+- **LeanSearch v2**: retrieve a global premise set through sketch-retrieve-reflect. Treat empty or insufficient retrieval as feedback to revise the proof sketch, not as permission to invent a theorem.
+- **Prover Agent**: when the full route is invisible, prove special cases or auxiliary facts bottom-up and infer the strategy they suggest. Keep exploratory lemmas separate from required assembly nodes.
+- **Delta Prover/Hilbert**: classify whether failure is sketch generation, decomposition, local solve, or assembly, and spend further compute only at the failed stage.
 - **Cost-quality Lean agents**: after failed attempts, decide between continuing the node and restarting/re-decomposing by using proof-state delta, failure diversity, proof similarity, and attempt count.
 - **LeanArchitect**: use blueprint metadata to separate statement text, proof text, dependency inference, status, and discussion/not-ready notes.
-- **LeanMarathon**: stabilize target fidelity before proof discharge, then work from dynamic leaves upward with local repairs and a closeness check that every lemma feeds a target.
+- **LeanMarathon**: stabilize target fidelity before proof discharge, then work from dynamic leaves upward. Keep source-aware repair, bounded edit scope, and low repair radius; do not use proof length as an escape condition.
 - **AlphaProof Nexus**: keep a small population of sketches; use a reviewer to score decomposition quality, novelty, plausibility, and good-gap versus bad-gap.
 - **MerLean-Prover/lean-collab**: separate planning, proving, and checking roles. A clean proof must still pass faithfulness to the original statement and mathematical-correctness checks.
 - **STAR-PolyaMath**: keep a non-reasoning coordinator or ledger in charge of state. Use a persistent meta-strategy note for chronic failure patterns, and review each fragile step with accept/challenge/trace-back/re-plan verdicts.
 - **Rethlas/Archon**: split informal route discovery from formal checking. Let retrieval and natural-language reasoning propose candidate lemmas, then ask the checking side to return precise missing obligations.
 - **MA-LoT**: separate whole-proof generation from feedback repair. One pass may draft the route; another pass should only analyze tool or reviewer feedback and patch the failing block.
 - **Ax-Prover**: use tool-equipped agents as artifact producers, not proof authorities. Trust the checker, counterexample, or retrieved theorem pattern over role confidence.
+- **Generative verifier studies**: verbal judges may reward proof style rather than validity, and ensembles of similar judges need not help. Triangulate fragile steps with a genuinely different evidence channel.
+- **Formal Conjectures**: test definitions with easy variants and boundary lemmas. A proof or disproof can reveal a translation, underspecification, or source error in the statement itself.
 
 ## Use In A Proof Project
 
