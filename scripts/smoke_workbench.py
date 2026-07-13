@@ -114,6 +114,23 @@ def main() -> int:
         }
     )
 
+    peppy_route = run(
+        str(SCRIPTS / "select_playbook.py"),
+        "Prove the worst-case rate of proximal gradient with a Lyapunov function.",
+    )
+    peppy_selected = json.loads(peppy_route.stdout)
+    peppy_idea = run(
+        str(SCRIPTS / "plan_idea.py"),
+        "Prove the worst-case rate of proximal gradient with a Lyapunov function.",
+    )
+    checks.append(
+        {
+            "name": "peppy-optimization-routing",
+            "ok": "optimization-or-playbook.md" in peppy_selected.get("selected", [])
+            and "PEP dual/Lyapunov certificate" in peppy_idea.stdout,
+        }
+    )
+
     with tempfile.TemporaryDirectory(prefix="proof-workbench-smoke-") as temp_dir:
         created = run(
             str(SCRIPTS / "start_proof.py"),
@@ -477,6 +494,9 @@ def main() -> int:
     frontier_text = (ROOT / "references" / "full-text-frontier-evidence.md").read_text(
         encoding="utf-8"
     )
+    peppy_text = (ROOT / "references" / "peppy-proof-bridge.md").read_text(
+        encoding="utf-8"
+    )
     template_text = (SCRIPTS / "start_proof.py").read_text(encoding="utf-8")
     checks.append(
         {
@@ -501,6 +521,25 @@ def main() -> int:
             and "no_authorized_pdf_found" in frontier_text
             and "PatternBoost" in discovery_text
             and "Self-supervised theorem discovery" in discovery_text,
+        }
+    )
+    checks.append(
+        {
+            "name": "peppy-conditional-proof-bridge",
+            "ok": "peppy-proof-bridge.md" in portable_text
+            and "PEP Eligibility Gate" in peppy_text
+            and "Stop after the first block" in peppy_text
+            and "A small floating residual is not an exact certificate" in peppy_text
+            and all(
+                block in peppy_text
+                for block in [
+                    "pep-implement",
+                    "pep-full-proof",
+                    "lyap-define",
+                    "lyap-vectors",
+                    "lyap-closed-form",
+                ]
+            ),
         }
     )
 

@@ -495,11 +495,18 @@ PLAYBOOK_GUIDES = {
                 "small integer instances, relaxation gaps, fractional solutions",
                 "OR-Tools/CVXPy for small instances and dual certificates",
             ),
+            (
+                "PEP certificate and Lyapunov route",
+                "encode the recurrence, class, normalization, and metric; conjecture the rate; then extract and prove a sparse certificate",
+                "encoding mismatch, finite-N overgeneralization, floating residuals, sign errors, boundary terms",
+                "Peppy/PEPFlow for discovery, followed by an independent exact identity check",
+            ),
         ],
         "lemmas": [
             "Feasible set and objective satisfy the theorem's compactness/convexity/continuity conditions.",
             "First-order or KKT conditions are sufficient, not merely necessary.",
             "A dual certificate, Bellman inequality, or exchange invariant implies global optimality.",
+            "Any all-horizon PEP certificate has exact indexed coefficients, feasible PSD/sign terms, and checked base, step, and boundary identities.",
             "Boundary and tie cases preserve the claimed structure.",
         ],
         "ideas": [
@@ -520,6 +527,12 @@ PLAYBOOK_GUIDES = {
                 "a local swap or deviation improves the solution",
                 "matroid, submodularity, convexity, or monotone marginal structure",
                 "small integer instances and local exchange checks",
+            ),
+            (
+                "PEP dual/Lyapunov certificate",
+                "a candidate algorithm rate lacks an exact all-horizon proof",
+                "an exact PEP encoding and valid interpolation class",
+                "Peppy eligibility gate, then independent exact checks of the certificate identities",
             ),
         ],
     },

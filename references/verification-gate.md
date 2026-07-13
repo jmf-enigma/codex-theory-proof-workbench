@@ -58,6 +58,8 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 - Could one false child force a wholesale rewrite because the decomposition has a large repair radius?
 - Did retrieval produce a jointly sufficient premise set, or only individually similar theorems?
 - Did formalization invent placeholder objects because the required library theory was absent?
+- If Peppy/PEPFlow was used, did the encoding match the exact algorithm, class, initial condition, performance metric, and horizon in the theorem?
+- Was a numerical sweep or floating-point dual kept below proof status until an exact certificate, sign conditions, and final theorem assembly were checked?
 
 ## Missing Lemma Search
 

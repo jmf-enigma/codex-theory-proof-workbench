@@ -23,6 +23,7 @@ PATTERN_QUERIES = {
         "KKT sufficiency proof constraint qualification",
         "primal dual certificate operations research proof",
         "exchange argument proof optimization matching scheduling",
+        "performance estimation problem exact Lyapunov certificate first order method",
     ],
     "mechanism-design-playbook.md": [
         "cyclic monotonicity proof mechanism design",

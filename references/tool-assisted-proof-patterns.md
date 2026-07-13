@@ -31,6 +31,7 @@ Use this for hard proofs where computation, CAS, SMT, optimization solvers, or L
 - **Python/SymPy/flint/gmpy2**: exact rational algebra, polynomial coefficient checks, finite stress tests, high-precision sanity checks.
 - **Z3/cvc5/PySAT**: finite/integer/Boolean counterexamples, IC/IR feasibility, small-model search, discrete impossibility.
 - **CVXPy/OR-Tools**: primal/dual optimization sanity checks, finite LP/MIP certificates, policy/capacity/matching counterexamples.
+- **Peppy/PEPFlow**: worst-case rates, PEP dual certificates, and Lyapunov discovery for exactly encoded fixed first-order or operator algorithms; use [peppy-proof-bridge.md](peppy-proof-bridge.md) before invoking it.
 - **Sage**: exact combinatorics, graph/algebra/finite-field/group computations.
 - **Lean/mathlib**: local formalization of stable lemmas once the informal statement is precise.
 - **Empirical/simulation tools**: falsification and sanity checks only; they do not prove universal claims.
@@ -74,6 +75,7 @@ If the expected artifact is only "numerical evidence," the step is not proof-rea
 - Numerical optimizer returns a solution: use it to guess active constraints, then prove KKT/duality/convexity or construct an exact certificate.
 - LP/MIP/SMT feasible model: use it as a counterexample or witness.
 - LP dual variables or Bellman inequalities: convert to a certificate that a human can verify line by line.
+- Peppy Block 1 returns a rate pattern: keep it as a conjecture. Later blocks may supply a finite-horizon dual certificate or an all-horizon Lyapunov identity, but only the exact artifact and its theorem mapping enter the proof.
 - Lean accepts a lemma: status becomes `formalized-local`; still explain how the lemma fits the paper proof.
 - Lean/API returns several verified helper lemmas but leaves the theorem open: keep the helpers, mark the theorem `lemma-conditional` or `still open`, and encode the missing global assembly lemma before claiming success.
 - Lean fails: inspect the failed subgoal; often it reveals a missing assumption, coercion/domain issue, or too-strong statement.
@@ -85,6 +87,7 @@ If the expected artifact is only "numerical evidence," the step is not proof-rea
 ### Optimization / OR/MS
 
 - Use tools to guess active sets, simplify KKT conditions, and search boundary failures.
+- For fixed-algorithm worst-case rates, apply the Peppy eligibility gate; do not force a general optimization theorem into a PEP encoding.
 - Final proof needs convexity/concavity, constraint qualification, feasibility, and a primal-dual/KKT certificate.
 - For nonconvex problems, numerical optima are only conjecture generators unless paired with a global argument.
 

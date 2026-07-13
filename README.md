@@ -48,7 +48,7 @@ Restart Codex or refresh skill discovery. To update later:
 git -C "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench" pull --ff-only
 ```
 
-The skill itself needs no Python packages. Its helper scripts support Python 3.10 or newer. Wolfram, Lean, Sage, Z3, CVXPy, and other mathematical backends are optional and are not bundled with this repository.
+The skill itself needs no Python packages. Its helper scripts support Python 3.10 or newer. Wolfram, Lean, Sage, Z3, CVXPy, Peppy/PEPFlow, and other mathematical backends are optional and are not bundled with this repository.
 
 ## Use It In Codex
 
@@ -191,6 +191,7 @@ Tool output becomes proof evidence only after it is translated into a named arti
 - a counterexample or finite witness;
 - an exact identity or quantified condition;
 - a KKT, dual, Bellman, LP, SMT, or combinatorial certificate;
+- an exact PEP dual or all-horizon Lyapunov certificate;
 - a local Lean theorem with no admitted gap;
 - a theorem repair exposing the missing assumption.
 
@@ -205,6 +206,10 @@ wolframscript -code '2+2'
 ```
 
 If the companion `math-tools` setup provides `wmath` or `codex-wmath`, the workbench can use those wrappers. This repository does not install them.
+
+### Optional Peppy / PEPFlow Support
+
+When the companion `peppy` skill and a PEPFlow checkout are installed, the workbench can route an exactly encoded fixed-algorithm performance problem through rate discovery, dual-certificate extraction, Lyapunov structure, and closed-form verification. The route is conditional: it starts only after the algorithm, function or operator class, normalization, metric, and horizon pass the [Peppy proof bridge](references/peppy-proof-bridge.md). Numerical sweeps remain conjecture evidence, and the workflow stops as soon as the next block would not improve the proof status.
 
 ## Multi-Agent Use
 
@@ -339,7 +344,7 @@ git clone https://github.com/jmf-enigma/codex-theory-proof-workbench.git \
 git -C "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench" pull --ff-only
 ```
 
-Skill 本身不需要额外 Python package，辅助脚本支持 Python 3.10 及以上版本。Wolfram、Lean、Sage、Z3、CVXPy 等数学后端都是可选项，本仓库不会自动安装。
+Skill 本身不需要额外 Python package，辅助脚本支持 Python 3.10 及以上版本。Wolfram、Lean、Sage、Z3、CVXPy、Peppy/PEPFlow 等数学后端都是可选项，本仓库不会自动安装。
 
 ## 在 Codex 中调用
 
@@ -480,6 +485,7 @@ Idea map、文献扫描、prover-verifier、formal check 和多 Agent 分工都�
 - counterexample 或 finite witness；
 - exact identity 或 quantified condition；
 - KKT、dual、Bellman、LP、SMT 或组合 certificate；
+- exact PEP dual 或适用于所有 horizon 的 Lyapunov certificate；
 - 没有 admitted gap 的 local Lean theorem；
 - 暴露 missing assumption 的 theorem repair。
 
@@ -494,6 +500,10 @@ wolframscript -code '2+2'
 ```
 
 如果配套的 `math-tools` 环境提供 `wmath` 或 `codex-wmath`，workbench 可以使用这些 wrapper。本仓库不会安装它们。
+
+### 可选 Peppy / PEPFlow 支持
+
+当本机已经安装配套的 `peppy` skill 和 PEPFlow checkout 时，workbench 可以把精确编码的固定算法性能问题交给 Peppy，依次完成 rate discovery、dual certificate 提取、Lyapunov 结构识别和 closed-form verification。这个分支只有在算法、函数或算子类、normalization、metric 与 horizon 通过 [Peppy 证明桥接规则](references/peppy-proof-bridge.md) 后才会启动。数值 sweep 仍只算 conjecture evidence，一旦下一 block 不再提升证明状态就会停止。
 
 ## 多 Agent 使用
 

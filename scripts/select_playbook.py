@@ -24,6 +24,9 @@ PLAYBOOKS = {
         "kkt", "duality", "convex", "linear program", "lp", "scheduling", "or/ms",
         "subgradient", "lagrangian", "complementary slackness", "slater",
         "exchange argument", "primal-dual", "total unimodularity", "relaxation gap",
+        "gradient descent", "accelerated gradient", "proximal gradient", "proximal point",
+        "first-order method", "operator splitting", "monotone operator", "cocoercive",
+        "performance estimation", "worst-case rate", "lyapunov function", "peppy", "pepflow",
     ],
     "mechanism-design-playbook.md": [
         "mechanism", "ic", "ir", "dsic", "bic", "auction", "myerson", "payment",

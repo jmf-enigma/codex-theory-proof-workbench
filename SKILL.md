@@ -101,6 +101,7 @@ Read only files needed by the current decision.
 - When stuck, first classify the block with [obstruction-taxonomy.md](references/obstruction-taxonomy.md), then use [proof-escalation-protocol.md](references/proof-escalation-protocol.md).
 - For a challenged, repeated, or hard-to-check local move, read [prover-verifier-loop.md](references/prover-verifier-loop.md).
 - Before CAS, SMT, optimization, simulation, or Lean work, read [tool-assisted-proof-patterns.md](references/tool-assisted-proof-patterns.md).
+- For a fixed-algorithm worst-case rate, PEP certificate, or all-horizon Lyapunov construction, read [peppy-proof-bridge.md](references/peppy-proof-bridge.md) only after its eligibility gate passes, then invoke the companion `peppy` skill.
 - Before finalizing, read [verification-gate.md](references/verification-gate.md).
 
 Read at most the relevant domain playbook:
@@ -132,6 +133,7 @@ Before a tool call, name the local claim, explicit domains, negation to test, ba
 
 - Use Wolfram or SymPy for exact algebra, sign conditions, quantifier elimination, and counterexamples under explicit assumptions.
 - Use Python, Z3, CVXPy, OR-Tools, Sage, or NetworkX for finite witnesses, optimization certificates, and discrete structures.
+- Use Peppy/PEPFlow only for an exactly encoded fixed-algorithm performance problem. Treat Block 1 sweeps as conjecture discovery and promote a certificate only through the gates in [peppy-proof-bridge.md](references/peppy-proof-bridge.md).
 - Use Lean for stable local lemmas, not as a default wrapper around the whole research theorem.
 - Treat simulations as falsification or sanity checks, never as universal proof.
 - Audit formal artifacts for `sorry`, admitted axioms, unresolved obligations, and missing global assembly.

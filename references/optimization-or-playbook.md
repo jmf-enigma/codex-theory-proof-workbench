@@ -10,6 +10,7 @@ Use for KKT, LP/convex duality, exchange arguments, queueing/control-style struc
 - Dynamic program: use [dp-proof-playbook.md](dp-proof-playbook.md) for Bellman recursion, monotonicity/convexity/contraction, and policy verification.
 - Structural policy: try threshold, monotone policy, indexability, submodularity, coupling, or interchange argument.
 - Algorithm proof: prove invariant, approximation ratio, primal-dual certificate, potential decrease, or exchange optimality.
+- Fixed first-order/operator algorithm rate: if the method, class, normalization, and metric are PEP-encodable, use [peppy-proof-bridge.md](peppy-proof-bridge.md) to discover and certify a rate or Lyapunov function.
 
 ## Smart Routes
 
@@ -18,6 +19,7 @@ Use for KKT, LP/convex duality, exchange arguments, queueing/control-style struc
 - Monotone optimal policy: prove increasing differences or submodularity of value differences.
 - DP convergence: use contraction if discounted; use monotone value iteration or span seminorm if average-cost.
 - Approximation: choose benchmark first, then prove algorithm reaches fraction/additive gap.
+- Unknown convergence rate: use Peppy Block 1 to conjecture the formula, Block 2 for certificate structure, and Blocks 3-5 only when an all-horizon readable Lyapunov proof is needed.
 
 ## Common Lemmas
 
@@ -42,3 +44,4 @@ Use for KKT, LP/convex duality, exchange arguments, queueing/control-style struc
 - OR-Tools for small integer/assignment/scheduling instances.
 - Wolfram/SymPy for FOC, Hessian, envelope, algebraic inequalities.
 - Z3 for finite policy/threshold counterexamples.
+- Peppy/PEPFlow for conditional fixed-algorithm performance estimation, dual certificates, and Lyapunov construction.
