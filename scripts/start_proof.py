@@ -308,6 +308,13 @@ For hard or previously failed proofs, fill three short candidates before choosin
 
 Fill this only when the answer, object, formula, construction, or decisive concept is genuinely unknown. Otherwise leave the template choices unchanged and continue with the ordinary proof loop.
 
+- frontier scan status: not run / completed
+- search cutoff date:
+- Scholar queries:
+- verified source anchors:
+- closest known result:
+- active-work signals:
+- current frontier gap:
 - known-solution status: not assessed / known / likely known / apparently open / genuinely new
 - status evidence:
 - discovery target: answer / threshold / formula / construction / policy / invariant / counterexample / intermediate theorem / new representation
@@ -1224,7 +1231,7 @@ def strategy_text(selected: list[tuple[str, int]]) -> str:
 - graph-search rule: mark OR alternatives and AND required subgoals; work the bottleneck required child before expanding another route
 - decomposition-admission rule: require parent sufficiency, strict simplification, acyclicity, source fidelity, low repair radius, and premise feasibility
 - failure-stage rule: distinguish strategy-discovery / decomposition / premise-retrieval / local-proof / assembly / fidelity / library-coverage before spending another attempt
-- discovery handoff rule: if the answer is unknown, define a candidate representation, validity gate, evaluator, simplification ladder, holdouts, and promotion criterion; freeze one candidate before proof
+- discovery handoff rule: treat model memory as unverified; first record Scholar-backed queries, verified source anchors, closest results, active-work signals, and the exact frontier gap; then define the candidate search and freeze one promoted candidate before proof
 - premise-bundle rule: for multi-step routes, retrieve a jointly sufficient theorem set through sketch-retrieve-reflect rather than independent similarity search
 - state/action dedupe rule: same goal, assumptions, central object, and failure witness means the same proof state unless there is a real new artifact
 - step-challenge rule: tag fragile steps by verification level, run goal and logic gates, then accept/challenge/trace-back/re-decompose/re-plan/stop
@@ -1286,7 +1293,7 @@ def triage_text(title: str, claim: str, selected: list[tuple[str, int]], mode: s
 2. Run the direct-solve and statement-fidelity checks. Mark any changed assumption, quantifier, domain, or conclusion as theorem repair.
 3. Write the negation and smallest toy, boundary, and relaxed-assumption cases in `counterexamples.md`.
 4. Use `ATTACK_MATRIX.md` to compare one proof route, one falsification route, and one orthogonal evidence route.
-5. Open `IDEA_MAP.md` only if the central object, construction, proof kernel, or unknown answer is missing. In discovery mode, fill its Novel Problem Discovery contract before broad search.
+5. Open `IDEA_MAP.md` only if the central object, construction, proof kernel, or unknown answer is missing. In discovery mode, complete its external frontier scan and Novel Problem Discovery contract before broad search.
 6. Build the active AND/OR lemma graph in `LEMMA_QUEUE.md`; work the least-certain required child on the assembly path.
 7. Use `WORKSTREAMS.md`, `PATTERN_SCAN.md`, `TOOL_PLAN.md`, or the prover-verifier contract only when repetition, retrieval, tools, or fragile local checking activates them.
 8. Run `proof_doctor.py .` after a failure or state change, and `audit_ledger.py LEDGER.md` before claiming a final proof.

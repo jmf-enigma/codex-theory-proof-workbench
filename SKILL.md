@@ -18,6 +18,7 @@ Use `math-proof-writing` after the mathematical argument is complete. Use `math-
 - Treat the same goal, assumptions, central object, and failure witness as the same proof state even when notation changes.
 - Preserve solved lemmas. Repair only the failed node and affected dependents.
 - Do not accept a missing lemma that restates the theorem, hides the construction, is circular, or lacks a verification hook.
+- Treat model memory as `unverified`, never as evidence that a result is known or open. Before frontier classification, search external literature and verify source anchors against DOI/publisher, arXiv, proceedings, or another official page.
 - Report `lemma-conditional` or `still open` when the kernel remains unproved.
 
 ## Mode Router
@@ -40,7 +41,7 @@ Do not open a full project for routine algebra or a standard theorem application
 1. State the theorem fence: exact claim, objects, domains, assumptions, quantifiers, and conclusion.
 2. Run a direct-solve check and match every theorem assumption explicitly.
 3. Write the negation and test the smallest finite, scalar, boundary, symmetric, or relaxed-assumption case.
-4. If the route is unclear, find the failure world, central object, proof kernel, and verification hook. If the answer or object is genuinely unknown, separate discovery from proof: define what generates candidates, how they are evaluated, and what evidence freezes one candidate as the theorem target.
+4. If the route is unclear, find the failure world, central object, proof kernel, and verification hook. If the answer or object may be unknown, first run an external frontier scan for exact and neighboring results, recent cited-by work, and active public projects. Then separate discovery from proof: define what generates candidates, how they are evaluated, and what evidence freezes one candidate as the theorem target.
 5. For a hard proof, keep two to four genuinely different routes. Give each route one expected artifact and its cheapest decisive evaluator, then expand the route with the best decision value and assembly relevance.
 6. Build an AND/OR lemma graph. Admit a decomposition only when the children conditionally imply the parent, are strictly simpler, acyclic, faithful, and locally repairable. Work the least-certain required child on the current assembly path.
 7. For each fragile move, name the current subgoal, proposed move, expected artifact, check, and proof-state delta. Use the prover-verifier loop only after challenge, repetition, or hard-to-check feedback.
@@ -92,7 +93,7 @@ Use `pattern_miner.py` only for an exact small-case sequence. Use `new_lemma_car
 Read only files needed by the current decision.
 
 - For classification, read [proof-router.md](references/proof-router.md). For project state and legal transitions, read [proof-state-machine.md](references/proof-state-machine.md).
-- When routes compete, read [strategy-scheduler.md](references/strategy-scheduler.md). When the central object or construction is missing, read [proof-idea-generator.md](references/proof-idea-generator.md). When the answer, object, or concept is genuinely unknown or apparently open, read [novel-problem-discovery.md](references/novel-problem-discovery.md).
+- When routes compete, read [strategy-scheduler.md](references/strategy-scheduler.md). When the central object or construction is missing, read [proof-idea-generator.md](references/proof-idea-generator.md). When the answer, object, or concept may be unknown or open, read [novel-problem-discovery.md](references/novel-problem-discovery.md); use `citation-tools` when available for Scholar-backed discovery and authoritative source verification.
 - For a hard or repeatedly failed research proof, or when adapting AI-assisted proof-search methods, read [research-backed-proof-loop.md](references/research-backed-proof-loop.md). For unfamiliar theorem families or missing standard tricks, read [external-proof-pattern-scan.md](references/external-proof-pattern-scan.md).
 - When stuck, first classify the block with [obstruction-taxonomy.md](references/obstruction-taxonomy.md), then use [proof-escalation-protocol.md](references/proof-escalation-protocol.md).
 - For a challenged, repeated, or hard-to-check local move, read [prover-verifier-loop.md](references/prover-verifier-loop.md).

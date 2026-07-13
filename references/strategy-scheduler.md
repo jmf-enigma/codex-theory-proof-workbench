@@ -115,7 +115,7 @@ For a research-level stuck proof, keep a small candidate frontier after the firs
 - rank routes qualitatively by decision value, evaluator cost, assembly relevance, novelty, and circularity risk;
 - retire any route whose compact failure state matches an earlier fingerprint.
 
-If the answer or construction is genuinely unknown, schedule discovery before proof. Require a candidate representation, validity gate, evaluator, simplification ladder, holdout set, promotion rule, and budget. Keep best-per-family candidates rather than a single scalar winner. After local stagnation, inspect another branch; after global stagnation, change representation, audit the evaluator, revise the frontier ladder, or stop. Once a candidate passes promotion, freeze it and return to the ordinary proof scheduler.
+If the answer or construction may be unknown, schedule an external frontier scan before discovery: exact and neighboring results, recent cited-by work, public active projects, verified source anchors, and the unresolved gap. Then require a candidate representation, validity gate, evaluator, simplification ladder, holdout set, promotion rule, and budget. Keep best-per-family candidates rather than a single scalar winner. After local stagnation, inspect another branch; after global stagnation, change representation, audit the evaluator, revise the frontier ladder, or stop. Once a candidate passes promotion, freeze it and return to the ordinary proof scheduler.
 
 When several initial sketches exist, refine the one with the smallest substantive error surface and strongest conditional assembly, not the most polished prose. Raw compiler-error count can be a useful proxy, but one deep mathematical gap can dominate many syntax errors.
 

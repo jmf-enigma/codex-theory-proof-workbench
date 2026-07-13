@@ -54,7 +54,7 @@ Node evidence may be `candidate`, `counterexample-tested`, `proved`, `tool-check
 
 ## Discovery Overlay
 
-Discovery is a mode overlay, not a mandatory state for ordinary proofs. When the answer or central object is unknown, pause before `S3`: record status evidence, define a candidate representation, validity gate, evaluator, simplification ladder, holdouts, promotion criterion, and budget. After one candidate passes those gates, freeze it as a fixed theorem statement and resume at `S1` or `S2`. If no defensible evaluator exists, use bounded conceptual exploration or ask for steering instead of running an open-ended candidate loop.
+Discovery is a mode overlay, not a mandatory state for ordinary proofs. When the answer or central object is unknown, pause before `S3`. First complete an external frontier scan with queries, cutoff date, verified source anchors, closest results, active-work signals, and the exact unresolved gap; model memory alone is not status evidence. Then define a candidate representation, validity gate, evaluator, simplification ladder, holdouts, promotion criterion, and budget. After one candidate passes those gates, freeze it as a fixed theorem statement and resume at `S1` or `S2`. If no defensible evaluator exists, use bounded conceptual exploration or ask for steering instead of running an open-ended candidate loop.
 
 ## Research-Level Overlay
 

@@ -12,22 +12,27 @@ Use this only when the answer, extremal object, constant, formula, construction,
 - Discover-to-prove handoff: freeze one candidate before starting the proof loop.
 - Stop and steering rules: stop on evaluator, representation, or prerequisite failure.
 
-## Status Gate
+## External Frontier Gate
 
 Before expensive search:
 
 1. Freeze the exact problem statement and intended notion of solution.
-2. Run a bounded literature and local-result scan. Record exact neighboring theorems, best known bounds, and dates.
-3. Classify the status as `known`, `likely known`, `apparently open`, or `genuinely new`. Use `apparently open` unless the novelty check is unusually strong.
-4. Separate a missing answer from a missing proof. If the candidate answer is already supplied, return to the ordinary proof loop.
-5. Preserve source fidelity. A solution to a weakened, discretized, or finite version is a partial result until the original quantifiers are restored.
+2. Mark anything recalled from model memory as `unverified memory`. It may supply search terms but cannot settle status.
+3. Use Google Scholar-backed discovery when available. Search the exact statement, equivalent terminology, the central object, and the closest stronger/weaker theorem. Keep the scan bounded and do not scrape Scholar result pages.
+4. Follow the strongest matches backward to their premises and forward through cited-by/recent work. Check recent arXiv, working-paper, proceedings, author, institution, and public project pages for visible ongoing approaches.
+5. Verify each source anchor against a DOI/publisher page, arXiv, proceedings, or another official page. Record title, authors, year, exact theorem or bound, URL/DOI/arXiv ID, and retrieval cutoff date.
+6. Record the closest known result, what its assumptions leave unresolved, and active-work signals. `No active work found` is acceptable only with the queries and cutoff that support it.
+7. Classify the status as `known`, `likely known`, `apparently open`, or `genuinely new`. Use `apparently open` unless the scan is unusually strong; absence from a bounded search never proves novelty.
+8. Separate a missing answer from a missing proof. If an externally sourced candidate answer is already supplied, return to premise retrieval and the ordinary proof loop.
+9. Preserve source fidelity. A solution to a weakened, discretized, or finite version is a partial result until the original quantifiers are restored.
 
-The literature scan serves two purposes. It checks novelty and identifies solved neighbors, representations, baselines, obstructions, and evaluators. It does not authorize importing a result whose assumptions do not match.
+The frontier scan serves three purposes: status verification, a map of who is publicly working on nearby formulations, and extraction of solved neighbors, representations, baselines, obstructions, and evaluators. It does not authorize importing a result whose assumptions do not match, and it must distinguish published facts from inferred research activity.
 
 ## Discovery Contract
 
 Do not launch broad candidate search until these fields are concrete:
 
+- **Frontier evidence**: completed Scholar queries, cutoff date, verified source anchors, closest known result, active-work signals, and the exact unresolved gap.
 - **Discovery target**: answer, threshold, formula, construction, policy, invariant, counterexample, intermediate theorem, or new representation.
 - **Candidate representation**: the smallest object the search is allowed to modify, such as a graph, priority function, recurrence, basis, dual certificate, or lemma statement.
 - **Validity gate**: an exact checker for feasibility, domains, constraints, and statement fidelity.

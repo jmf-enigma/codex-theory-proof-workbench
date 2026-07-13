@@ -70,9 +70,10 @@ identify what is genuinely new, and do not retry an equivalent construction.
 For a problem whose answer or extremal object is not yet known:
 
 ```text
-Use $theory-proof-workbench in discovery mode. First check whether the problem
-is actually open, define an exact evaluator and simplification ladder, then
-freeze one supported candidate before trying to prove it.
+Use $theory-proof-workbench in discovery mode. Treat model memory as unverified.
+Search Scholar and recent public work, verify exact source anchors, identify the
+closest result and unresolved gap, then define an evaluator and freeze one
+supported candidate before trying to prove it.
 ```
 
 For strategy without a full proof project:
@@ -143,7 +144,7 @@ The workbench selects the lightest useful mode. The advanced machinery is condit
 | Direct | A named theorem, certificate, or short derivation is visible | A verified proof |
 | Micro check | A small proof needs one nearby theorem pattern | A theorem match or clear mismatch |
 | Light idea | The central object or construction is unclear | A proof kernel and verification hook |
-| Discovery | The answer, extremal object, formula, or concept is unknown | A checked candidate and fixed theorem handoff |
+| Discovery | The answer, extremal object, formula, or concept may be unknown | A verified frontier map, checked candidate, and fixed theorem handoff |
 | Project | The proof is hard, multi-lemma, or tool-assisted | Persistent proof state and a lemma graph |
 | Recovery | The theorem has failed before | A no-repeat diagnosis and a genuinely new move |
 
@@ -152,13 +153,14 @@ For hard proofs, the core loop is:
 1. Freeze the exact statement, assumptions, domains, and quantifiers.
 2. Check direct theorems and try to falsify the claim on small and boundary cases.
 3. Identify the failure world, central object, and smallest decisive proof kernel.
-4. If the answer is unknown, define the candidate representation, exact validity gate, evaluator, simplification ladder, holdouts, and promotion rule before broad search.
-5. Freeze a promoted candidate as a fixed theorem target; otherwise compare a small number of genuinely different proof routes, each with a cheap decisive evaluator.
-6. Build an AND/OR lemma graph and work the least-certain required child.
-7. Use tools only for a named counterexample, condition, identity, certificate, or formal lemma.
-8. On failure, find the first invalid step, preserve the verified prefix, and repair only affected dependents.
-9. After two unchanged local attempts, repair, re-decompose, retrieve, tool-check, or stop.
-10. Assemble the original theorem and run an adversarial final review.
+4. If the answer may be unknown, search exact and neighboring results, recent cited-by work, and public active projects; verify sources and state the precise frontier gap.
+5. Then define the candidate representation, exact validity gate, evaluator, simplification ladder, holdouts, and promotion rule before broad search.
+6. Freeze a promoted candidate as a fixed theorem target; otherwise compare a small number of genuinely different proof routes, each with a cheap decisive evaluator.
+7. Build an AND/OR lemma graph and work the least-certain required child.
+8. Use tools only for a named counterexample, condition, identity, certificate, or formal lemma.
+9. On failure, find the first invalid step, preserve the verified prefix, and repair only affected dependents.
+10. After two unchanged local attempts, repair, re-decompose, retrieve, tool-check, or stop.
+11. Assemble the original theorem and run an adversarial final review.
 
 ## Proof Project Memory
 
@@ -354,9 +356,9 @@ Codex 遇到困难或重复失败的证明时可以隐式触发这个 skill。�
 对于答案或 extremal object 尚未知的问题：
 
 ```text
-使用 $theory-proof-workbench 的 discovery mode。先检查问题是否真的 open，
-定义精确 evaluator 和 simplification ladder，再把通过检查的候选固定下来，
-然后进入证明。
+使用 $theory-proof-workbench 的 discovery mode。先把模型记忆视为 unverified，
+检索 Scholar、近期 cited-by 工作和公开项目，核验来源并找出最接近结果与精确 gap，
+再定义 evaluator，把通过检查的候选固定下来，然后进入证明。
 ```
 
 只想寻找思路而不创建完整项目时：
@@ -427,7 +429,7 @@ Workbench 会选择足够解决当前问题的最轻模式。高级流程是条�
 | Direct | 已经看到标准定理、certificate 或短推导 | 经过验证的证明 |
 | Micro check | 小证明只缺一个相近 theorem pattern | 定理匹配或明确不匹配 |
 | Light idea | Central object 或构造不清楚 | Proof kernel 和 verification hook |
-| Discovery | 答案、extremal object、公式或概念未知 | 经过检查的 candidate 和固定 theorem handoff |
+| Discovery | 答案、extremal object、公式或概念可能未知 | 经过核查的 frontier map、candidate 和固定 theorem handoff |
 | Project | 证明困难、多 lemma 或需要工具 | 持久化 proof state 和 lemma graph |
 | Recovery | 命题以前证明失败过 | No-repeat 诊断和真正的新路线 |
 
@@ -436,13 +438,14 @@ Workbench 会选择足够解决当前问题的最轻模式。高级流程是条�
 1. 固定精确命题、assumptions、domains 和 quantifiers。
 2. 检查直接定理，并在小例子和边界情形上尝试反驳。
 3. 找到 failure world、central object 和最小的决定性 proof kernel。
-4. 如果答案未知，先定义 candidate representation、exact validity gate、evaluator、simplification ladder、holdout 和 promotion rule。
-5. 通过 promotion gate 后把 candidate 固定成 theorem target；否则只比较少量但真正不同的证明路线。
-6. 构建 AND/OR lemma graph，优先处理最不确定的 required child。
-7. 工具只能用于产生明确的反例、条件、恒等式、certificate 或 formal lemma。
-8. 失败后定位第一处无效步骤，保留已验证前缀，只修复受影响的 dependents。
-9. 两次局部尝试都没有缩小 proof state 时，必须修复、重拆、检索、工具检查或停止。
-10. 最后组装回原命题并做 adversarial review。
+4. 如果答案可能未知，先检索 exact/neighboring result、近期 cited-by 工作和公开项目，核验来源并写出精确 frontier gap。
+5. 再定义 candidate representation、exact validity gate、evaluator、simplification ladder、holdout 和 promotion rule。
+6. 通过 promotion gate 后把 candidate 固定成 theorem target；否则只比较少量但真正不同的证明路线。
+7. 构建 AND/OR lemma graph，优先处理最不确定的 required child。
+8. 工具只能用于产生明确的反例、条件、恒等式、certificate 或 formal lemma。
+9. 失败后定位第一处无效步骤，保留已验证前缀，只修复受影响的 dependents。
+10. 两次局部尝试都没有缩小 proof state 时，必须修复、重拆、检索、工具检查或停止。
+11. 最后组装回原命题并做 adversarial review。
 
 ## Proof Project 记忆
 

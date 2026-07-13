@@ -37,6 +37,8 @@ Use a minimal scan first. For a small unclear proof, inspect one close theorem f
 For every useful source, record:
 
 - source:
+- search cutoff and queries:
+- active-work signals: recent papers, authors, projects, or an evidence-bounded `none found`.
 - trick name:
 - theorem family:
 - proof decomposition:
@@ -48,6 +50,7 @@ For every useful source, record:
 - premise bundle: which results must work together, not merely resemble the target.
 - repair-radius lesson: how much of the graph changes if this imported step fails.
 - source anchor: the exact definition, theorem, or proof passage that prevents route drift.
+- source verification: DOI/publisher, arXiv, proceedings, or another official page.
 - failure stage addressed: strategy-discovery / decomposition / premise-retrieval / local-proof / assembly / fidelity / library-coverage.
 - transplantable idea:
 - hidden assumptions:

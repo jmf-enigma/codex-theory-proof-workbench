@@ -190,18 +190,44 @@ def main() -> int:
         )
         checks.append(
             {
-                "name": "novel-discovery-contract-gate",
+                "name": "novel-frontier-scan-gate",
                 "ok": discovery_diagnosis["novel_problem"]["activated"]
                 and not discovery_diagnosis["novel_problem"]["ready_for_search"]
                 and discovery_diagnosis["primary_action"].startswith(
-                    "Define the novel-problem discovery contract"
+                    "Run an external frontier scan"
                 ),
             }
         )
 
         idea_map = discovery_project / "IDEA_MAP.md"
         discovery_text = idea_map.read_text(encoding="utf-8")
+        memory_only = discovery_text.replace(
+            "- known-solution status: not assessed / known / likely known / apparently open / genuinely new",
+            "- known-solution status: known",
+        )
+        idea_map.write_text(memory_only, encoding="utf-8")
+        memory_only_diagnosis = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(discovery_project), "--json").stdout
+        )
+        checks.append(
+            {
+                "name": "memory-is-not-known-evidence",
+                "ok": memory_only_diagnosis["novel_problem"]["frontier_scan_needed"]
+                and memory_only_diagnosis["primary_action"].startswith(
+                    "Run an external frontier scan"
+                ),
+            }
+        )
+        idea_map.write_text(discovery_text, encoding="utf-8")
+
         setup_replacements = {
+            "- frontier scan status: not run / completed": "- frontier scan status: completed",
+            "- search cutoff date:": "- search cutoff date: 2026-07-13",
+            "- Scholar queries:": "- Scholar queries: exact threshold-policy claim; cited-by search on closest Bellman theorem",
+            "- verified source anchors:": "- verified source anchors: Closest Bellman theorem, https://arxiv.org/abs/2604.15839",
+            "- closest known result:": "- closest known result: finite-horizon threshold theorem under stronger monotonicity",
+            "- active-work signals:": "- active-work signals: two 2026 preprints study related finite-state models; no exact general theorem found",
+            "- current frontier gap:": "- current frontier gap: infinite-horizon threshold formula without the stronger monotonicity assumption",
             "- known-solution status: not assessed / known / likely known / apparently open / genuinely new": "- known-solution status: apparently open",
             "- status evidence:": "- status evidence: bounded scan found solved finite neighbors but no general threshold theorem",
             "- discovery target: answer / threshold / formula / construction / policy / invariant / counterexample / intermediate theorem / new representation": "- discovery target: threshold formula",
@@ -291,6 +317,7 @@ def main() -> int:
             and "Decomposition Admission Gate" in template_text
             and "jointly sufficient premise bundle" in template_text
             and "Discover-To-Prove Handoff" in discovery_text
+            and "Google Scholar-backed discovery" in discovery_text
             and "PatternBoost" in discovery_text
             and "Self-supervised theorem discovery" in discovery_text,
         }

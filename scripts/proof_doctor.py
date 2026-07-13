@@ -325,10 +325,14 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
     else:
         status = None
 
-    activated = status in {"apparently-open", "genuinely-new", "unknown-answer"} or (
-        mode == "discovery" and status not in {"known", "likely-known"}
-    )
     fields = {
+        "frontier scan status": concrete("frontier scan status"),
+        "search cutoff date": concrete("search cutoff date"),
+        "Scholar queries": concrete("Scholar queries"),
+        "verified source anchors": concrete("verified source anchors"),
+        "closest known result": concrete("closest known result"),
+        "active-work signals": concrete("active-work signals"),
+        "current frontier gap": concrete("current frontier gap"),
         "status evidence": concrete("status evidence"),
         "discovery target": concrete("discovery target"),
         "candidate representation": concrete("candidate representation"),
@@ -342,15 +346,55 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
         "fixed proof handoff": concrete("fixed proof handoff"),
     }
 
+    frontier_required = mode == "discovery" or status is not None
+    frontier_missing = []
+    scan_status = fields["frontier scan status"].strip().lower()
+    if frontier_required and scan_status not in {"completed", "complete", "done", "verified"}:
+        frontier_missing.append("frontier scan status")
+    for field in [
+        "search cutoff date",
+        "Scholar queries",
+        "verified source anchors",
+        "closest known result",
+        "active-work signals",
+        "current frontier gap",
+    ]:
+        if frontier_required and not fields[field]:
+            frontier_missing.append(field)
+    source_anchor = fields["verified source anchors"]
+    if source_anchor and not re.search(
+        r"https?://|\bdoi\b|\barxiv\b|\b10\.\d{4,9}/",
+        source_anchor,
+        flags=re.I,
+    ):
+        frontier_missing.append("verified source anchors with DOI, arXiv ID, or official URL")
+    if frontier_required and status is None:
+        frontier_missing.append("known-solution status")
+    if frontier_required and status is not None and not fields["status evidence"]:
+        frontier_missing.append("status evidence")
+
+    frontier_scan_needed = frontier_required and bool(frontier_missing)
+    frontier_verified = frontier_required and not frontier_missing
+    activated = status in {"apparently-open", "genuinely-new", "unknown-answer"} or (
+        mode == "discovery" and status not in {"known", "likely-known"}
+    )
+
     if not activated:
-        action = (
-            "Treat the result as known or likely known and use bounded premise retrieval before the ordinary proof loop."
-            if status in {"known", "likely-known"}
-            else "not activated"
-        )
+        if frontier_scan_needed:
+            action = (
+                "Run an external frontier scan before accepting a known/open classification: use Scholar-backed "
+                "queries, verify source anchors, inspect recent cited-by and public active work, and state the exact gap."
+            )
+        elif status in {"known", "likely-known"}:
+            action = "Use the verified closest result for bounded premise retrieval, then continue with the ordinary proof loop."
+        else:
+            action = "not activated"
         return {
             "activated": False,
             "status": status,
+            "frontier_scan_needed": frontier_scan_needed,
+            "frontier_verified": frontier_verified,
+            "frontier_missing": frontier_missing,
             "missing_setup": [],
             "ready_for_search": False,
             "candidate_found": bool(fields["discovered candidate"]),
@@ -359,10 +403,6 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
         }
 
     missing = []
-    if status is None:
-        missing.append("known-solution status")
-    if status in {"apparently-open", "genuinely-new", "unknown-answer"} and not fields["status evidence"]:
-        missing.append("status evidence")
     for field in [
         "discovery target",
         "candidate representation",
@@ -380,11 +420,17 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
         and candidate_found
         and fields["holdout cases"]
         and fields["promotion criterion"]
+        and frontier_verified
         and not missing
     )
-    if missing:
+    if frontier_scan_needed:
         action = (
-            "Define the novel-problem discovery contract before broad search: status evidence, target, "
+            "Run an external frontier scan before accepting a known/open classification: use Scholar-backed "
+            "queries, verify source anchors, inspect recent cited-by and public active work, and state the exact gap."
+        )
+    elif missing:
+        action = (
+            "Define the novel-problem discovery contract before broad search: target, "
             "candidate representation, validity gate, evaluator, simplification ladder, and budget."
         )
     elif not candidate_found:
@@ -408,8 +454,11 @@ def novel_problem_summary(project: Path, mode: str) -> dict:
     return {
         "activated": True,
         "status": status,
+        "frontier_scan_needed": frontier_scan_needed,
+        "frontier_verified": frontier_verified,
+        "frontier_missing": frontier_missing,
         "missing_setup": missing,
-        "ready_for_search": not missing,
+        "ready_for_search": frontier_verified and not missing,
         "candidate_found": candidate_found,
         "handoff_ready": handoff_ready,
         "recommended_action": action,
@@ -769,6 +818,8 @@ def primary_action_for(
         return "Present the proof with its verified status and essential assumptions."
     if state in {"S7-adversarial-review", "S8-finalize"} and not audit["ready_for_final_proof"]:
         return "Close the blocking ledger and verification-gate gaps before presenting the proof."
+    if novel_problem["frontier_scan_needed"]:
+        return novel_problem["recommended_action"]
     if novel_problem["activated"] and not novel_problem["handoff_ready"]:
         return novel_problem["recommended_action"]
     if failure_localization["needed"]:
@@ -833,7 +884,7 @@ def diagnose(project: Path) -> dict:
         actions.append("Create ATTACK_MATRIX.md with one proof route and one falsification route.")
     if not (project / "LEMMA_QUEUE.md").exists():
         actions.append("Create LEMMA_QUEUE.md as a blueprint DAG with nodes, statement deps, proof deps, downstream use, statuses, and failure diagnoses.")
-    if novel_problem["activated"]:
+    if novel_problem["frontier_scan_needed"] or novel_problem["activated"]:
         actions.append(f"Novel-problem discovery: {novel_problem['recommended_action']}")
     if not (project / "WORKSTREAMS.md").exists() and state in {"S3-route-portfolio", "S5-local-certification", "S7-adversarial-review", "S9-stuck"}:
         actions.append("Create WORKSTREAMS.md with approved goals, bounded workstream cards, and a look-at-how-others-do-it gate.")
@@ -975,6 +1026,10 @@ def print_human(result: dict) -> None:
     print("novel problem discovery:")
     print(f"- activated: {novel['activated']}")
     print(f"- status: {novel['status']}")
+    print(f"- frontier_scan_needed: {novel['frontier_scan_needed']}")
+    print(f"- frontier_verified: {novel['frontier_verified']}")
+    for field in novel["frontier_missing"]:
+        print(f"- frontier_missing: {field}")
     print(f"- ready_for_search: {novel['ready_for_search']}")
     print(f"- candidate_found: {novel['candidate_found']}")
     print(f"- handoff_ready: {novel['handoff_ready']}")
