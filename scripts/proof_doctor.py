@@ -425,6 +425,55 @@ def prover_verifier_need(project: Path, progress: dict, summary: dict) -> dict:
     return {"needed": bool(reasons), "reasons": reasons}
 
 
+def failure_localization_summary(project: Path, progress: dict, pv_need: dict) -> dict:
+    chunks = []
+    has_board = False
+    for name in ["WORKSTREAMS.md", "LEDGER.md"]:
+        path = project / name
+        if path.exists():
+            text = path.read_text(encoding="utf-8")
+            has_board = has_board or "Failure Localization And Salvage" in text
+            chunks.append(text)
+    text = "\n".join(chunks)
+
+    def real_values(field: str) -> list[str]:
+        return [
+            value
+            for value in filled_field_values(text, field)
+            if not looks_like_template_choice(value)
+        ]
+
+    first_failure = real_values("first failing step")
+    verified_prefix = real_values("verified prefix")
+    failure_witness = real_values("failure witness or verifier error")
+    rescued = real_values("independently rescued artifacts")
+    affected = real_values("affected dependents")
+    scope = real_values("next scope")
+    triggered = progress["no_progress_threshold_met"] or pv_need["needed"]
+    needed = triggered and not first_failure
+
+    if needed:
+        action = "localize the earliest failing step before route selection"
+    elif first_failure and scope:
+        action = f"execute {scope[0]} while preserving the verified prefix"
+    elif first_failure:
+        action = "preserve the verified prefix and repair only the first failing node plus affected dependents"
+    else:
+        action = "not activated"
+
+    return {
+        "has_board": has_board,
+        "needed": needed,
+        "first_failing_step": first_failure[:1],
+        "verified_prefix": verified_prefix[:1],
+        "failure_witness": failure_witness[:1],
+        "rescued_artifacts": rescued[:1],
+        "affected_dependents": affected[:1],
+        "next_scope": scope[:1],
+        "recommended_action": action,
+    }
+
+
 def route_decision_summary(state: str, progress: dict, fingerprints: dict, idea_map: dict, pattern_scan: dict) -> dict:
     reasons = []
     decision = "continue"
@@ -520,6 +569,7 @@ def primary_action_for(
     idea_map: dict,
     pattern_scan: dict,
     pv_need: dict,
+    failure_localization: dict,
     audit: dict,
 ) -> str:
     if (
@@ -533,6 +583,13 @@ def primary_action_for(
         return "Present the proof with its verified status and essential assumptions."
     if state in {"S7-adversarial-review", "S8-finalize"} and not audit["ready_for_final_proof"]:
         return "Close the blocking ledger and verification-gate gaps before presenting the proof."
+    if failure_localization["needed"]:
+        return "Localize the earliest failing step, freeze the verified prefix, and salvage independent artifacts before choosing another route."
+    if failure_localization["first_failing_step"] and failure_localization["next_scope"]:
+        return (
+            f"Execute the localized scope: {failure_localization['next_scope'][0]}; "
+            "preserve the verified prefix and repair only affected dependents."
+        )
     if progress["no_progress_threshold_met"] or state == "S9-stuck":
         return f"Execute the route decision: {route_decision['decision']}; produce {route_decision['next_artifact']}."
     if pv_need["needed"]:
@@ -574,6 +631,7 @@ def diagnose(project: Path) -> dict:
     progress = progress_evidence_summary(project)
     prover_verifier = prover_verifier_summary(project)
     pv_need = prover_verifier_need(project, progress, prover_verifier)
+    failure_localization = failure_localization_summary(project, progress, pv_need)
     route_decision = route_decision_summary(state, progress, fingerprints, idea_map, pattern_scan)
 
     actions = []
@@ -604,6 +662,10 @@ def diagnose(project: Path) -> dict:
         actions.append(f"Route decision: {route_decision['decision']}; expected artifact: {route_decision['next_artifact']}.")
     if pv_need["needed"]:
         actions.append("Fill the Prover-Verifier Move Contract for the fragile move before another prose retry.")
+    if failure_localization["needed"]:
+        actions.append("Fill Failure Localization And Salvage: first failing step, failure witness, verified prefix, rescued artifacts, and affected dependents.")
+    elif failure_localization["first_failing_step"]:
+        actions.append("Preserve the verified prefix and independently rescued artifacts; repair only the first failing node and affected dependents.")
     actions.extend(STATE_ACTIONS.get(state, STATE_ACTIONS["S9-stuck"]))
     if idea_map["needed"] and state in {"S1-classify", "S2-stress-test", "S2b-idea-map", "S3-route-portfolio", "S9-stuck"}:
         actions.append("Use IDEA_MAP.md as an optional idea pass: failure world, pattern guess, central object, proof kernel, central lemma, verification hook.")
@@ -645,6 +707,7 @@ def diagnose(project: Path) -> dict:
         idea_map,
         pattern_scan,
         pv_need,
+        failure_localization,
         audit,
     )
     ordered_actions = [primary_action]
@@ -680,6 +743,7 @@ def diagnose(project: Path) -> dict:
         "attempt_fingerprints": fingerprints,
         "progress_evidence": progress,
         "prover_verifier": {**prover_verifier, **pv_need},
+        "failure_localization": failure_localization,
         "route_decision": route_decision,
         "audit": audit,
     }
@@ -731,6 +795,13 @@ def print_human(result: dict) -> None:
     print(f"- needed_now: {pv['needed']}")
     for reason in pv["reasons"]:
         print(f"- reason: {reason}")
+    localization = result["failure_localization"]
+    print("failure localization:")
+    print(f"- needed_now: {localization['needed']}")
+    print(f"- first_failing_step: {localization['first_failing_step']}")
+    print(f"- verified_prefix: {localization['verified_prefix']}")
+    print(f"- rescued_artifacts: {localization['rescued_artifacts']}")
+    print(f"- recommended_action: {localization['recommended_action']}")
     route = result["route_decision"]
     print("route decision:")
     print(f"- decision: {route['decision']}")

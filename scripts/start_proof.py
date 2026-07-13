@@ -102,16 +102,16 @@ Treat attempts with the same goal, assumptions, central object, and failure witn
 If there are several fingerprints or the match is ambiguous, run:
 
 ```bash
-codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/check_attempt.py . --route-family "ROUTE" --central-object "OBJECT" --target-lemma "LEMMA" --failure-witness "WITNESS"
+codex-math-python "${{CODEX_HOME:-$HOME/.codex}}/skills/theory-proof-workbench/scripts/check_attempt.py" . --route-family "ROUTE" --central-object "OBJECT" --target-lemma "LEMMA" --failure-witness "WITNESS"
 ```
 
 ## Route Candidate Board
 
-Use this when several proof sketches are plausible. Keep it small and retire repeats quickly.
+Use this when several proof sketches are plausible. Keep it small, attach one cheap decisive evaluator to each candidate, and retire repeats quickly.
 
-| route | central object | why plausible | verification hook | novelty axis | gap grade | status | retire if |
+| route | central object | expected artifact | cheapest decisive evaluator | decision value | assembly relevance | novelty axis | status / retire if |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| R1 |  |  |  |  | good / bad / unknown | candidate |  |
+| R1 |  |  | toy / boundary / symbolic / solver / local formal | high / medium / low | high / medium / low |  | candidate /  |
 
 ## Step Challenge Board
 
@@ -131,6 +131,19 @@ Use this for fragile local moves, especially after a failed attempt, tool feedba
 | PV1 |  |  | proof / counterexample / condition / certificate / repaired statement | accept / challenge / trace-back / re-decompose / retrieve / tool-check / statement-repair / stop-report |  | smaller / unchanged / larger / refuted |  |
 
 The verifier is read-only unless explicitly assigned a proof role. If the same move is challenged twice without a new artifact, route to `Route Decision Check`.
+
+## Failure Localization And Salvage
+
+Fill this only after a verifier, tool, reviewer, or counterexample rejects a multi-step attempt. Later deductions are not evidence once an earlier dependency fails.
+
+- verified prefix:
+- first failing step:
+- failure witness or verifier error:
+- independently rescued artifacts:
+- affected dependents:
+- next scope: local trace-back / re-decompose / route replan / statement repair / stop-report
+
+Preserve only artifacts whose own dependencies were checked. Repair the first failing node and affected dependents; do not regenerate the verified prefix.
 
 ## Proof-State Equivalence
 
@@ -985,7 +998,7 @@ Blueprint refinement rule:
 When a lemma becomes reusable, create a lemma card:
 
 ```bash
-codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/new_lemma_card.py "LEMMA NAME" --statement "STATEMENT"
+codex-math-python "${{CODEX_HOME:-$HOME/.codex}}/skills/theory-proof-workbench/scripts/new_lemma_card.py" "LEMMA NAME" --statement "STATEMENT"
 ```
 """
 
@@ -1015,7 +1028,7 @@ Use this directory for reusable local proof moves extracted from papers, appendi
 Create a card only when the trick changes the next proof move:
 
 ```bash
-codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/new_trick_card.py "TRICK NAME" --project . --source "SOURCE" --shape "PROBLEM SHAPE" --obstruction "OBSTRUCTION"
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/new_trick_card.py" "TRICK NAME" --project . --source "SOURCE" --shape "PROBLEM SHAPE" --obstruction "OBSTRUCTION"
 ```
 
 Status values:

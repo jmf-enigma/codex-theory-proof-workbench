@@ -27,6 +27,7 @@ Use a proof-writing skill instead when the mathematical argument is already comp
 | A missing lemma hides the entire theorem | Proof-kernel and good-gap/bad-gap checks |
 | Tools return data but no proof | Artifact-first tool plans and proof translation |
 | A plausible local step may contain a gap | Conditional prover-verifier review |
+| One bad step causes the whole attempt to be discarded | First-error localization and verified-prefix salvage |
 | Several attempts make no progress | Route decisions, bounded escalation, and honest stop statuses |
 
 ## Install
@@ -140,11 +141,12 @@ For hard proofs, the core loop is:
 1. Freeze the exact statement, assumptions, domains, and quantifiers.
 2. Check direct theorems and try to falsify the claim on small and boundary cases.
 3. Identify the failure world, central object, and smallest decisive proof kernel.
-4. Compare a small number of genuinely different routes.
+4. Compare a small number of genuinely different routes, each with a cheap decisive evaluator.
 5. Build an AND/OR lemma graph and work the least-certain required child.
 6. Use tools only for a named counterexample, condition, identity, certificate, or formal lemma.
-7. After two unchanged local attempts, repair, re-decompose, retrieve, tool-check, or stop.
-8. Assemble the original theorem and run an adversarial final review.
+7. On failure, find the first invalid step, preserve the verified prefix, and repair only affected dependents.
+8. After two unchanged local attempts, repair, re-decompose, retrieve, tool-check, or stop.
+9. Assemble the original theorem and run an adversarial final review.
 
 ## Proof Project Memory
 
@@ -156,7 +158,7 @@ For hard proofs, the core loop is:
 | `ATTACK_MATRIX.md` | Proof, falsification, and orthogonal evidence routes |
 | `IDEA_MAP.md` | Central objects, constructions, kernels, and one-step moves |
 | `LEMMA_QUEUE.md` | AND/OR lemma graph and node status |
-| `WORKSTREAMS.md` | Attempt fingerprints, bounded branches, and route decisions |
+| `WORKSTREAMS.md` | Candidate frontier, attempt fingerprints, first-error salvage, and route decisions |
 | `PATTERN_SCAN.md` | Bounded extraction from papers, ledgers, or formal libraries |
 | `TOOL_PLAN.md` | Expected artifacts before computation or formalization |
 | `LEDGER.md` | Persistent claim, evidence, failures, and verification status |
@@ -219,6 +221,7 @@ Never label a result as proved when its decisive lemma is still guessed.
 └── scripts/
     ├── start_proof.py
     ├── proof_doctor.py
+    ├── smoke_workbench.py
     ├── audit_ledger.py
     └── ...
 ```
@@ -231,8 +234,11 @@ The workbench scripts use only the Python standard library. The Codex skill vali
 python3 -m pip install pyyaml
 python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py .
 PYTHONPYCACHEPREFIX=/tmp/codex-pycache python3 -m py_compile scripts/*.py
+python3 scripts/smoke_workbench.py
 python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
+
+The smoke test checks deterministic control behavior: domain routing, recovery activation, first-error gating, verified-prefix salvage, portable paths, and the presence of research-backed rules. It does not claim a theorem-solving benchmark gain. The practical improvement is narrower and testable: fewer equivalent retries, more local repairs, and clearer separation between checked artifacts and an unfinished global proof.
 
 ## Design Influences
 
@@ -242,6 +248,11 @@ The workflow translates ideas from proof-agent and formalization research into l
 - [Prover-Verifier Games](https://arxiv.org/abs/2407.13692): optimize fragile steps for adversarial checkability.
 - [STAR-PolyaMath](https://arxiv.org/abs/2605.19338): separate proof reasoning from persistent control, trace-back, and re-planning.
 - [Goedel-Architect](https://arxiv.org/abs/2606.06468): maintain and refine a dependency blueprint instead of restarting solved subgraphs.
+- [AI co-mathematician](https://arxiv.org/abs/2605.06651): preserve state, uncertainty, failed workstreams, and human steering across long research tasks.
+- [Aristotle](https://arxiv.org/abs/2510.01346): search an AND/OR proof graph, merge equivalent states, and use formal feedback to guide expansion.
+- [Goedel-Prover-V2](https://arxiv.org/abs/2508.03613) and [process-verified theorem proving](https://arxiv.org/abs/2606.20068): repair from precise verifier errors and retain valid proof prefixes.
+- [Aletheia](https://arxiv.org/abs/2602.10177): separate generation, verification, and revision, including an honest failure outcome.
+- [AlphaEvolve](https://arxiv.org/abs/2506.13131): maintain diverse candidates only when automated evaluators can rank concrete artifacts.
 
 These papers inspire the workflow. They are not treated as proof authority for a user's theorem.
 
@@ -280,6 +291,7 @@ MIT License. See [LICENSE](LICENSE).
 | Missing lemma 其实等于整个 theorem | Proof kernel 和 good-gap/bad-gap 检查 |
 | 工具只返回数字，没有形成证明 | Artifact-first tool plan 和 proof translation |
 | 某个局部步骤看起来对但可能藏着漏洞 | 条件触发的 prover-verifier review |
+| 一个坏步骤导致整条尝试被全部丢弃 | 定位第一处错误并回收已验证前缀 |
 | 多次尝试没有进展 | Route decision、有限升级和诚实停止 |
 
 ## 安装
@@ -392,11 +404,12 @@ Workbench 会选择足够解决当前问题的最轻模式。高级流程是条�
 1. 固定精确命题、assumptions、domains 和 quantifiers。
 2. 检查直接定理，并在小例子和边界情形上尝试反驳。
 3. 找到 failure world、central object 和最小的决定性 proof kernel。
-4. 比较少量但真正不同的路线。
+4. 比较少量但真正不同的路线，并为每条路线指定一个低成本的决定性检查。
 5. 构建 AND/OR lemma graph，优先处理最不确定的 required child。
 6. 工具只能用于产生明确的反例、条件、恒等式、certificate 或 formal lemma。
-7. 两次局部尝试都没有缩小 proof state 时，必须修复、重拆、检索、工具检查或停止。
-8. 最后组装回原命题并做 adversarial review。
+7. 失败后定位第一处无效步骤，保留已验证前缀，只修复受影响的 dependents。
+8. 两次局部尝试都没有缩小 proof state 时，必须修复、重拆、检索、工具检查或停止。
+9. 最后组装回原命题并做 adversarial review。
 
 ## Proof Project 记忆
 
@@ -408,7 +421,7 @@ Workbench 会选择足够解决当前问题的最轻模式。高级流程是条�
 | `ATTACK_MATRIX.md` | 证明、反驳和正交证据路线 |
 | `IDEA_MAP.md` | Central object、构造、kernel 和 one-step move |
 | `LEMMA_QUEUE.md` | AND/OR lemma graph 和节点状态 |
-| `WORKSTREAMS.md` | Attempt fingerprint、有限分支和 route decision |
+| `WORKSTREAMS.md` | Candidate frontier、attempt fingerprint、first-error salvage 和 route decision |
 | `PATTERN_SCAN.md` | 从论文、旧 ledger 或 formal library 中有限提取结构 |
 | `TOOL_PLAN.md` | 计算或 formalization 之前声明 expected artifact |
 | `LEDGER.md` | 持久化 claim、证据、失败记录和 verification status |
@@ -471,6 +484,7 @@ wolframscript -code '2+2'
 └── scripts/
     ├── start_proof.py
     ├── proof_doctor.py
+    ├── smoke_workbench.py
     ├── audit_ledger.py
     └── ...
 ```
@@ -483,8 +497,11 @@ Workbench 脚本只使用 Python 标准库。Codex 的 skill validator 还需要
 python3 -m pip install pyyaml
 python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py .
 PYTHONPYCACHEPREFIX=/tmp/codex-pycache python3 -m py_compile scripts/*.py
+python3 scripts/smoke_workbench.py
 python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
+
+Smoke test 检查的是确定性的控制行为，包括领域路由、recovery 激活、first-error gate、verified-prefix salvage、路径可移植性和研究规则是否完整。它并不声称已经测得 theorem-solving benchmark 的提升。能够诚实验证的改进更具体：减少等价重试，更常做局部修复，并明确区分已经检查的 artifact 与尚未闭合的全局证明。
 
 ## 设计来源
 
@@ -494,6 +511,11 @@ python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 - [Prover-Verifier Games](https://arxiv.org/abs/2407.13692)：让脆弱步骤能够经受对抗性检查。
 - [STAR-PolyaMath](https://arxiv.org/abs/2605.19338)：把证明推理与持续控制、trace-back 和 re-plan 分开。
 - [Goedel-Architect](https://arxiv.org/abs/2606.06468)：维护并修正 dependency blueprint，而不是重复推倒已经解决的 subgraph。
+- [AI co-mathematician](https://arxiv.org/abs/2605.06651)：在长期研究任务中保留状态、不确定性、失败 workstream 和人工 steering。
+- [Aristotle](https://arxiv.org/abs/2510.01346)：搜索 AND/OR proof graph，合并等价状态，并用 formal feedback 指导扩展。
+- [Goedel-Prover-V2](https://arxiv.org/abs/2508.03613) 和 [process-verified theorem proving](https://arxiv.org/abs/2606.20068)：根据精确 verifier error 修复证明并保留有效前缀。
+- [Aletheia](https://arxiv.org/abs/2602.10177)：分离生成、验证和修订，并允许诚实地返回失败。
+- [AlphaEvolve](https://arxiv.org/abs/2506.13131)：只有在自动 evaluator 能比较具体 artifact 时，才维护多样候选。
 
 这些论文只提供工作流启发，不会被当成用户命题的证明依据。
 

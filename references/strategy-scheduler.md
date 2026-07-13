@@ -7,6 +7,7 @@ Use this file to choose the next proof route after classification or failure.
 - Normalize first: make objects, quantifiers, and the smallest nontrivial case explicit.
 - Portfolio routes: choose genuinely different proof architectures before converging.
 - Search discipline: retrieve, guess, kernelize, verify, and repair locally.
+- Frontier control: compare a few non-equivalent next moves by decision value, check cost, and assembly relevance.
 - Marginal value routing: after repeated failure, choose exactly one next action.
 - Novelty and decision value: continue only when a route changes evidence, object, or obstruction.
 - Switch rules and scoring: select the route whose assumptions and certificates best match the theorem.
@@ -40,7 +41,8 @@ Run at least two routes for a hard proof unless one route cleanly proves or refu
 - Draft-Sketch-Prove: turn the intuitive proof into named subgoals before filling details; subgoals should be small enough for algebra, finite checks, Lean, or direct theorem matching.
 - Direct-first then blueprint: try a short direct route once. If it fails, build a lemma graph rather than extending the same prose proof.
 - One-step verifier loop: for a fragile subgoal, try one move, predict the new subgoal, check it, and record whether the proof state became smaller.
-- Repair by isolation: when a route fails, isolate the first false or unproved subgoal instead of rewriting the whole proof.
+- Repair by isolation: when a route fails, find the earliest false or unproved step, preserve the verified prefix, and rewrite only the affected subgraph.
+- First-error rule: downstream steps after the first invalid inference are not evidence. Earlier checked steps and independent helper lemmas remain reusable artifacts.
 - Compact feedback repair: when retrying a failed node, use the node statement, retrieved pattern, previous attempt signature, and previous feedback. Do not reload the whole failed history into the next attempt.
 - Progress estimate: after each route, mark whether the remaining obstacle is smaller, unchanged, or bigger; stop or switch after two unchanged/bigger cycles.
 - Recombine only after local checks: a final proof is allowed only when each sketch lemma has a status and the assembly matches the original quantifiers.
@@ -87,12 +89,25 @@ A route has made progress only if it proves/refutes a kernel, shrinks the missin
 
 For difficult proofs, use a three-lane first pass unless direct mode succeeds: proof route, falsification route, and orthogonal evidence route. The third lane can be small-case pattern mining, symbolic simplification, LP/SMT/CVX certificate search, Lean for a local lemma, or a one-to-three-source pattern scan.
 
-For research-level stuck proofs, keep a small route population after the first pass:
+## Frontier Controller
+
+For a research-level stuck proof, keep a small candidate frontier after the first pass:
 
 - 2-4 routes only;
 - each route must differ by central object, certificate type, theorem family, or failure world;
-- score by plausibility, novelty, decomposition quality, evidence/certificate availability, and circularity risk;
+- attach one cheap evaluator to each route: toy counterexample, symbolic identity, premise match, local certificate, or formalizable leaf;
+- rank routes qualitatively by decision value, evaluator cost, assembly relevance, novelty, and circularity risk;
 - retire any route whose compact failure state matches an earlier fingerprint.
+
+Expand one route at a time. Prefer the route whose next artifact can prove, refute, or sharply re-decompose the kernel. Keep a lower-ranked route alive only when it explores a genuinely different proof state. Do not average several weak sketches into one proof.
+
+After an evaluator returns:
+
+- `accept`: add the artifact to the lemma graph;
+- `local repair`: preserve the verified prefix and repair the first failing node;
+- `trace-back`: reopen the earliest accepted ancestor contradicted by the new evidence;
+- `route replan`: retire the proof family only when its central object, decomposition, or required assumptions fail;
+- `stop/report`: use when every live candidate is equivalent, low-value, or lacks a checkable artifact.
 
 ## Decision Value Ranking
 
@@ -103,6 +118,8 @@ When several next moves are possible, choose the one with the highest decision v
 - produce a checkable certificate, exact identity, LP/SMT/CVX witness, or local formalization;
 - retrieve a theorem pattern whose assumptions can be matched immediately;
 - replace an opaque algebra step with a dual, envelope, Bellman, KL, coupling, potential, or telescope representation.
+
+Use a verification cascade and stop at the first decisive level: dimensional/domain checks, smallest counterexample or boundary case, exact symbolic/numeric certificate, local formalization, then adversarial assembly review. Expensive formal search is justified only when the local statement is stable and the cheaper checks cannot decide it.
 
 Low-value moves include polishing exposition, adding an unmotivated case split, strengthening the same missing lemma, or trying another route whose failure witness is unchanged.
 

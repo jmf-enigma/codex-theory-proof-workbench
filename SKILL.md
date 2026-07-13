@@ -40,19 +40,20 @@ Do not open a full project for routine algebra or a standard theorem application
 2. Run a direct-solve check and match every theorem assumption explicitly.
 3. Write the negation and test the smallest finite, scalar, boundary, symmetric, or relaxed-assumption case.
 4. If the route is unclear, find the failure world, central object, proof kernel, and verification hook. Discover unknown thresholds, potentials, hard instances, coefficients, or policies before trying to prove them.
-5. For a hard proof, keep two to four genuinely different routes. Change the theorem family, central object, certificate type, failure world, or evidence source.
+5. For a hard proof, keep two to four genuinely different routes. Give each route one expected artifact and its cheapest decisive evaluator, then expand the route with the best decision value and assembly relevance.
 6. Build an AND/OR lemma graph. Mark required children as AND nodes and alternative routes as OR nodes. Work the least-certain required child on the current assembly path.
 7. For each fragile move, name the current subgoal, proposed move, expected artifact, check, and proof-state delta. Use the prover-verifier loop only after challenge, repetition, or hard-to-check feedback.
-8. After two unchanged local attempts, choose exactly one action: repair, re-decompose, retrieve, tool-falsify, formalize locally, repair the theorem, or stop/report.
-9. Assemble only proved, checked, known, or explicitly conditional nodes into the original theorem.
-10. Run adversarial review and assign an honest proof status.
+8. On failure, locate the first invalid step, preserve the verified prefix and independent helper lemmas, then choose local trace-back or route-level replan.
+9. After two unchanged local attempts, choose exactly one action: repair, re-decompose, retrieve, tool-falsify, formalize locally, repair the theorem, or stop/report.
+10. Assemble only proved, checked, known, or explicitly conditional nodes into the original theorem.
+11. Run adversarial review and assign an honest proof status.
 
 ## Commands
 
 Run a compact idea pass without creating files:
 
 ```bash
-codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/plan_idea.py "CLAIM"
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/plan_idea.py" "CLAIM"
 ```
 
 Add `--full` only when the compact output does not identify a useful kernel.
@@ -60,7 +61,7 @@ Add `--full` only when the compact output does not identify a useful kernel.
 Start a hard proof project:
 
 ```bash
-codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/start_proof.py --title "SHORT NAME" --claim "CLAIM"
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/start_proof.py" --title "SHORT NAME" --claim "CLAIM"
 ```
 
 Add `--mode recovery` when the theorem has already failed.
@@ -68,19 +69,19 @@ Add `--mode recovery` when the theorem has already failed.
 Diagnose one primary next move before resuming a project:
 
 ```bash
-codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/proof_doctor.py path/to/project
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/proof_doctor.py" path/to/project
 ```
 
 Check a possibly repeated attempt only when the match is ambiguous:
 
 ```bash
-codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/check_attempt.py path/to/project --route-family "ROUTE" --central-object "OBJECT" --target-lemma "LEMMA" --failure-witness "WITNESS"
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/check_attempt.py" path/to/project --route-family "ROUTE" --central-object "OBJECT" --target-lemma "LEMMA" --failure-witness "WITNESS"
 ```
 
 Audit the ledger before claiming a final proof:
 
 ```bash
-codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/audit_ledger.py path/to/project/LEDGER.md
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/audit_ledger.py" path/to/project/LEDGER.md
 ```
 
 Use `pattern_miner.py` only for an exact small-case sequence. Use `new_lemma_card.py` and `new_trick_card.py` only after a lemma or trick has proved useful in a real route.
@@ -91,7 +92,7 @@ Read only files needed by the current decision.
 
 - For classification, read [proof-router.md](references/proof-router.md). For project state and legal transitions, read [proof-state-machine.md](references/proof-state-machine.md).
 - When routes compete, read [strategy-scheduler.md](references/strategy-scheduler.md). When the central object or construction is missing, read [proof-idea-generator.md](references/proof-idea-generator.md).
-- For a hard or repeatedly failed research proof, read [research-backed-proof-loop.md](references/research-backed-proof-loop.md). For unfamiliar theorem families or missing standard tricks, read [external-proof-pattern-scan.md](references/external-proof-pattern-scan.md).
+- For a hard or repeatedly failed research proof, or when adapting AI-assisted proof-search methods, read [research-backed-proof-loop.md](references/research-backed-proof-loop.md). For unfamiliar theorem families or missing standard tricks, read [external-proof-pattern-scan.md](references/external-proof-pattern-scan.md).
 - When stuck, first classify the block with [obstruction-taxonomy.md](references/obstruction-taxonomy.md), then use [proof-escalation-protocol.md](references/proof-escalation-protocol.md).
 - For a challenged, repeated, or hard-to-check local move, read [prover-verifier-loop.md](references/prover-verifier-loop.md).
 - Before CAS, SMT, optimization, simulation, or Lean work, read [tool-assisted-proof-patterns.md](references/tool-assisted-proof-patterns.md).
@@ -111,7 +112,13 @@ Read at most the relevant domain playbook:
 If classification is uncertain, run:
 
 ```bash
-codex-math-python /Users/mingfeijiang/.codex/skills/theory-proof-workbench/scripts/select_playbook.py "CLAIM OR TOPIC"
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/select_playbook.py" "CLAIM OR TOPIC"
+```
+
+Run the integrated smoke test after modifying the skill:
+
+```bash
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/smoke_workbench.py"
 ```
 
 ## Tool Contract
@@ -134,6 +141,7 @@ Record only compact, decision-relevant state:
 - proved, checked, false, conditional, and missing nodes;
 - failed attempt signature and failure witness;
 - current obstruction and proof-state delta;
+- first failing step, verified prefix, and independently rescued artifacts;
 - accepted counterexamples, certificates, theorem patterns, and local tricks;
 - next allowed action and expected artifact.
 

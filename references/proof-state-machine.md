@@ -10,7 +10,7 @@ Use this to keep a hard proof moving instead of looping.
 - `S2b-idea-map`: optional state for unclear or repeatedly failed proofs; propose failure world, small-case pattern guess, central object, proof kernel, central lemma, and verification hook.
 - `S3-route-portfolio`: at least two plausible proof routes with switch rules.
 - `S4-lemma-graph`: theorem reduced to a blueprint-style dependency graph of definitions, lemmas, and theorem assembly nodes with statement dependencies, proof dependencies, downstream use, and statuses.
-- `S5-local-certification`: check fragile lemmas with tools, known theorems, one-step proof-state feedback, or the prover-verifier move contract.
+- `S5-local-certification`: check fragile lemmas with tools, known theorems, one-step proof-state feedback, or the prover-verifier move contract; retain any independently verified prefix or helper artifact.
 - `S6-assembly`: combine lemmas into the exact target statement.
 - `S7-adversarial-review`: try to break assumptions, quantifiers, boundary cases, and conclusion.
 - `S8-finalize`: final proof with verification status.
@@ -28,6 +28,7 @@ Use this to keep a hard proof moving instead of looping.
 - `S3 -> S4`: route has a decomposable proof skeleton.
 - `S4 -> S5`: all nontrivial steps are lemma candidates with statement dependencies, proof dependencies, downstream use, statuses, expected evidence artifacts, gap grades, and compact repair states for failed nodes. Fragile or repeated local moves have a named prover move and verifier target.
 - `S4 -> S4`: merge equivalent proof states or actions before retrying. Equivalent means same goal, same local assumptions, same central object, and same failure witness up to notation.
+- `S5 -> S4`: when a check fails, return to the earliest failing node, keep the verified prefix, and invalidate only affected dependents.
 - `S5 -> S6`: each essential lemma is proved, tool-checked, or explicitly marked conditional.
 - `S6 -> S7`: assembled proof matches the exact claim.
 - `S7 -> S8`: review finds no unhandled gaps.
@@ -48,6 +49,8 @@ After two failed attempts, do not continue prose proof. Update the ledger with:
 
 Then apply `proof-escalation-protocol.md`: tool falsification, retrieval, local formalization, theorem repair, or stop/report.
 
+Node evidence may be `candidate`, `counterexample-tested`, `proved`, `tool-checked`, `partial-verified`, `formalized-local`, `false`, or `missing`. `partial-verified` means a checked prefix or helper artifact survived an incomplete global proof; it cannot close the parent theorem by itself.
+
 ## Research-Level Overlay
 
 For proofs that have already failed or look paper-level, run `S3 -> S6` as a Draft-Sketch-Prove cycle:
@@ -56,11 +59,13 @@ For proofs that have already failed or look paper-level, run `S3 -> S6` as a Dra
 - Sketch: convert the draft into named subgoals/lemmas, each with inputs, output, and likely prior result.
 - Prove: fill or refute the subgoals one by one; for fragile kernels, try one move at a time and record whether the subgoal became smaller.
 - Verify: for challenged local moves, separate proposer, checker, and coordinator roles; record verifier verdict, soundness probe, proof-state delta, and decision before retrying.
+- First-error localization: on rejection, identify the earliest invalid step and its witness. Freeze the valid prefix and discard downstream claims that depend on the bad step.
 - Repair: when a subgoal fails, classify the exact failure, weaken the lemma or add the missing assumption, then recombine.
 - Blueprint refinement: preserve solved nodes, diagnose failed nodes as false statement or too-hard proof, then rewrite only the failed node and its dependents.
 - AND/OR proof graph: treat alternative routes as OR nodes and required child lemmas as AND nodes. A parent proof route is not solved until all required children are solved. Work the lowest-confidence required child first.
 - Action/state equivalence: if a new tactic, derivation, or construction produces the same remaining subgoal as a previous failed move, record it as the same proof state instead of counting it as a new attempt.
 - Lemma revision loop: after failure, keep proved nodes and verified helper lemmas, add or repair only unproved lemmas, and rerun assembly only after the changed dependencies are ready.
+- Salvage rule: promote an intermediate result only when its own dependencies are valid; a result derived after the first failing step is not rescued merely because it looks plausible.
 - Dynamic leaves: work on ready leaves whose dependencies are settled and whose downstream use feeds the current theorem. Do not prove orphan lemmas unless they falsify or repair the route.
 - Good-gap review: do not accept a missing lemma unless it is smaller than its parent, non-circular, assumption-explicit, and checkable.
 - Compact repair: the next repair should use the node statement, dependencies, previous attempt signature, previous feedback, and suggested fix, not the full failed transcript.
