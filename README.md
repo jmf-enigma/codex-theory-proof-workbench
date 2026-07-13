@@ -108,9 +108,9 @@ Advanced machinery is conditional. A routine proof does not create a project, ru
 2. Check direct theorems and certificates, then write the negation and test small, symmetric, boundary, or relaxed-assumption cases.
 3. Identify the failure world, central object, and smallest proof kernel that decides the current route.
 4. If the answer may be unknown, verify the nearest literature frontier before candidate search. Define a representation, evaluator, holdout set, and promotion rule, then freeze one supported candidate.
-5. Seed a small number of routes independently, then group them by mathematical approach family before choosing a favorite. Build an AND/OR lemma graph and work on the least-certain required child along the current assembly path.
+5. Seed a small number of routes independently, then group them by mathematical approach family before choosing a favorite. Keep one incompatible shadow family until the leading kernel is decided. Build an AND/OR lemma graph and work on the least-certain required child along the current assembly path.
 6. Give every fragile tool or proof move an expected artifact. After failure, preserve valid nodes and repair the first broken dependency. Two unchanged attempts trigger a route change, retrieval, theorem repair, or stop decision.
-7. Reassemble the original theorem, run an adversarial review, and assign the strongest proof status supported by the evidence.
+7. Reassemble the original theorem, map every acceptance item and edge case to a checked proof node, run an adversarial review, and assign the strongest proof status supported by the evidence.
 
 This loop does not guarantee that every true theorem will be proved. It prevents unresolved mathematics from being hidden behind fluent prose and makes the remaining gap reusable in the next attempt.
 
@@ -403,9 +403,9 @@ Workbench 会选择足以产生下一个决定性 artifact 的最轻模式。
 2. 检查直接 theorem 与 certificate，再写出命题的否定，并测试小规模、对称、边界和放松假设的情形。
 3. 找出 failure world、central object，以及能够决定当前路线的最小 proof kernel。
 4. 如果答案可能未知，先核查最近的文献 frontier。随后定义 candidate representation、evaluator、holdout 和 promotion rule，再固定一个有证据支持的 candidate。
-5. 先独立生成少量路线，再按数学机制归入 approach family，之后才选择当前主路线。建立 AND/OR lemma graph，优先处理当前 assembly path 上最不确定的 required child。
+5. 先独立生成少量路线，再按数学机制归入 approach family，之后才选择当前主路线。在 leading kernel 得到判定前保留一个不兼容的 shadow family。建立 AND/OR lemma graph，优先处理当前 assembly path 上最不确定的 required child。
 6. 每个脆弱的工具调用或证明动作都必须声明 expected artifact。失败后保留有效节点，只修复第一处损坏的 dependency。两次尝试都没有改变 proof state 时，必须更换路线、检索、修正命题或停止。
-7. 最后重新组装原 theorem，进行 adversarial review，并给出证据能够支持的最强 proof status。
+7. 最后重新组装原 theorem，把每个 acceptance item 和边界情形映射到经过检查的 proof node，再进行 adversarial review，并给出证据能够支持的最强 proof status。
 
 这个流程不能保证每个真 theorem 都会被证明。它能防止尚未解决的数学问题被流畅文字掩盖，也能让当前 gap 在下一次尝试中继续使用。
 

@@ -162,8 +162,12 @@ def main() -> int:
             {
                 "name": "acceptance-and-route-family-control",
                 "ok": "## Acceptance Contract" in claim_template
+                and "atomic semantic obligations" in claim_template
+                and "## Completion Coverage" in claim_template
                 and "## Approach Family Registry" in workstreams_template
+                and "## Portfolio Checkpoint" in workstreams_template
                 and "not the current favorite" in workstreams_template
+                and "menu, not a required roster" in workstreams_template
                 and "new mechanism / invariant / construction" in workstreams_template,
             }
         )
@@ -499,6 +503,15 @@ def main() -> int:
     research_text = (ROOT / "references" / "research-backed-proof-loop.md").read_text(
         encoding="utf-8"
     )
+    strategy_text = (ROOT / "references" / "strategy-scheduler.md").read_text(
+        encoding="utf-8"
+    )
+    verification_text = (ROOT / "references" / "verification-gate.md").read_text(
+        encoding="utf-8"
+    )
+    escalation_text = (ROOT / "references" / "proof-escalation-protocol.md").read_text(
+        encoding="utf-8"
+    )
     discovery_text = (ROOT / "references" / "novel-problem-discovery.md").read_text(
         encoding="utf-8"
     )
@@ -526,6 +539,11 @@ def main() -> int:
             )
             and "Decomposition Admission Gate" in template_text
             and "jointly sufficient premise bundle" in template_text
+            and "incompatible shadow family" in strategy_text
+            and "Roles are a menu, not fixed quotas" in strategy_text
+            and "Semantic-obligation gate" in verification_text
+            and "Completion-coverage gate" in verification_text
+            and "underexplored family" in escalation_text
             and "Discover-To-Prove Handoff" in discovery_text
             and "Google Scholar-backed discovery" in discovery_text
             and "SHA-256" in frontier_text

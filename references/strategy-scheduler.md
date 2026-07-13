@@ -45,6 +45,9 @@ For a hard problem, separate independent route seeding from later synthesis.
 - Mark a family saturated when independent seeds reach the same kernel or failure witness without a new artifact. Redirect the next search toward an underexplored family instead of adding attempts to the crowded one.
 - End the independence phase once each live family has produced one concrete artifact or exact gap. Only then cross-pollinate useful lemmas, constructions, or counterexamples.
 - A route ending at a lemma comparable in strength to the theorem is blocked, not nearly solved. Reopen it only when a new mechanism, invariant, construction, representation, premise bundle, or verification hook makes that lemma genuinely more tractable.
+- Keep one incompatible shadow family alive through the next portfolio checkpoint while the leading kernel remains unresolved. The shadow gets one bounded decisive probe, not continuous equal funding.
+- After each bounded round, the integrator updates live, saturated, blocked, and retired families; records returned artifacts; and allocates the next role or tool to the highest-value missing artifact. Roles are a menu, not fixed quotas.
+- Before `stop/report`, inspect the registry for an underexplored family with a cheap high-decision probe. Run at most one such probe; exhausting the favorite route is not portfolio exhaustion, but the registry is not a license for unbounded search.
 
 Keep the live frontier small. Independent serial passes can supply diversity; agent count is not a progress metric.
 

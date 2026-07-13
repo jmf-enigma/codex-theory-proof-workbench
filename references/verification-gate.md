@@ -36,6 +36,8 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 18. Decomposition gate: before accepting child lemmas, check parent sufficiency, strict simplification, acyclicity, source fidelity, repair radius, and premise feasibility.
 19. Verifier-diversity gate: do not upgrade confidence because similar verbal reviewers agree. Require a different evidence channel for the fragile kernel when feasible.
 20. Definition-sanity gate: when the theorem introduces custom objects or formal definitions, prove easy expected variants and boundary/API lemmas before trusting a difficult target built on them.
+21. Semantic-obligation gate: decompose custom definitions and exact counting, feasibility, closure, multiplicity, support, or object-type requirements into atomic obligations; verify that every reduction and construction preserves them.
+22. Completion-coverage gate: map every acceptance-contract item, required edge case, and reduction obligation to the proof node or certificate that discharges it. Any uncovered required row prevents complete-proof status.
 
 ## Adversarial Review Checklist
 
@@ -58,6 +60,8 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 - Could one false child force a wholesale rewrite because the decomposition has a large repair radius?
 - Did retrieval produce a jointly sufficient premise set, or only individually similar theorems?
 - Did formalization invent placeholder objects because the required library theory was absent?
+- Did a reduction preserve the exact object class and every semantic obligation, or did it solve a cleaner neighboring problem?
+- Does each required edge case and acceptance item have a named place in the final proof rather than an implicit promise?
 - If Peppy/PEPFlow was used, did the encoding match the exact algorithm, class, initial condition, performance metric, and horizon in the theorem?
 - Was a numerical sweep or floating-point dual kept below proof status until an exact certificate, sign conditions, and final theorem assembly were checked?
 

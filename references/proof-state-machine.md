@@ -4,11 +4,11 @@ Use this to keep a hard proof moving instead of looping.
 
 ## States
 
-- `S0-parse`: exact claim, notation, quantifiers, domains, and statement fence.
+- `S0-parse`: exact claim, notation, quantifiers, domains, statement fence, acceptance contract, and atomic semantic obligations.
 - `S1-classify`: target type, direct-solve check, and candidate theorem families.
 - `S2-stress-test`: negation, edge cases, finite/numeric examples, relaxed assumptions.
 - `S2b-idea-map`: optional state for unclear or repeatedly failed proofs; propose failure world, small-case pattern guess, central object, proof kernel, central lemma, and verification hook.
-- `S3-route-portfolio`: at least two plausible proof routes with switch rules.
+- `S3-route-portfolio`: at least two plausible proof routes with switch rules, including one incompatible shadow family while the leading kernel remains unresolved.
 - `S4-lemma-graph`: theorem reduced to a blueprint-style dependency graph of definitions, lemmas, and theorem assembly nodes with statement dependencies, proof dependencies, downstream use, and statuses.
 - `S5-local-certification`: check fragile lemmas with tools, known theorems, one-step proof-state feedback, or the prover-verifier move contract; retain any independently verified prefix or helper artifact.
 - `S6-assembly`: combine lemmas into the exact target statement.
@@ -18,7 +18,7 @@ Use this to keep a hard proof moving instead of looping.
 
 ## Transitions
 
-- `S0 -> S1`: all variables, domains, quantifiers, assumptions, and the no-silent-statement-change rule are explicit.
+- `S0 -> S1`: all variables, domains, quantifiers, assumptions, acceptance items, semantic obligations, and the no-silent-statement-change rule are explicit.
 - `S1 -> S2`: at least one theorem family or proof route is plausible.
 - `S1 -> S8`: direct theorem, certificate, contradiction, or known decomposition proves the claim and verification gates pass.
 - `S2 -> refuted`: counterexample found.
@@ -30,7 +30,7 @@ Use this to keep a hard proof moving instead of looping.
 - `S4 -> S4`: merge equivalent proof states or actions before retrying. Equivalent means same goal, same local assumptions, same central object, and same failure witness up to notation.
 - `S5 -> S4`: when a check fails, return to the earliest failing node, keep the verified prefix, and invalidate only affected dependents.
 - `S5 -> S6`: each essential lemma is proved, tool-checked, or explicitly marked conditional.
-- `S6 -> S7`: assembled proof matches the exact claim.
+- `S6 -> S7`: assembled proof matches the exact claim and every required acceptance item, edge case, and semantic obligation maps to a proved or checked node.
 - `S7 -> S8`: review finds no unhandled gaps.
 - any state -> `S9`: a named obstruction blocks progress.
 - `S9 -> S1/S2/S3/S4/S5/S6`: classify the failure stage, then return to strategy discovery, stress testing, route choice, decomposition, local proof, or assembly at the earliest affected layer.

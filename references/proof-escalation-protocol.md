@@ -50,6 +50,7 @@ Move upward only after recording the result in `LEDGER.md`.
    - otherwise propose the weakest extra assumption or weaker conclusion that makes the lemma true;
    - ask the user only when the repair changes the economic/modeling meaning.
 8. Stop/report:
+   - inspect the approach-family registry first; if one underexplored family still has a cheap high-decision probe, run that single bounded probe before stopping;
    - return `still open` rather than a fake proof;
    - report the exact obstruction, failed routes, attempted tools, and next bounded experiment.
 

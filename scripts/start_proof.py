@@ -40,6 +40,16 @@ CLAIM_TEMPLATE = """# Claim
 - admissible objects or operations:
 - required edge and boundary cases:
 - near-misses that do not count:
+- atomic semantic obligations:
+- preservation checks for reductions and constructions:
+
+## Completion Coverage
+
+Fill this only during assembly or final review. A required row without a proved or checked discharge prevents complete-proof status.
+
+| acceptance obligation or edge case | proof node or certificate | status |
+| --- | --- | --- |
+| C1 |  | open / covered |
 """
 
 
@@ -81,7 +91,7 @@ Good role split:
 
 Bad split: several agents independently writing the same full proof.
 
-For open-ended route discovery, independent scouts may each return one compact route card rather than a full proof. Give them the theorem fence and allowed prior results, but not the current favorite or other scouts' narratives. Deduplicate their cards by mathematical approach family before allocating proof budget.
+For open-ended route discovery, independent scouts may each return one compact route card rather than a full proof. Give them the theorem fence and allowed prior results, but not the current favorite or other scouts' narratives. Deduplicate their cards by mathematical approach family before allocating proof budget. The role table is a menu, not a required roster; allocate the next role dynamically from the missing artifact.
 
 | role | assigned artifact | input files | exclusions / do not touch | stop rule | status |
 | --- | --- | --- | --- | --- | --- |
@@ -102,6 +112,18 @@ Use this only when several routes are live. Classify by mathematical mechanism, 
 | family | proof architecture | central object / certificate | independent seed artifact | kernel or failure witness | status | reopen only with |
 | --- | --- | --- | --- | --- | --- | --- |
 | F1 |  |  |  |  | live / saturated / blocked / retired | new mechanism / invariant / construction / representation / premise / verifier |
+
+## Portfolio Checkpoint
+
+Use this only after a bounded round with several live families. Preserve one incompatible shadow while the leading kernel is unresolved; do not fund every family equally.
+
+- leading family and decisive next artifact:
+- incompatible shadow family and bounded probe:
+- live / saturated / blocked / retired updates:
+- artifacts returned this round:
+- underexplored high-decision family, if any:
+- next dynamic role or tool allocation:
+- stop coverage: no cheap high-decision family remains / run one bounded probe
 
 ## Attempt Fingerprint Index
 
