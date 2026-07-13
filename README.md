@@ -1,38 +1,16 @@
 # Codex Theory Proof Workbench
 
-A Codex skill for discovering, debugging, and recovering hard theoretical proofs.
+[中文说明](#codex-理论证明工作台)
 
-The workbench is designed for proofs where the hard part is still missing. It keeps the theorem statement fixed, searches for decisive lemmas or constructions, remembers failed routes, coordinates local mathematical tools, and reports an exact obstruction when the proof remains open.
+A Codex skill for hard theory problems whose mathematical core is still unresolved.
 
-It is not a theorem database and it does not make an unsupported argument correct. Its job is to make proof search more deliberate, checkable, and less repetitive.
+Proof attempts often stall before the writing stage. The statement drifts, a guessed construction is treated as a lemma, or several attempts return to the same obstruction under different notation. Theory Proof Workbench keeps an explicit proof state, tests the claim before expanding it, preserves valid partial results, and chooses the next move by the artifact it can produce.
 
-## When To Use It
+A run may end with a complete proof, a counterexample, a repaired theorem, a conditional result, or the smallest remaining obstruction. Each outcome carries an explicit proof status. For mathematics that is already complete and only needs exposition or LaTeX, use `math-proof-writing` instead.
 
-- Operations research, management science, optimization, queueing, inventory, scheduling, and control.
-- Dynamic programming, MDPs, Bellman certificates, threshold policies, and indexability.
-- Mechanism design, economic theory, IC/IR, envelope arguments, and cyclic monotonicity.
-- Learning theory, bandits, online learning, regret bounds, and information-theoretic lower bounds.
-- Games, matching, probabilistic constructions, and the Lovasz Local Lemma.
-- Any proof that has already failed and should resume from evidence rather than restart from scratch.
+## Quick Start
 
-Use a proof-writing skill instead when the mathematical argument is already complete and only needs clearer exposition, LaTeX, or paper-style polishing.
-
-## What It Changes
-
-| Failure mode | Workbench response |
-| --- | --- |
-| The proof silently changes the claim | Statement-fidelity and theorem-repair gates |
-| The same idea returns under new notation | Attempt fingerprints and proof-state deduplication |
-| The central construction is unknown | Small-case discovery, tight-case search, and pattern mining |
-| The answer itself is new or apparently open | A separate discovery contract, evaluator-backed candidate search, holdouts, and a fixed proof handoff |
-| A missing lemma hides the entire theorem | Proof-kernel and good-gap/bad-gap checks |
-| Tools return data but no proof | Artifact-first tool plans and proof translation |
-| A plausible local step may contain a gap | Conditional prover-verifier review |
-| One bad step causes the whole attempt to be discarded | First-error localization and verified-prefix salvage |
-| A failure triggers the wrong kind of repair | Stage routing across strategy, decomposition, retrieval, local proof, assembly, fidelity, and library coverage |
-| Several attempts make no progress | Route decisions, bounded escalation, and honest stop statuses |
-
-## Install
+### Install
 
 Clone the repository into the Codex skills directory:
 
@@ -42,196 +20,217 @@ git clone https://github.com/jmf-enigma/codex-theory-proof-workbench.git \
   "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench"
 ```
 
-Restart Codex or refresh skill discovery. To update later:
+Restart Codex or refresh skill discovery. Update the installation later with:
 
 ```bash
 git -C "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench" pull --ff-only
 ```
 
-The skill itself needs no Python packages. Its helper scripts support Python 3.10 or newer. Wolfram, Lean, Sage, Z3, CVXPy, Peppy/PEPFlow, and other mathematical backends are optional and are not bundled with this repository.
+The skill itself has no third-party Python dependencies. Its helper scripts support Python 3.10 or newer. Wolfram, Lean, Sage, Z3, CVXPy, Peppy/PEPFlow, and other mathematical backends are optional and are not bundled here.
 
-## Use It In Codex
+### Ask Codex
 
-Codex may invoke the skill implicitly for a hard or repeatedly failed proof. Explicit invocation is the most reliable way to request the full workflow:
+For a hard proof:
 
 ```text
-Use $theory-proof-workbench to prove this theorem. First check the exact
-statement and small counterexamples. If the route is unclear, identify the
-proof kernel before writing a long proof.
+Use $theory-proof-workbench to prove this theorem. Preserve the exact statement,
+test small counterexamples, and identify the proof kernel before writing a long proof.
 ```
 
 For a proof that has already failed:
 
 ```text
-Use $theory-proof-workbench in recovery mode. Read the existing ledger first,
-identify what is genuinely new, and do not retry an equivalent construction.
+Use $theory-proof-workbench in recovery mode. Read the existing ledger, identify
+what is genuinely new, and do not retry an equivalent construction.
 ```
 
 For a problem whose answer or extremal object is not yet known:
 
 ```text
 Use $theory-proof-workbench in discovery mode. Treat model memory as unverified.
-Search Scholar and recent public work, retrieve a lawful closest full text,
-record exact theorem and proof anchors plus a transferable solution card, then
-identify the unresolved gap and freeze one supported candidate before proof.
+Check the literature frontier, freeze one supported candidate, and then prove it.
 ```
 
 For strategy without a full proof project:
 
 ```text
-Use $theory-proof-workbench only for a light idea pass. Give me the failure
-world, central object, proof kernel, and one checkable next move.
+Use $theory-proof-workbench for a light idea pass. Give me the failure world,
+central object, proof kernel, and one checkable next move.
 ```
 
-This is a skill, not a resident background service. It runs when Codex handles a proof task. Persistent proof state lives in the generated project files.
+Codex can invoke the skill implicitly, but an explicit skill name is the most reliable way to request its full workflow. The workbench runs only while Codex handles a proof task and has no resident background process.
+
+## Scope
+
+The skill is intended for theoretical work in:
+
+- operations research, management science, optimization, queueing, inventory, scheduling, and control.
+- dynamic programming, MDPs, Bellman certificates, threshold policies, and indexability.
+- mechanism design, economic theory, IC/IR, envelope arguments, and cyclic monotonicity.
+- learning theory, bandits, online learning, regret bounds, and information-theoretic lower bounds.
+- games, matching, probabilistic constructions, and the Lovasz Local Lemma.
+
+It is most useful when a central lemma, construction, certificate, or even the answer remains uncertain. Routine algebra and standard theorem applications should stay lightweight.
+
+## What The Workbench Changes
+
+| Common failure | Workbench response |
+| --- | --- |
+| The argument silently changes the claim | Freeze variables, assumptions, domains, quantifiers, and conclusion in a theorem fence |
+| The same route returns under different notation | Compare attempt fingerprints and merge equivalent proof states |
+| The central construction is missing | Search small and tight cases, mine exact patterns, and reserve holdout checks |
+| The answer may be new or open | Separate candidate discovery from proof and require verified frontier evidence |
+| A tool returns numbers but no mathematics | Request a named artifact and translate it into a lemma, certificate, or counterexample |
+| One bad step invalidates a long attempt | Locate the first error, retain the verified prefix, and repair affected dependents only |
+| Repeated work does not shrink the problem | Change the route or artifact type, repair the theorem, or report an honest stop status |
+
+The unit of progress is evidence. A new paragraph is not progress unless it proves or refutes a kernel, exposes an assumption, supplies a checked certificate, retrieves a usable theorem pattern, or strictly reduces the remaining subgoal.
+
+## Modes
+
+The workbench selects the lightest mode that can produce the next decisive artifact.
+
+| Mode | Use when | Typical result |
+| --- | --- | --- |
+| Direct | A named theorem, certificate, contradiction, or short decomposition is visible | A checked proof |
+| Micro check | A small proof lacks one nearby theorem pattern or standard trick | A precise match or mismatch |
+| Light idea | The central object or construction is unclear | A proof kernel and verification hook |
+| Discovery | The answer, extremal object, formula, or concept is unknown | A checked candidate and fixed theorem handoff |
+| Project | The proof is hard, multi-lemma, tool-assisted, or literature-dependent | Persistent proof state and a lemma graph |
+| Recovery | The theorem has failed before | A no-repeat diagnosis and a genuinely new move |
+
+Advanced machinery is conditional. A routine proof does not create a project, run a literature scan, start several agents, or invoke every mathematical backend.
+
+## Proof Loop
+
+1. Freeze the exact statement and list every object, domain, assumption, quantifier, and requested conclusion.
+2. Check direct theorems and certificates, then write the negation and test small, symmetric, boundary, or relaxed-assumption cases.
+3. Identify the failure world, central object, and smallest proof kernel that decides the current route.
+4. If the answer may be unknown, verify the nearest literature frontier before candidate search. Define a representation, evaluator, holdout set, and promotion rule, then freeze one supported candidate.
+5. Compare a small number of genuinely different routes. Build an AND/OR lemma graph and work on the least-certain required child along the current assembly path.
+6. Give every fragile tool or proof move an expected artifact. After failure, preserve valid nodes and repair the first broken dependency. Two unchanged attempts trigger a route change, retrieval, theorem repair, or stop decision.
+7. Reassemble the original theorem, run an adversarial review, and assign the strongest proof status supported by the evidence.
+
+This loop does not guarantee that every true theorem will be proved. It prevents unresolved mathematics from being hidden behind fluent prose and makes the remaining gap reusable in the next attempt.
+
+## What A Run Returns
+
+For a hard problem, the visible result should state:
+
+- the exact claim and essential assumptions.
+- the current proof status.
+- the decisive proof pattern, proof, counterexample, or exact obstruction.
+- the proof-critical artifacts that were checked and how they enter the argument.
+- what changed since any previous failure.
+- one bounded next move when the theorem remains open.
+
+Internal boards and ledgers stay out of the answer unless they help the reader judge correctness.
+
+## Evidence And Proof Status
+
+Mathematical tools contribute evidence only after their output is translated into a checkable object. Examples include an exact identity, a quantified condition, a KKT or dual certificate, a Bellman inequality, an SMT witness or unsat core, an exact PEP certificate, or a Lean theorem with no admitted gap.
+
+Numerical experiments can falsify a claim or suggest a formula. They do not prove a universal statement. A formal helper lemma also does not close the main theorem when the final assembly still contains `sorry`, an admitted axiom, or an unencoded obligation.
+
+| Status | Meaning |
+| --- | --- |
+| `conjecture` | The claim currently rests on intuition or a pattern guess |
+| `counterexample-tested` | Bounded tests found no counterexample |
+| `lemma-conditional` | The theorem follows only if named missing lemmas hold |
+| `human-proof` | Every nontrivial step has a stated mathematical justification |
+| `tool-checked` | Fragile local steps have independent computational artifacts |
+| `formalized-local` | Important local lemmas are machine-checked |
+| `formalized-complete` | The full theorem and its assembly are machine-checked |
+
+`tool-checked` and `formalized-local` can strengthen a human proof, but neither repairs a missing global assembly step. A result is not called proved while its decisive lemma remains conjectural or conditional.
+
+## Persistent Proof Projects
+
+`start_proof.py` creates a durable project for hard or repeated work. The files are loaded as needed rather than injected into every proof attempt.
+
+| Files | Purpose |
+| --- | --- |
+| `claim.md`, `TRIAGE.md`, `routing.json` | Exact claim, initial mode, and domain routing |
+| `ATTACK_MATRIX.md`, `IDEA_MAP.md` | Competing routes, failure worlds, central objects, and kernels |
+| `LEMMA_QUEUE.md`, `WORKSTREAMS.md` | AND/OR dependencies, attempt fingerprints, failure localization, and route decisions |
+| `PATTERN_SCAN.md`, `TOOL_PLAN.md` | Bounded theorem/trick retrieval and expected computational artifacts |
+| `LEDGER.md`, `ESCALATION.md` | Persistent evidence, failed states, proof status, and legal next moves |
+| `literature/frontier-evidence.json` | Hashed discovery evidence, exact source anchors, solution cards, and frontier status |
+
+`proof_doctor.py` reads the current state and recommends one primary next action. The full history remains in the ledger. A repair pass receives only the local node, dependencies, prior failure, and proposed new evidence.
 
 ## Command-Line Helpers
 
-The scripts are optional. Codex can run them while working, or they can be called directly:
+Most users can let Codex run these scripts. They are also available directly:
 
 ```bash
 cd "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench"
-```
 
-Compact idea pass:
-
-```bash
+# Compact idea map
 python3 scripts/plan_idea.py "CLAIM"
-```
 
-Add `--full` only when the compact pass does not reveal a useful central object or proof kernel.
+# Durable project, with --mode recovery or --mode discovery when appropriate
+python3 scripts/start_proof.py --title "short-name" --claim "EXACT CLAIM"
 
-Start a hard proof project:
-
-```bash
-python3 scripts/start_proof.py \
-  --title "short-proof-name" \
-  --claim "Exact theorem statement"
-```
-
-Use `--mode recovery` when the same theorem has already failed. Use `--mode discovery` when the answer or central object is unknown.
-
-Diagnose one primary next move:
-
-```bash
+# One primary next move
 python3 scripts/proof_doctor.py path/to/proof_project
-```
 
-Use `--json` for machine-readable output. Before presenting a final proof, audit its ledger:
-
-```bash
+# Final ledger audit
 python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
 ```
 
-Discovery projects also create `literature/frontier-evidence.json`. The lightweight `frontier_evidence.py` helper can register executed Scholar evidence, fetch lawful open PDFs, hash local copies, record exact proof anchors, and validate the bundle. Its SSRN route derives `10.2139/ssrn.ID`, discovers same-work publisher DOIs, and searches verified open mirrors before browser access. It can also consume a fresh browser-issued signed URL without persisting its temporary credential. The DOI route serves INFORMS papers and checks alternate working-paper versions against the published record. See [Full-Text Frontier Evidence](references/full-text-frontier-evidence.md).
-
-Other focused helpers include:
+Add `--full` to `plan_idea.py` only when the compact pass does not reveal a useful kernel. Add `--json` to `proof_doctor.py` for machine-readable output.
 
 | Script | Purpose |
 | --- | --- |
 | `select_playbook.py` | Route a claim to the relevant domain playbook |
-| `check_attempt.py` | Detect a repeated route or construction |
-| `pattern_miner.py` | Guess exact patterns from small-case sequences |
-| `new_lemma_card.py` | Save a reusable local lemma |
+| `check_attempt.py` | Detect an equivalent route or construction before retrying |
+| `pattern_miner.py` | Guess exact formulas from small-case sequences and test holdouts |
+| `new_lemma_card.py` | Save a lemma that has proved useful in a real route |
 | `new_trick_card.py` | Save a validated paper or proof trick |
-| `frontier_evidence.py` | Fetch, anchor, hash, and validate frontier literature evidence |
+| `frontier_evidence.py` | Fetch, hash, anchor, and validate frontier literature evidence |
 
-If a configured mathematical environment provides `codex-math-python`, it can replace `python3`. It is not required by this repository.
+Discovery projects use `frontier_evidence.py` to record executed Scholar evidence, retrieve lawful open full text, hash local copies, and preserve exact theorem or proof anchors. Its SSRN route resolves stable identities and verified open mirrors instead of manufacturing temporary signed URLs. Its DOI route supports INFORMS records and compares working-paper versions with the published record. See [Full-Text Frontier Evidence](references/full-text-frontier-evidence.md).
 
-## Adaptive Workflow
+If the mathematical environment provides `codex-math-python`, it can replace `python3`. This repository does not require that wrapper.
 
-The workbench selects the lightest useful mode. The advanced machinery is conditional, not a checklist for every proof.
+## Mathematical Backends
 
-| Mode | Use when | Typical output |
-| --- | --- | --- |
-| Direct | A named theorem, certificate, or short derivation is visible | A verified proof |
-| Micro check | A small proof needs one nearby theorem pattern | A theorem match or clear mismatch |
-| Light idea | The central object or construction is unclear | A proof kernel and verification hook |
-| Discovery | The answer, extremal object, formula, or concept may be unknown | A verified frontier map, checked candidate, and fixed theorem handoff |
-| Project | The proof is hard, multi-lemma, or tool-assisted | Persistent proof state and a lemma graph |
-| Recovery | The theorem has failed before | A no-repeat diagnosis and a genuinely new move |
+Before a tool call, the workbench names the local claim, domains, negation to test, backend, expected artifact, and how the result would change the proof state. A route stops after repeated timeouts or outputs that do not decide or shrink the subgoal.
 
-For hard proofs, the core loop is:
+Typical roles include:
 
-1. Freeze the exact statement, assumptions, domains, and quantifiers.
-2. Check direct theorems and try to falsify the claim on small and boundary cases.
-3. Identify the failure world, central object, and smallest decisive proof kernel.
-4. If the answer may be unknown, search exact and neighboring results, preserve executed Scholar evidence, proof-read a lawful closest full text, and state the precise frontier gap.
-5. Then define the candidate representation, exact validity gate, evaluator, simplification ladder, holdouts, and promotion rule before broad search.
-6. Freeze a promoted candidate as a fixed theorem target; otherwise compare a small number of genuinely different proof routes, each with a cheap decisive evaluator.
-7. Build an AND/OR lemma graph and work the least-certain required child.
-8. Use tools only for a named counterexample, condition, identity, certificate, or formal lemma.
-9. On failure, find the first invalid step, preserve the verified prefix, and repair only affected dependents.
-10. After two unchanged local attempts, repair, re-decompose, retrieve, tool-check, or stop.
-11. Assemble the original theorem and run an adversarial final review.
+- Wolfram or SymPy for exact algebra, sign conditions, quantifier elimination, and small symbolic counterexamples.
+- Python, Z3, CVXPy, OR-Tools, Sage, and NetworkX for finite witnesses, optimization certificates, and discrete structures.
+- Lean for stable local lemmas after the informal statement is precise.
+- simulation for falsification and sensitivity checks, never as a universal proof.
 
-## Proof Project Memory
+### Wolfram
 
-`start_proof.py` creates durable project files. They are not all loaded at once. `proof_doctor.py` recommends only the files relevant to the current proof state.
-
-| File | Role |
-| --- | --- |
-| `TRIAGE.md` | Initial mode and immediate decisions |
-| `ATTACK_MATRIX.md` | Proof, falsification, and orthogonal evidence routes |
-| `IDEA_MAP.md` | Central objects, constructions, kernels, and one-step moves |
-| `LEMMA_QUEUE.md` | AND/OR lemma graph and node status |
-| `WORKSTREAMS.md` | Candidate frontier, attempt fingerprints, first-error salvage, failure-stage routing, and route decisions |
-| `PATTERN_SCAN.md` | Bounded extraction from papers, ledgers, or formal libraries |
-| `TOOL_PLAN.md` | Expected artifacts before computation or formalization |
-| `LEDGER.md` | Persistent claim, evidence, failures, and verification status |
-| `ESCALATION.md` | Legal next moves after repeated failure |
-| `literature/frontier-evidence.json` | Hashed Scholar/full-text evidence, exact anchors, solution cards, and frontier status in discovery mode |
-
-The idea map, literature scan, prover-verifier loop, formal checks, and multi-agent roles activate only when the current proof needs them.
-
-## Mathematical Tools
-
-Tool output becomes proof evidence only after it is translated into a named artifact:
-
-- a counterexample or finite witness;
-- an exact identity or quantified condition;
-- a KKT, dual, Bellman, LP, SMT, or combinatorial certificate;
-- an exact PEP dual or all-horizon Lyapunov certificate;
-- a local Lean theorem with no admitted gap;
-- a theorem repair exposing the missing assumption.
-
-Numerical experiments and simulations can falsify or guide a conjecture, but they do not prove a universal statement. A formal helper lemma also does not close the main theorem when the final assembly still contains `sorry`, admitted axioms, or an unencoded obligation.
-
-### Optional Wolfram Support
-
-Wolfram is useful for symbolic simplification, inequality conditions, quantifier elimination, KKT algebra, Bellman differences, envelope calculations, and small counterexample searches. Install it separately from the official [Wolfram Engine](https://www.wolfram.com/engine/) and [WolframScript](https://reference.wolfram.com/language/workflow/InstallWolframScript.html.en) pages.
+Install [Wolfram Engine](https://www.wolfram.com/engine/) and [WolframScript](https://reference.wolfram.com/language/workflow/InstallWolframScript.html.en) separately. A minimal check is:
 
 ```bash
 wolframscript -code '2+2'
 ```
 
-If the companion `math-tools` setup provides `wmath` or `codex-wmath`, the workbench can use those wrappers. This repository does not install them.
+If `math-tools` provides `wmath` or `codex-wmath`, the workbench can use those wrappers for bounded symbolic calls. They are not installed by this repository.
 
-### Optional Peppy / PEPFlow Support
+### Peppy And PEPFlow
 
-When the companion `peppy` skill and a [PEPFlow](https://github.com/pepflow-lib/PEPFlow) checkout are installed, the workbench can route an exactly encoded fixed-algorithm performance problem through rate discovery, dual-certificate extraction, Lyapunov structure, and closed-form verification. The route is conditional: it starts only after the algorithm, function or operator class, normalization, metric, and horizon pass the [Peppy proof bridge](references/peppy-proof-bridge.md). Numerical sweeps remain conjecture evidence, and the workflow stops as soon as the next block would not improve the proof status.
+When the companion `peppy` skill and a [PEPFlow](https://github.com/pepflow-lib/PEPFlow) checkout are available, fixed-algorithm performance problems can move through rate discovery, dual-certificate extraction, Lyapunov structure, and closed-form verification. The route starts only when the algorithm, function or operator class, normalization, performance metric, and horizon pass the [Peppy proof bridge](references/peppy-proof-bridge.md). Numerical sweeps remain conjecture evidence, and the workflow stops when another block would not improve the proof status.
 
-The attribution chain is explicit. The underlying performance-estimation framework was introduced by [Drori and Teboulle (2014)](https://doi.org/10.1007/s10107-013-0653-0). Exact finite-dimensional SDP formulations use interpolation results developed by [Taylor, Hendrickx, and Glineur (2017)](https://doi.org/10.1007/s10107-016-1009-3), with the composite-oracle extension in their [SIAM Journal on Optimization paper](https://doi.org/10.1137/16M108104X). The automated Lyapunov route is methodologically related to [Taylor, Van Scoy, and Lessard (2018)](https://proceedings.mlr.press/v80/taylor18a.html). The concrete third-party backend and numerical-to-symbolic workflow are described by [Suh, Ying, Jiang, and Nguyen (2025)](https://openreview.net/forum?id=tJqsZZBmmB); PEPFlow remains a separate [Apache-2.0 project](https://github.com/pepflow-lib/PEPFlow/blob/main/LICENSE).
+The mathematical basis is credited to the original sources:
 
-For a research paper that materially uses this route, cite PEPFlow and the PEP/interpolation paper matching the encoded problem class. Cite another implementation such as PEPit only if it was actually used. The local `peppy` skill is an orchestration layer and does not claim authorship of PEP, interpolation theory, or PEPFlow.
+- [Drori and Teboulle (2014)](https://doi.org/10.1007/s10107-013-0653-0) introduced performance estimation for first-order methods.
+- [Taylor, Hendrickx, and Glineur (2017)](https://doi.org/10.1007/s10107-016-1009-3) developed exact smooth strongly convex interpolation and finite-dimensional SDP representations. Their [composite convex extension](https://doi.org/10.1137/16M108104X) covers a broader oracle model.
+- [Taylor, Van Scoy, and Lessard (2018)](https://proceedings.mlr.press/v80/taylor18a.html) developed automated tight quadratic Lyapunov analyses.
+- [Suh, Ying, Jiang, and Nguyen (2025)](https://openreview.net/forum?id=tJqsZZBmmB) describe PEPFlow's numerical-to-symbolic proof workflow.
 
-## Multi-Agent Use
+PEPFlow remains a separate [Apache-2.0 project](https://github.com/pepflow-lib/PEPFlow/blob/main/LICENSE). Research that materially uses this route should cite PEPFlow and the methodology paper matching the encoded class. Cite PEPit or another implementation only when it was actually used. The local `peppy` skill is an orchestration layer, not a rebranding of PEP, interpolation theory, or PEPFlow.
 
-Parallel agents are opt-in. When explicitly requested, split them by artifact: one planner, one falsifier, one retriever, one local tool-checker or formalizer, and one reviewer. A single integrator remains responsible for the theorem statement, route choice, and final proof status. Several agents should not write competing versions of the same proof route.
+## Multi-Agent Work
 
-## Proof Statuses
-
-| Status | Meaning |
-| --- | --- |
-| `conjecture` | Intuition or pattern match only |
-| `counterexample-tested` | No counterexample found in bounded tests |
-| `lemma-conditional` | The theorem depends on named missing lemmas |
-| `human-proof` | Every nontrivial step has a mathematical justification |
-| `tool-checked` | Fragile local steps have independent tool artifacts |
-| `formalized-local` | Important local lemmas are machine-checked |
-| `formalized-complete` | The complete theorem and assembly are machine-checked |
-
-Never label a result as proved when its decisive lemma is still guessed.
+Parallel agents are opt-in. When requested, split them by artifact: planner, falsifier, retriever, local tool-checker or formalizer, and reviewer. One integrator remains responsible for statement fidelity, route choice, and final proof status. Several agents should not produce competing prose versions of the same route.
 
 ## Repository Layout
 
@@ -241,21 +240,36 @@ Never label a result as proved when its decisive lemma is still guessed.
 ├── agents/openai.yaml
 ├── references/
 │   ├── proof-router.md
-│   ├── proof-idea-generator.md
-│   ├── dp-proof-playbook.md
-│   ├── mechanism-design-playbook.md
-│   └── ...
+│   ├── research-backed-proof-loop.md
+│   ├── novel-problem-discovery.md
+│   ├── peppy-proof-bridge.md
+│   ├── domain playbooks
+│   └── verification and escalation rules
 └── scripts/
     ├── start_proof.py
     ├── proof_doctor.py
+    ├── frontier_evidence.py
     ├── smoke_workbench.py
-    ├── audit_ledger.py
-    └── ...
+    └── focused state and pattern helpers
 ```
+
+`SKILL.md` contains the compact controller. Detailed procedures live in references and are read only when the current decision requires them. Scripts handle deterministic project state, routing, retrieval evidence, and audits.
+
+## Research Basis
+
+The workbench converts ideas from proof search, formalization, and mathematical discovery into lightweight control rules. The main design threads are:
+
+- Proof decomposition and graph repair draw on [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283), [Goedel-Architect](https://arxiv.org/abs/2606.06468), and [LEAP](https://arxiv.org/abs/2606.03303).
+- Formal feedback, premise retrieval, and source fidelity draw on [Aristotle](https://arxiv.org/abs/2510.01346), [Goedel-Prover-V2](https://arxiv.org/abs/2508.03613), [process-verified theorem proving](https://arxiv.org/abs/2606.20068), [LeanSearch v2](https://arxiv.org/abs/2605.13137), [LeanMarathon](https://arxiv.org/abs/2606.05400), and [MerLean-Prover](https://arxiv.org/abs/2605.26959).
+- Independent checking and honest failure outcomes draw on [Prover-Verifier Games](https://arxiv.org/abs/2407.13692), [Aletheia](https://arxiv.org/abs/2602.10177), [Scaling Generative Verifiers](https://arxiv.org/abs/2511.13027), and [Formal Conjectures](https://arxiv.org/abs/2605.13171).
+- Persistent research state and stage-aware repair draw on [STAR-PolyaMath](https://arxiv.org/abs/2605.19338), the [AI co-mathematician](https://arxiv.org/abs/2605.06651), [Prover Agent](https://arxiv.org/abs/2506.19923), [Delta Prover](https://arxiv.org/abs/2507.15225), and [Hilbert](https://arxiv.org/abs/2509.22819).
+- Evaluator-driven discovery draws on [AlphaEvolve](https://arxiv.org/abs/2506.13131), [Discover and Prove](https://arxiv.org/abs/2604.15839), [PatternBoost](https://arxiv.org/abs/2411.00566), [Generative Modelling for Mathematical Discovery](https://arxiv.org/abs/2503.11061), [AI-assisted open-problem discovery](https://arxiv.org/abs/2603.04735), [self-supervised theorem discovery](https://arxiv.org/abs/2606.28747), [MLEvolve](https://arxiv.org/abs/2606.06473), [QED](https://arxiv.org/abs/2604.24021), and [From Solvers to Research](https://arxiv.org/abs/2607.07779).
+
+The operational mapping appears in [Research-Backed Proof Loop](references/research-backed-proof-loop.md) and [Novel Problem Discovery](references/novel-problem-discovery.md). These papers motivate workflow decisions. They do not serve as proof authority for a user's theorem.
 
 ## Development
 
-The workbench scripts use only the Python standard library. The Codex skill validator additionally needs PyYAML:
+The helper scripts use the Python standard library. The Codex skill validator additionally needs PyYAML.
 
 ```bash
 python3 -m pip install pyyaml
@@ -265,74 +279,27 @@ python3 scripts/smoke_workbench.py
 python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 
-The smoke test checks deterministic control behavior: domain routing, recovery activation, novel-problem discovery gates and proof handoff, first-error gating, verified-prefix salvage, failure-stage routing, portable paths, and the presence of research-backed rules. It does not claim a theorem-solving benchmark gain. The practical improvement is narrower and testable: fewer equivalent retries, more local repairs, and clearer separation between checked artifacts and an unfinished global proof.
-
-## Design Influences
-
-The workflow translates ideas from proof-agent and formalization research into lightweight control rules:
-
-- [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283): turn an informal route into smaller named proof obligations.
-- [Prover-Verifier Games](https://arxiv.org/abs/2407.13692): optimize fragile steps for adversarial checkability.
-- [STAR-PolyaMath](https://arxiv.org/abs/2605.19338): separate proof reasoning from persistent control, trace-back, and re-planning.
-- [Goedel-Architect](https://arxiv.org/abs/2606.06468): maintain and refine a dependency blueprint instead of restarting solved subgraphs.
-- [AI co-mathematician](https://arxiv.org/abs/2605.06651): preserve state, uncertainty, failed workstreams, and human steering across long research tasks.
-- [Aristotle](https://arxiv.org/abs/2510.01346): search an AND/OR proof graph, merge equivalent states, and use formal feedback to guide expansion.
-- [Goedel-Prover-V2](https://arxiv.org/abs/2508.03613) and [process-verified theorem proving](https://arxiv.org/abs/2606.20068): repair from precise verifier errors and retain valid proof prefixes.
-- [Aletheia](https://arxiv.org/abs/2602.10177): separate generation, verification, and revision, including an honest failure outcome.
-- [AlphaEvolve](https://arxiv.org/abs/2506.13131): maintain diverse candidates only when automated evaluators can rank concrete artifacts.
-- [Discover and Prove](https://arxiv.org/abs/2604.15839): discover an unknown answer first, then freeze it and turn the task into a fixed formal theorem.
-- [PatternBoost](https://arxiv.org/abs/2411.00566) and [Generative Modelling for Mathematical Discovery](https://arxiv.org/abs/2503.11061): combine global pattern generation, local improvement, exact evaluators, and diverse candidate populations.
-- [AI-assisted open-problem discovery](https://arxiv.org/abs/2603.04735) and [self-supervised theorem discovery](https://arxiv.org/abs/2606.28747): search across representations, use numerical or formal feedback, and salvage useful intermediate theorems.
-- [MLEvolve](https://arxiv.org/abs/2606.06473), [QED](https://arxiv.org/abs/2604.24021), and [From Solvers to Research](https://arxiv.org/abs/2607.07779): share information across branches, use explicit stagnation triggers and independent verification, and recognize when progress requires a new concept or human judgment.
-- [LEAP](https://arxiv.org/abs/2606.03303): reject decompositions that are formally admissible but cyclic, non-simplifying, or useless to the parent assembly.
-- [LeanMarathon](https://arxiv.org/abs/2606.05400) and [MerLean-Prover](https://arxiv.org/abs/2605.26959): stabilize target fidelity, minimize repair radius, preserve source-aware repairs, and invalidate only affected dependents.
-- [LeanSearch v2](https://arxiv.org/abs/2605.13137): retrieve jointly useful premise bundles through sketch-retrieve-reflect rather than isolated semantic matches.
-- [Prover Agent](https://arxiv.org/abs/2506.19923), [Delta Prover](https://arxiv.org/abs/2507.15225), and [Hilbert](https://arxiv.org/abs/2509.22819): grow strategies from auxiliary lemmas, repair from failed subproblems, and route compute by failure stage.
-- [Scaling Generative Verifiers](https://arxiv.org/abs/2511.13027) and [Formal Conjectures](https://arxiv.org/abs/2605.13171): distinguish stylistic approval from validity and treat proofs or disproofs as statement-fidelity audits.
-
-These papers inspire the workflow. They are not treated as proof authority for a user's theorem.
+The smoke test checks deterministic behavior such as routing, recovery activation, first-error salvage, discovery evidence gates, Peppy routing and attribution, portable paths, and proof handoff. It does not claim a measured theorem-solving benchmark gain. The tested improvements are narrower: equivalent retries are rejected, repairs stay local, and checked artifacts remain distinct from unfinished proofs.
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+This repository is released under the MIT License. See [LICENSE](LICENSE). Optional third-party backends retain their own licenses.
 
 ---
 
 # Codex 理论证明工作台
 
-这是一个用于困难理论证明的 Codex skill，负责寻找证明思路、调试失败路线并从旧的 proof state 继续推进。
+[Back to English](#codex-theory-proof-workbench)
 
-它适合“关键数学还没有解决”的情况。工作台会固定原命题，寻找真正有决定作用的 lemma 或构造，记住失败路线，按需调用数学工具，并在证明仍未闭合时明确报告 obstruction。
+这是一个面向困难理论问题的 Codex skill，适用于核心数学仍未解决的证明任务。
 
-它不是定理百科，也不会把一个缺少关键 lemma 的推导包装成正确证明。它解决的是证明搜索的判断、记忆和验证问题。
+很多证明在写作之前就已经卡住。命题可能在推导中悄悄改变，尚未证明的构造可能被当成 lemma，同一个 obstruction 也可能换一套符号后反复出现。Theory Proof Workbench 会保存明确的 proof state，先检验命题，再扩展证明，同时保留已经有效的局部结果，并根据下一步能够产生的 artifact 选择路线。
 
-## 适用范围
+一次运行可能得到完整证明、反例、修正后的 theorem、条件性结论，或者当前最小的未解决 obstruction。每种结果都会带有明确的 proof status。数学内容已经完成，只需要改善表述或 LaTeX 时，应使用 `math-proof-writing`。
 
-- 运筹、管理科学、优化、排队、库存、调度和控制。
-- 动态规划、MDP、Bellman certificate、threshold policy 和 indexability。
-- 机制设计、经济理论、IC/IR、envelope 和 cyclic monotonicity。
-- Learning theory、bandits、online learning、regret bound 和信息论 lower bound。
-- 博弈、匹配、概率构造和 Lovasz Local Lemma。
-- 已经失败过，需要读取证据继续推进，而不是重新开始的证明。
+## 快速开始
 
-如果核心证明已经完成，只需要改善表达、LaTeX 或论文写作，应改用 proof-writing skill。
-
-## 它解决什么
-
-| 常见问题 | Workbench 的处理方式 |
-| --- | --- |
-| 证明过程中偷偷改了命题 | Statement-fidelity 和 theorem-repair gate |
-| 同一个想法换符号后反复出现 | Attempt fingerprint 和 proof-state 去重 |
-| 不知道关键构造是什么 | 小例子、tight case 和 pattern mining |
-| 答案本身是新的或看起来仍然 open | 单独的 discovery contract、evaluator 驱动的候选搜索、holdout 检查和固定 proof handoff |
-| Missing lemma 其实等于整个 theorem | Proof kernel 和 good-gap/bad-gap 检查 |
-| 工具只返回数字，没有形成证明 | Artifact-first tool plan 和 proof translation |
-| 某个局部步骤看起来对但可能藏着漏洞 | 条件触发的 prover-verifier review |
-| 一个坏步骤导致整条尝试被全部丢弃 | 定位第一处错误并回收已验证前缀 |
-| 失败后选择了错误类型的修复 | 在策略、分解、premise retrieval、局部证明、assembly、fidelity 和 library coverage 之间分层调度 |
-| 多次尝试没有进展 | Route decision、有限升级和诚实停止 |
-
-## 安装
+### 安装
 
 把仓库克隆到 Codex 的 skills 目录：
 
@@ -342,194 +309,217 @@ git clone https://github.com/jmf-enigma/codex-theory-proof-workbench.git \
   "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench"
 ```
 
-随后重启 Codex 或刷新 skill discovery。以后更新可以运行：
+重启 Codex 或刷新 skill discovery。以后更新可以运行：
 
 ```bash
 git -C "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench" pull --ff-only
 ```
 
-Skill 本身不需要额外 Python package，辅助脚本支持 Python 3.10 及以上版本。Wolfram、Lean、Sage、Z3、CVXPy、Peppy/PEPFlow 等数学后端都是可选项，本仓库不会自动安装。
+Skill 本身不依赖第三方 Python package，辅助脚本支持 Python 3.10 及以上版本。Wolfram、Lean、Sage、Z3、CVXPy、Peppy/PEPFlow 等数学后端都是可选项，本仓库不会自动安装。
 
-## 在 Codex 中调用
+### 在 Codex 中调用
 
-Codex 遇到困难或重复失败的证明时可以隐式触发这个 skill。显式调用最稳定：
+证明一个困难 theorem：
 
 ```text
-使用 $theory-proof-workbench 证明这个 theorem。先检查精确命题和小型反例。
-如果路线不清楚，先找 proof kernel，不要直接写很长的证明。
+使用 $theory-proof-workbench 证明这个 theorem。保持原命题不变，先检查小型反例，
+在写长证明之前找出 proof kernel。
 ```
 
-对于已经失败过的证明：
+继续一个已经失败过的证明：
 
 ```text
 使用 $theory-proof-workbench 的 recovery mode。先读取已有 ledger，说明这次真正
 新增了什么，不要再次尝试等价构造。
 ```
 
-对于答案或 extremal object 尚未知的问题：
+答案或 extremal object 仍未知：
 
 ```text
-使用 $theory-proof-workbench 的 discovery mode。先把模型记忆视为 unverified，
-检索 Scholar、近期 cited-by 工作和公开项目，合法获取最接近论文的全文，记录精确
-theorem/proof anchor 和可迁移的 solution card，再找出精确 gap 并固定候选。
+使用 $theory-proof-workbench 的 discovery mode。把模型记忆视为 unverified，
+先核查文献 frontier，固定一个有证据支持的 candidate，然后再证明它。
 ```
 
-只想寻找思路而不创建完整项目时：
+只需要一次思路分析：
 
 ```text
-使用 $theory-proof-workbench 做一次 light idea pass。只给我 failure world、
-central object、proof kernel 和一个可检查的 next move。
+使用 $theory-proof-workbench 做 light idea pass。给出 failure world、central object、
+proof kernel 和一个可以检查的 next move。
 ```
 
-这是一个按任务触发的 skill，不是持续运行的后台服务。需要跨多次对话保存的 proof state 会写入项目文件。
+Codex 可以隐式触发这个 skill，但显式写出 skill 名称最稳定。Workbench 只在 Codex 处理当前证明任务时运行，不是常驻后台服务。
 
-## 命令行辅助脚本
+## 适用范围
 
-这些脚本不是必须手动运行的，Codex 可以在证明过程中自动调用。也可以直接使用：
+这个 skill 主要用于以下理论问题：
 
-```bash
-cd "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench"
-```
+- 运筹、管理科学、优化、排队、库存、调度和控制。
+- 动态规划、MDP、Bellman certificate、threshold policy 和 indexability。
+- 机制设计、经济理论、IC/IR、envelope argument 和 cyclic monotonicity。
+- learning theory、bandits、online learning、regret bound 和信息论 lower bound。
+- 博弈、匹配、概率构造和 Lovasz Local Lemma。
 
-轻量 idea pass：
+当 central lemma、构造、certificate，甚至答案本身仍不确定时，它最有价值。常规代数和标准定理应用应保持轻量。
 
-```bash
-python3 scripts/plan_idea.py "CLAIM"
-```
+## 它具体改变什么
 
-只有精简输出仍找不到 central object 或 proof kernel 时才加入 `--full`。
-
-创建困难证明项目：
-
-```bash
-python3 scripts/start_proof.py \
-  --title "short-proof-name" \
-  --claim "Exact theorem statement"
-```
-
-同一个 theorem 已经失败过时，加入 `--mode recovery`。答案或 central object 未知时，加入 `--mode discovery`。
-
-诊断一个首要 next move：
-
-```bash
-python3 scripts/proof_doctor.py path/to/proof_project
-```
-
-使用 `--json` 可以获得机器可读输出。提交最终证明前检查 ledger：
-
-```bash
-python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
-```
-
-Discovery project 还会生成 `literature/frontier-evidence.json`。轻量的 `frontier_evidence.py` 可以登记真实执行过的 Scholar 证据、下载合法开放 PDF、计算本地文件哈希、记录精确证明位置并验证整个 evidence bundle。SSRN 路由会由 abstract ID 推出 `10.2139/ssrn.ID`，自动发现同一工作的正式发表 DOI，并优先寻找经过核验的开放镜像；浏览器已经取得新鲜临时链接时，也能即时使用而不保存其中的临时凭证。INFORMS 论文走 DOI 路由，并将工作论文版本与正式发表记录逐项比对。细节见 [全文 Frontier 证据](references/full-text-frontier-evidence.md)。
-
-其他辅助脚本：
-
-| Script | 用途 |
+| 常见失败 | Workbench 的处理方式 |
 | --- | --- |
-| `select_playbook.py` | 根据 claim 选择对应领域 playbook |
-| `check_attempt.py` | 识别重复路线或重复构造 |
-| `pattern_miner.py` | 从小规模精确序列中猜测规律 |
-| `new_lemma_card.py` | 保存可复用的 local lemma |
-| `new_trick_card.py` | 保存经过验证的论文或证明 trick |
-| `frontier_evidence.py` | 下载、定位、哈希并验证 frontier 文献证据 |
+| 推导过程中悄悄改变了命题 | 用 theorem fence 固定变量、假设、domain、quantifier 和结论 |
+| 同一路线换符号后再次出现 | 比较 attempt fingerprint，合并等价 proof state |
+| 缺少核心构造 | 检查小例子和 tight case，寻找精确规律，并保留 holdout 验证 |
+| 答案可能是新的或仍然 open | 把 candidate discovery 与 proof 分开，并要求可核验的 frontier evidence |
+| 工具只返回数字 | 事先指定 artifact，再把输出转化成 lemma、certificate 或反例 |
+| 一个坏步骤拖垮整条路线 | 找到第一处错误，回收 verified prefix，只修复受影响的 dependent |
+| 多次尝试都没有缩小问题 | 更换路线或 artifact，修正 theorem，或者诚实停止 |
 
-如果本机数学环境提供 `codex-math-python`，可以用它替换 `python3`；本仓库不依赖这个 wrapper。
+这里把证据视为进展。只有当一次尝试证明或反驳了 kernel、暴露了缺失假设、产生了经过检查的 certificate、找到了能进入组装的 theorem pattern，或者严格缩小了剩余 subgoal，它才算真正推进。
 
-## 自适应工作流
+## 模式选择
 
-Workbench 会选择足够解决当前问题的最轻模式。高级流程是条件触发的，不是每次证明都要执行的 checklist。
+Workbench 会选择足以产生下一个决定性 artifact 的最轻模式。
 
-| Mode | 适用情况 | 典型输出 |
+| Mode | 适用情况 | 典型结果 |
 | --- | --- | --- |
-| Direct | 已经看到标准定理、certificate 或短推导 | 经过验证的证明 |
-| Micro check | 小证明只缺一个相近 theorem pattern | 定理匹配或明确不匹配 |
-| Light idea | Central object 或构造不清楚 | Proof kernel 和 verification hook |
-| Discovery | 答案、extremal object、公式或概念可能未知 | 经过核查的 frontier map、candidate 和固定 theorem handoff |
-| Project | 证明困难、多 lemma 或需要工具 | 持久化 proof state 和 lemma graph |
-| Recovery | 命题以前证明失败过 | No-repeat 诊断和真正的新路线 |
+| Direct | 已经看到标准 theorem、certificate、contradiction 或短分解 | 经过检查的证明 |
+| Micro check | 小证明只缺一个相近 theorem pattern 或标准 trick | 精确匹配或明确不匹配 |
+| Light idea | Central object 或构造仍不清楚 | Proof kernel 和 verification hook |
+| Discovery | 答案、extremal object、公式或概念仍未知 | 经过检查的 candidate 和固定 theorem handoff |
+| Project | 证明困难、多 lemma、需要工具或文献 | 持久化 proof state 和 lemma graph |
+| Recovery | 同一 theorem 以前已经失败 | No-repeat 诊断和真正的新路线 |
 
-困难证明的主流程是：
+高级流程都是条件触发。普通证明不会自动创建项目、扫描文献、启动多个 Agent，或者遍历所有数学后端。
 
-1. 固定精确命题、assumptions、domains 和 quantifiers。
-2. 检查直接定理，并在小例子和边界情形上尝试反驳。
-3. 找到 failure world、central object 和最小的决定性 proof kernel。
-4. 如果答案可能未知，先检索 exact/neighboring result，保存真实 Scholar 查询证据，精读合法获取的最近全文，并写出精确 frontier gap。
-5. 再定义 candidate representation、exact validity gate、evaluator、simplification ladder、holdout 和 promotion rule。
-6. 通过 promotion gate 后把 candidate 固定成 theorem target；否则只比较少量但真正不同的证明路线。
-7. 构建 AND/OR lemma graph，优先处理最不确定的 required child。
-8. 工具只能用于产生明确的反例、条件、恒等式、certificate 或 formal lemma。
-9. 失败后定位第一处无效步骤，保留已验证前缀，只修复受影响的 dependents。
-10. 两次局部尝试都没有缩小 proof state 时，必须修复、重拆、检索、工具检查或停止。
-11. 最后组装回原命题并做 adversarial review。
+## 证明循环
 
-## Proof Project 记忆
+1. 固定精确命题，列出所有对象、domain、假设、quantifier 和目标结论。
+2. 检查直接 theorem 与 certificate，再写出命题的否定，并测试小规模、对称、边界和放松假设的情形。
+3. 找出 failure world、central object，以及能够决定当前路线的最小 proof kernel。
+4. 如果答案可能未知，先核查最近的文献 frontier。随后定义 candidate representation、evaluator、holdout 和 promotion rule，再固定一个有证据支持的 candidate。
+5. 只比较少量但真正不同的路线。建立 AND/OR lemma graph，优先处理当前 assembly path 上最不确定的 required child。
+6. 每个脆弱的工具调用或证明动作都必须声明 expected artifact。失败后保留有效节点，只修复第一处损坏的 dependency。两次尝试都没有改变 proof state 时，必须更换路线、检索、修正命题或停止。
+7. 最后重新组装原 theorem，进行 adversarial review，并给出证据能够支持的最强 proof status。
 
-`start_proof.py` 会创建持久化项目文件，但不会每次把它们全部加载。`proof_doctor.py` 只推荐当前 proof state 真正需要的文件。
+这个流程不能保证每个真 theorem 都会被证明。它能防止尚未解决的数学问题被流畅文字掩盖，也能让当前 gap 在下一次尝试中继续使用。
+
+## 一次运行会返回什么
+
+对于困难问题，最终可见结果应包含：
+
+- 精确 claim 和必要假设。
+- 当前 proof status。
+- 决定性的 proof pattern、证明、反例或精确 obstruction。
+- 已检查的 proof-critical artifact，以及它们如何进入论证。
+- 相比之前失败真正新增的内容。
+- theorem 仍未闭合时，一个有边界的 next move。
+
+内部 board 和 ledger 默认不会出现在最终回答中，除非它们能帮助读者判断正确性。
+
+## 证据与证明状态
+
+数学工具的输出只有转化成可检查对象后才能进入证明。例如 exact identity、quantified condition、KKT 或 dual certificate、Bellman inequality、SMT witness 或 unsat core、exact PEP certificate，以及没有 admitted gap 的 Lean theorem。
+
+数值实验可以反驳 claim 或帮助猜公式，但不能证明 universal statement。如果最终 assembly 仍含 `sorry`、admitted axiom 或未编码 obligation，那么局部 formal lemma 也没有闭合主 theorem。
+
+| Status | 含义 |
+| --- | --- |
+| `conjecture` | 当前只有直觉或 pattern guess |
+| `counterexample-tested` | 有限测试中没有发现反例 |
+| `lemma-conditional` | Theorem 只有在明确列出的 missing lemma 成立时才成立 |
+| `human-proof` | 每个非平凡步骤都有明确的数学依据 |
+| `tool-checked` | 脆弱局部步骤有独立计算 artifact |
+| `formalized-local` | 重要 local lemma 已经 machine-checked |
+| `formalized-complete` | 完整 theorem 及其 assembly 已经 machine-checked |
+
+`tool-checked` 和 `formalized-local` 可以增强 human proof，但不能替代缺失的全局 assembly。决定性 lemma 仍是 conjectural 或 conditional 时，结果不能称为 proved。
+
+## 持久化证明项目
+
+`start_proof.py` 会为困难或重复失败的任务创建持久化项目。这些文件按需加载，不会在每次证明时全部进入上下文。
 
 | 文件 | 作用 |
 | --- | --- |
-| `TRIAGE.md` | 初始模式和立即需要作出的判断 |
-| `ATTACK_MATRIX.md` | 证明、反驳和正交证据路线 |
-| `IDEA_MAP.md` | Central object、构造、kernel 和 one-step move |
-| `LEMMA_QUEUE.md` | AND/OR lemma graph 和节点状态 |
-| `WORKSTREAMS.md` | Candidate frontier、attempt fingerprint、first-error salvage、failure-stage routing 和 route decision |
-| `PATTERN_SCAN.md` | 从论文、旧 ledger 或 formal library 中有限提取结构 |
-| `TOOL_PLAN.md` | 计算或 formalization 之前声明 expected artifact |
-| `LEDGER.md` | 持久化 claim、证据、失败记录和 verification status |
-| `ESCALATION.md` | 重复失败后允许采取的下一步 |
-| `literature/frontier-evidence.json` | Discovery mode 下带哈希的 Scholar/全文证据、精确 anchor、solution card 和 frontier status |
+| `claim.md`、`TRIAGE.md`、`routing.json` | 精确 claim、初始 mode 和领域路由 |
+| `ATTACK_MATRIX.md`、`IDEA_MAP.md` | 备选路线、failure world、central object 和 kernel |
+| `LEMMA_QUEUE.md`、`WORKSTREAMS.md` | AND/OR dependency、attempt fingerprint、failure localization 和 route decision |
+| `PATTERN_SCAN.md`、`TOOL_PLAN.md` | 有边界的 theorem/trick 检索和 expected computational artifact |
+| `LEDGER.md`、`ESCALATION.md` | 持久证据、失败状态、proof status 和合法 next move |
+| `literature/frontier-evidence.json` | 带哈希的 discovery evidence、精确 source anchor、solution card 和 frontier status |
 
-Idea map、文献扫描、prover-verifier、formal check 和多 Agent 分工都只在当前证明确实需要时启用。
+`proof_doctor.py` 会读取当前状态并推荐一个首要 next action。完整历史保留在 ledger 中，局部 repair 只接收当前节点、dependency、之前的失败和准备引入的新证据。
 
-## 数学工具
+## 命令行辅助工具
 
-工具输出只有转化成明确 artifact 后才能进入证明：
+多数情况下可以让 Codex 自动运行这些脚本，也可以直接调用：
 
-- counterexample 或 finite witness；
-- exact identity 或 quantified condition；
-- KKT、dual、Bellman、LP、SMT 或组合 certificate；
-- exact PEP dual 或适用于所有 horizon 的 Lyapunov certificate；
-- 没有 admitted gap 的 local Lean theorem；
-- 暴露 missing assumption 的 theorem repair。
+```bash
+cd "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench"
 
-数值实验和 simulation 可以反驳或启发 conjecture，但不能证明 universal statement。如果最终 assembly 仍含 `sorry`、admitted axiom 或未编码 obligation，那么 formal helper lemma 也不能算完整证明。
+# 精简 idea map
+python3 scripts/plan_idea.py "CLAIM"
 
-### 可选 Wolfram 支持
+# 持久化项目，需要时加入 --mode recovery 或 --mode discovery
+python3 scripts/start_proof.py --title "short-name" --claim "EXACT CLAIM"
 
-Wolfram 适合 symbolic simplification、inequality condition、quantifier elimination、KKT algebra、Bellman difference、envelope calculation 和小规模反例搜索。需要从官方 [Wolfram Engine](https://www.wolfram.com/engine/) 与 [WolframScript](https://reference.wolfram.com/language/workflow/InstallWolframScript.html.en) 页面单独安装。
+# 一个首要 next move
+python3 scripts/proof_doctor.py path/to/proof_project
+
+# 最终 ledger audit
+python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
+```
+
+只有精简的 `plan_idea.py` 找不到 useful kernel 时才加入 `--full`。`proof_doctor.py` 可以使用 `--json` 输出机器可读结果。
+
+| Script | 用途 |
+| --- | --- |
+| `select_playbook.py` | 根据 claim 选择领域 playbook |
+| `check_attempt.py` | 重试前识别等价路线或构造 |
+| `pattern_miner.py` | 从小规模序列猜测精确公式并检查 holdout |
+| `new_lemma_card.py` | 保存已经在真实路线中发挥作用的 lemma |
+| `new_trick_card.py` | 保存经过验证的论文或证明 trick |
+| `frontier_evidence.py` | 获取、哈希、定位并验证 frontier 文献证据 |
+
+Discovery project 使用 `frontier_evidence.py` 保存真实执行过的 Scholar 证据，获取合法公开全文，对本地文件计算哈希，并记录精确 theorem 或 proof anchor。SSRN 路由会解析稳定 identity 和经过核验的公开镜像，不会制造临时 signed URL。DOI 路由支持 INFORMS 记录，并比较 working paper 与正式发表版本。细节见 [全文 Frontier 证据](references/full-text-frontier-evidence.md)。
+
+如果数学环境提供 `codex-math-python`，可以用它替换 `python3`。本仓库不依赖这个 wrapper。
+
+## 数学后端
+
+每次工具调用之前，workbench 都会声明 local claim、domain、准备测试的 negation、backend、expected artifact，以及结果将如何改变 proof state。如果连续 timeout 或输出不能决定或缩小 subgoal，这条工具路线就会停止。
+
+常见分工包括：
+
+- Wolfram 或 SymPy 用于 exact algebra、sign condition、quantifier elimination 和小型 symbolic counterexample。
+- Python、Z3、CVXPy、OR-Tools、Sage 和 NetworkX 用于 finite witness、optimization certificate 和 discrete structure。
+- Lean 用于 informal statement 已经稳定的 local lemma。
+- simulation 只用于反驳和 sensitivity check，不作为 universal proof。
+
+### Wolfram
+
+[Wolfram Engine](https://www.wolfram.com/engine/) 和 [WolframScript](https://reference.wolfram.com/language/workflow/InstallWolframScript.html.en) 需要单独安装。最小检查命令是：
 
 ```bash
 wolframscript -code '2+2'
 ```
 
-如果配套的 `math-tools` 环境提供 `wmath` 或 `codex-wmath`，workbench 可以使用这些 wrapper。本仓库不会安装它们。
+如果 `math-tools` 提供 `wmath` 或 `codex-wmath`，workbench 可以通过这些 wrapper 运行有边界的 symbolic call。本仓库不会安装它们。
 
-### 可选 Peppy / PEPFlow 支持
+### Peppy 与 PEPFlow
 
-当本机已经安装配套的 `peppy` skill 和 [PEPFlow](https://github.com/pepflow-lib/PEPFlow) checkout 时，workbench 可以把精确编码的固定算法性能问题交给 Peppy，依次完成 rate discovery、dual certificate 提取、Lyapunov 结构识别和 closed-form verification。这个分支只有在算法、函数或算子类、normalization、metric 与 horizon 通过 [Peppy 证明桥接规则](references/peppy-proof-bridge.md) 后才会启动。数值 sweep 仍只算 conjecture evidence，一旦下一 block 不再提升证明状态就会停止。
+当本机已经安装配套的 `peppy` skill 和 [PEPFlow](https://github.com/pepflow-lib/PEPFlow) checkout 时，固定算法的性能问题可以依次进行 rate discovery、dual certificate 提取、Lyapunov 结构识别和 closed-form verification。只有算法、函数或算子类、normalization、performance metric 与 horizon 通过 [Peppy 证明桥接规则](references/peppy-proof-bridge.md) 后，这个分支才会启动。数值 sweep 仍只算 conjecture evidence。下一 block 不再提升 proof status 时，流程就会停止。
 
-这里的归属关系是明确的。Performance Estimation Problem 框架由 [Drori 和 Teboulle（2014）](https://doi.org/10.1007/s10107-013-0653-0)提出；精确的有限维 SDP 表示依赖 [Taylor、Hendrickx 和 Glineur（2017）](https://doi.org/10.1007/s10107-016-1009-3)的 interpolation 结果，其 composite-oracle 扩展见三位作者发表在 [SIAM Journal on Optimization 的论文](https://doi.org/10.1137/16M108104X)；自动 Lyapunov 分析的方法与 [Taylor、Van Scoy 和 Lessard（2018）](https://proceedings.mlr.press/v80/taylor18a.html)直接相关。实际使用的第三方后端及其从数值结果走向符号证明的流程由 [Suh、Ying、Jiang 和 Nguyen（2025）](https://openreview.net/forum?id=tJqsZZBmmB)说明，PEPFlow 仍是独立的 [Apache-2.0 项目](https://github.com/pepflow-lib/PEPFlow/blob/main/LICENSE)。
+相关数学来源如下：
 
-如果论文中的结果实质使用了这条路线，应引用 PEPFlow，并根据所编码的问题类引用对应的 PEP/interpolation 原始论文。只有实际使用了 PEPit 等其他实现时才应引用它们。本地 `peppy` skill 只是调度层，不主张 PEP、interpolation theory 或 PEPFlow 的原创归属。
+- [Drori 和 Teboulle（2014）](https://doi.org/10.1007/s10107-013-0653-0)提出了用于一阶方法的 performance estimation。
+- [Taylor、Hendrickx 和 Glineur（2017）](https://doi.org/10.1007/s10107-016-1009-3)给出了精确的 smooth strongly convex interpolation 与有限维 SDP 表示，三位作者的 [composite convex 扩展](https://doi.org/10.1137/16M108104X)覆盖了更广的 oracle model。
+- [Taylor、Van Scoy 和 Lessard（2018）](https://proceedings.mlr.press/v80/taylor18a.html)研究了自动化的 tight quadratic Lyapunov analysis。
+- [Suh、Ying、Jiang 和 Nguyen（2025）](https://openreview.net/forum?id=tJqsZZBmmB)说明了 PEPFlow 从数值分析走向符号证明的流程。
 
-## 多 Agent 使用
+PEPFlow 是独立的 [Apache-2.0 项目](https://github.com/pepflow-lib/PEPFlow/blob/main/LICENSE)。论文中的结果如果实质使用了这条路线，应引用 PEPFlow，并根据所编码的问题类引用对应的方法论文。只有实际使用 PEPit 或其他实现时才应引用它们。本地 `peppy` skill 只是调度层，不会重新主张 PEP、interpolation theory 或 PEPFlow 的原创归属。
 
-并行 Agent 只在用户明确要求时启用。合理分工应按 artifact 划分，例如 planner、falsifier、retriever、local tool-checker 或 formalizer、reviewer。始终由一个 integrator 负责命题一致性、route choice 和最终 proof status，不应让多个 Agent 同时写同一证明路线的不同版本。
+## 多 Agent 工作
 
-## Proof Status
-
-| Status | 含义 |
-| --- | --- |
-| `conjecture` | 只有直觉或 pattern match |
-| `counterexample-tested` | 在有限测试中没有发现反例 |
-| `lemma-conditional` | Theorem 依赖明确列出的 missing lemma |
-| `human-proof` | 每个非平凡步骤都有数学依据 |
-| `tool-checked` | 脆弱局部步骤有独立 tool artifact |
-| `formalized-local` | 重要 local lemma 已经 machine-checked |
-| `formalized-complete` | 完整 theorem 和 assembly 都已经 machine-checked |
-
-决定性 lemma 仍然只是猜测时，不能把结果称为 proved。
+并行 Agent 只在用户要求时启用。合理分工按照 artifact 划分，包括 planner、falsifier、retriever、local tool-checker 或 formalizer、reviewer。始终由一个 integrator 负责 statement fidelity、route choice 和最终 proof status。多个 Agent 不应同时为同一路线撰写互相竞争的 prose 版本。
 
 ## 仓库结构
 
@@ -539,21 +529,36 @@ wolframscript -code '2+2'
 ├── agents/openai.yaml
 ├── references/
 │   ├── proof-router.md
-│   ├── proof-idea-generator.md
-│   ├── dp-proof-playbook.md
-│   ├── mechanism-design-playbook.md
-│   └── ...
+│   ├── research-backed-proof-loop.md
+│   ├── novel-problem-discovery.md
+│   ├── peppy-proof-bridge.md
+│   ├── domain playbooks
+│   └── verification and escalation rules
 └── scripts/
     ├── start_proof.py
     ├── proof_doctor.py
+    ├── frontier_evidence.py
     ├── smoke_workbench.py
-    ├── audit_ledger.py
-    └── ...
+    └── focused state and pattern helpers
 ```
+
+`SKILL.md` 只保留精简 controller。详细流程放在 references 中，并且只在当前 decision 需要时读取。Scripts 负责确定性的 project state、routing、retrieval evidence 和 audit。
+
+## 研究来源
+
+Workbench 把 proof search、formalization 和 mathematical discovery 中的研究方法转化成轻量控制规则。主要来源可以分成几条线：
+
+- Proof decomposition 与 graph repair 参考 [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283)、[Goedel-Architect](https://arxiv.org/abs/2606.06468) 和 [LEAP](https://arxiv.org/abs/2606.03303)。
+- Formal feedback、premise retrieval 和 source fidelity 参考 [Aristotle](https://arxiv.org/abs/2510.01346)、[Goedel-Prover-V2](https://arxiv.org/abs/2508.03613)、[process-verified theorem proving](https://arxiv.org/abs/2606.20068)、[LeanSearch v2](https://arxiv.org/abs/2605.13137)、[LeanMarathon](https://arxiv.org/abs/2606.05400) 和 [MerLean-Prover](https://arxiv.org/abs/2605.26959)。
+- Independent checking 与诚实 failure outcome 参考 [Prover-Verifier Games](https://arxiv.org/abs/2407.13692)、[Aletheia](https://arxiv.org/abs/2602.10177)、[Scaling Generative Verifiers](https://arxiv.org/abs/2511.13027) 和 [Formal Conjectures](https://arxiv.org/abs/2605.13171)。
+- 持久化 research state 与 stage-aware repair 参考 [STAR-PolyaMath](https://arxiv.org/abs/2605.19338)、[AI co-mathematician](https://arxiv.org/abs/2605.06651)、[Prover Agent](https://arxiv.org/abs/2506.19923)、[Delta Prover](https://arxiv.org/abs/2507.15225) 和 [Hilbert](https://arxiv.org/abs/2509.22819)。
+- Evaluator-driven discovery 参考 [AlphaEvolve](https://arxiv.org/abs/2506.13131)、[Discover and Prove](https://arxiv.org/abs/2604.15839)、[PatternBoost](https://arxiv.org/abs/2411.00566)、[Generative Modelling for Mathematical Discovery](https://arxiv.org/abs/2503.11061)、[AI-assisted open-problem discovery](https://arxiv.org/abs/2603.04735)、[self-supervised theorem discovery](https://arxiv.org/abs/2606.28747)、[MLEvolve](https://arxiv.org/abs/2606.06473)、[QED](https://arxiv.org/abs/2604.24021) 和 [From Solvers to Research](https://arxiv.org/abs/2607.07779)。
+
+具体的流程映射见 [Research-Backed Proof Loop](references/research-backed-proof-loop.md) 和 [Novel Problem Discovery](references/novel-problem-discovery.md)。这些论文用于支持 workflow decision，不会被当成用户 theorem 的证明依据。
 
 ## 开发检查
 
-Workbench 脚本只使用 Python 标准库。Codex 的 skill validator 还需要 PyYAML：
+辅助脚本只使用 Python 标准库。Codex 的 skill validator 还需要 PyYAML。
 
 ```bash
 python3 -m pip install pyyaml
@@ -563,33 +568,8 @@ python3 scripts/smoke_workbench.py
 python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 
-Smoke test 检查的是确定性的控制行为，包括领域路由、recovery 激活、新问题 discovery gate 与 proof handoff、first-error gate、verified-prefix salvage、failure-stage routing、路径可移植性和研究规则是否完整。它并不声称已经测得 theorem-solving benchmark 的提升。能够诚实验证的改进更具体：减少等价重试，更常做局部修复，并明确区分已经检查的 artifact 与尚未闭合的全局证明。
-
-## 设计来源
-
-这个工作流把自动证明与 formalization 研究中的一些思路转化成轻量控制规则：
-
-- [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283)：把非形式化路线拆成更小的命名 proof obligations。
-- [Prover-Verifier Games](https://arxiv.org/abs/2407.13692)：让脆弱步骤能够经受对抗性检查。
-- [STAR-PolyaMath](https://arxiv.org/abs/2605.19338)：把证明推理与持续控制、trace-back 和 re-plan 分开。
-- [Goedel-Architect](https://arxiv.org/abs/2606.06468)：维护并修正 dependency blueprint，而不是重复推倒已经解决的 subgraph。
-- [AI co-mathematician](https://arxiv.org/abs/2605.06651)：在长期研究任务中保留状态、不确定性、失败 workstream 和人工 steering。
-- [Aristotle](https://arxiv.org/abs/2510.01346)：搜索 AND/OR proof graph，合并等价状态，并用 formal feedback 指导扩展。
-- [Goedel-Prover-V2](https://arxiv.org/abs/2508.03613) 和 [process-verified theorem proving](https://arxiv.org/abs/2606.20068)：根据精确 verifier error 修复证明并保留有效前缀。
-- [Aletheia](https://arxiv.org/abs/2602.10177)：分离生成、验证和修订，并允许诚实地返回失败。
-- [AlphaEvolve](https://arxiv.org/abs/2506.13131)：只有在自动 evaluator 能比较具体 artifact 时，才维护多样候选。
-- [Discover and Prove](https://arxiv.org/abs/2604.15839)：先发现未知答案，再把它固定为明确的 formal theorem。
-- [PatternBoost](https://arxiv.org/abs/2411.00566) 和 [Generative Modelling for Mathematical Discovery](https://arxiv.org/abs/2503.11061)：结合 global pattern generation、local improvement、exact evaluator 和多样候选。
-- [AI-assisted open-problem discovery](https://arxiv.org/abs/2603.04735) 和 [self-supervised theorem discovery](https://arxiv.org/abs/2606.28747)：搜索不同 representation，使用数值或 formal feedback，并回收有用的中间 theorem。
-- [MLEvolve](https://arxiv.org/abs/2606.06473)、[QED](https://arxiv.org/abs/2604.24021) 和 [From Solvers to Research](https://arxiv.org/abs/2607.07779)：在不同分支间共享证据，用明确 stagnation trigger 和独立 verifier，并在需要新概念或人工判断时诚实停下来。
-- [LEAP](https://arxiv.org/abs/2606.03303)：拒绝虽然形式上可接受、但循环、没有简化或无法帮助 parent assembly 的分解。
-- [LeanMarathon](https://arxiv.org/abs/2606.05400) 和 [MerLean-Prover](https://arxiv.org/abs/2605.26959)：先稳定 target fidelity，缩小 repair radius，保留 source-aware repair，只使受影响的 dependents 失效。
-- [LeanSearch v2](https://arxiv.org/abs/2605.13137)：通过 sketch-retrieve-reflect 检索能够共同工作的 premise bundle，而不是孤立的语义相似结果。
-- [Prover Agent](https://arxiv.org/abs/2506.19923)、[Delta Prover](https://arxiv.org/abs/2507.15225) 和 [Hilbert](https://arxiv.org/abs/2509.22819)：从辅助 lemma 生长策略，根据失败 subproblem 修复，并按失败阶段分配计算。
-- [Scaling Generative Verifiers](https://arxiv.org/abs/2511.13027) 和 [Formal Conjectures](https://arxiv.org/abs/2605.13171)：区分写得像证明与数学有效性，并把证明或反证当作 statement-fidelity audit。
-
-这些论文只提供工作流启发，不会被当成用户命题的证明依据。
+Smoke test 检查确定性行为，包括 routing、recovery activation、first-error salvage、discovery evidence gate、Peppy 路由与归属、portable path 和 proof handoff。它不声称已经测得 theorem-solving benchmark 的提升。能够直接验证的改进更具体，包括拒绝等价重试、保持局部 repair，以及区分 checked artifact 与 unfinished proof。
 
 ## 许可证
 
-MIT License。详见 [LICENSE](LICENSE)。
+本仓库使用 MIT License，详见 [LICENSE](LICENSE)。可选第三方后端保留各自的许可证。
