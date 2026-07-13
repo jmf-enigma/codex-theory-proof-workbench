@@ -538,6 +538,8 @@ def main() -> int:
                     "10.1137/16M108104X",
                     "proceedings.mlr.press/v80/taylor18a.html",
                     "openreview.net/forum?id=tJqsZZBmmB",
+                    "openreview.net/forum?id=q7TfzOgGnb",
+                    "PEPFlow/tree/peppy-workshop-v1/examples_peppy",
                     "github.com/pepflow-lib/PEPFlow",
                 ]
             )

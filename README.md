@@ -225,8 +225,11 @@ The mathematical basis is credited to the original sources:
 - [Taylor, Hendrickx, and Glineur (2017)](https://doi.org/10.1007/s10107-016-1009-3) developed exact smooth strongly convex interpolation and finite-dimensional SDP representations. Their [composite convex extension](https://doi.org/10.1137/16M108104X) covers a broader oracle model.
 - [Taylor, Van Scoy, and Lessard (2018)](https://proceedings.mlr.press/v80/taylor18a.html) developed automated tight quadratic Lyapunov analyses.
 - [Suh, Ying, Jiang, and Nguyen (2025)](https://openreview.net/forum?id=tJqsZZBmmB) describe PEPFlow's numerical-to-symbolic proof workflow.
+- [Suh, Yoon, Nguyen, Ying, and Ma (2026)](https://openreview.net/forum?id=q7TfzOgGnb) introduce Peppy and its five-stage AI-assisted workflow. The corresponding command files and examples are in the official PEPFlow [`peppy-workshop-v1` release](https://github.com/pepflow-lib/PEPFlow/tree/peppy-workshop-v1/examples_peppy).
 
-PEPFlow remains a separate [Apache-2.0 project](https://github.com/pepflow-lib/PEPFlow/blob/main/LICENSE). Research that materially uses this route should cite PEPFlow and the methodology paper matching the encoded class. Cite PEPit or another implementation only when it was actually used. The local `peppy` skill is an orchestration layer, not a rebranding of PEP, interpolation theory, or PEPFlow.
+The five block skills `pep-implement`, `pep-full-proof`, `lyap-define`, `lyap-vectors`, and `lyap-closed-form` originate from that official Peppy release. The local `peppy` shortcut selects and resumes those blocks. It is a convenience layer, not an independent implementation or a rebranding of PEP, interpolation theory, Peppy, or PEPFlow.
+
+PEPFlow remains a separate [Apache-2.0 project](https://github.com/pepflow-lib/PEPFlow/blob/main/LICENSE). Research that materially uses this route should cite both Peppy and PEPFlow, together with the methodology source matching the encoded class. Cite PEPit or another implementation only when it was actually used.
 
 ## Multi-Agent Work
 
@@ -514,8 +517,11 @@ wolframscript -code '2+2'
 - [Taylor、Hendrickx 和 Glineur（2017）](https://doi.org/10.1007/s10107-016-1009-3)给出了精确的 smooth strongly convex interpolation 与有限维 SDP 表示，三位作者的 [composite convex 扩展](https://doi.org/10.1137/16M108104X)覆盖了更广的 oracle model。
 - [Taylor、Van Scoy 和 Lessard（2018）](https://proceedings.mlr.press/v80/taylor18a.html)研究了自动化的 tight quadratic Lyapunov analysis。
 - [Suh、Ying、Jiang 和 Nguyen（2025）](https://openreview.net/forum?id=tJqsZZBmmB)说明了 PEPFlow 从数值分析走向符号证明的流程。
+- [Suh、Yoon、Nguyen、Ying 和 Ma（2026）](https://openreview.net/forum?id=q7TfzOgGnb)提出了 Peppy 及其五阶段 AI-assisted workflow。对应的命令文件与示例收录在 PEPFlow 官方的 [`peppy-workshop-v1` release](https://github.com/pepflow-lib/PEPFlow/tree/peppy-workshop-v1/examples_peppy) 中。
 
-PEPFlow 是独立的 [Apache-2.0 项目](https://github.com/pepflow-lib/PEPFlow/blob/main/LICENSE)。论文中的结果如果实质使用了这条路线，应引用 PEPFlow，并根据所编码的问题类引用对应的方法论文。只有实际使用 PEPit 或其他实现时才应引用它们。本地 `peppy` skill 只是调度层，不会重新主张 PEP、interpolation theory 或 PEPFlow 的原创归属。
+五个 block skill `pep-implement`、`pep-full-proof`、`lyap-define`、`lyap-vectors` 和 `lyap-closed-form` 都直接来自这次官方 Peppy release。本地 `peppy` shortcut 负责选择和续跑这些 block。它只是便利的调度层，不是独立实现，也不会重新主张 PEP、interpolation theory、Peppy 或 PEPFlow 的原创归属。
+
+PEPFlow 是独立的 [Apache-2.0 项目](https://github.com/pepflow-lib/PEPFlow/blob/main/LICENSE)。论文中的结果如果实质使用了这条路线，应同时引用 Peppy 与 PEPFlow，并根据所编码的问题类引用对应的方法论文。只有实际使用 PEPit 或其他实现时才应引用它们。
 
 ## 多 Agent 工作
 
