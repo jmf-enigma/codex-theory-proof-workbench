@@ -32,9 +32,9 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 14. Progress gate: if the same obstruction survives two cycles, stop polishing and either isolate the missing lemma, weaken the theorem, or return `still open`.
 15. Novelty gate: for a repeated proof, state what changed since the last failed attempt. Acceptable changes are a new central object, theorem family, certificate, counterexample, missing assumption, verified trick, tool artifact, or theorem repair.
 16. Decision-value gate: before another long proof attempt, state the artifact it is expected to produce. If there is no expected artifact, choose counterexample search, retrieval, local formalization, theorem repair, or stop.
-17. Formal artifact gate: if Lean or a formal-proving API was used, check for `sorry`, admitted axioms, incomplete declarations, unproved theorem dependencies, and whether verified helper lemmas actually imply the original theorem.
+17. Formal artifact gate: if Lean or a formal-proving API was used, check for `sorry`, admitted or unexpected axioms, unsafe shortcuts, incomplete declarations, unproved theorem dependencies, and whether verified helper lemmas actually imply the original theorem. Record an expected axiom allowlist or footprint and isolate every external trust assumption; kernel validity, trust footprint, and statement fidelity are separate checks.
 18. Decomposition gate: before accepting child lemmas, check parent sufficiency, strict simplification, acyclicity, source fidelity, repair radius, and premise feasibility.
-19. Verifier-diversity gate: do not upgrade confidence because similar verbal reviewers agree. Require a different evidence channel for the fragile kernel when feasible.
+19. Verifier-diversity gate: do not upgrade confidence because similar verbal reviewers agree. A model judge is never the sole acceptance channel. Derive atomic acceptance obligations from the problem and require a different evidence channel for the fragile kernel when feasible; a longer prose rubric is not additional evidence.
 20. Definition-sanity gate: when the theorem introduces custom objects or formal definitions, prove easy expected variants and boundary/API lemmas before trusting a difficult target built on them.
 21. Semantic-obligation gate: decompose custom definitions and exact counting, feasibility, closure, multiplicity, support, or object-type requirements into atomic obligations; verify that every reduction and construction preserves them.
 22. Completion-coverage gate: map every acceptance-contract item, required edge case, and reduction obligation to the proof node or certificate that discharges it. Any uncovered required row prevents complete-proof status.
@@ -64,6 +64,8 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 - Does each required edge case and acceptance item have a named place in the final proof rather than an implicit promise?
 - If Peppy/PEPFlow was used, did the encoding match the exact algorithm, class, initial condition, performance metric, and horizon in the theorem?
 - Was a numerical sweep or floating-point dual kept below proof status until an exact certificate, sign conditions, and final theorem assembly were checked?
+- Was the evaluator exhaustive for the stated theorem, or did a pass only mean no violation on a finite, sampled, or proxy suite?
+- If the proof was formalized, did the recorded axiom footprint match the allowlist, and were real-world oracle or data assumptions kept outside the proved core?
 
 ## Missing Lemma Search
 

@@ -310,9 +310,10 @@ Treat trick cards as working memory, not permanent truth.
 - Mark the trick as `candidate` until it is checked in the current proof.
 - Mark it as `validated-local` only after it proves, refutes, or repairs a concrete lemma.
 - Mark it as `rejected` if the hidden assumptions do not hold.
-- Promote it to global skill memory only after reuse or after the user asks to keep it.
+- For reuse, compare the trick's dependency signature: required assumptions and inputs, transformation, produced artifact, and verification hook. Similar prose or notation is not recurrence.
+- Promote it to global skill memory only after replay on a second route or held-out problem shape, or after the user asks to keep it. A valuable one-off remains `validated-local`.
 
-Do not store long summaries of papers. Store the local move and its failure mode.
+This semantic-replay rule adapts [TacMiner's dependency-graph lesson](https://arxiv.org/abs/2503.24036) without assuming that rare informal mathematical tricks must recur frequently. Do not store long summaries of papers. Store the local move and its failure mode.
 
 ### 9. Theorem-Repair Engine
 

@@ -46,6 +46,15 @@ REQUIRED_RECORD_FIELDS = {
     "verification_reports": ("event_type", "run_id", "verdict"),
     "events": ("event_type",),
 }
+CHECKER_GUIDED_ATTEMPT_FIELDS = (
+    "feedback_kind",
+    "checker_backend",
+    "diagnostic",
+    "local_state",
+    "diagnosis",
+    "repair",
+    "replay_result",
+)
 BRIEF_FIELDS = {
     "attempts": (
         "event_type",
@@ -53,6 +62,13 @@ BRIEF_FIELDS = {
         "target_lemma",
         "outcome",
         "failure_witness",
+        "feedback_kind",
+        "checker_backend",
+        "diagnostic",
+        "local_state",
+        "diagnosis",
+        "repair",
+        "replay_result",
         "proof_state_delta",
     ),
     "proof_nodes": ("event_type", "node_id", "status", "statement"),
@@ -223,6 +239,31 @@ def validate_record(channel: str, record: dict[str, Any]) -> None:
     ]
     if nonstrings:
         raise ValueError(f"{channel} record fields must be strings: {', '.join(nonstrings)}")
+    if channel == "attempts":
+        event_type = record.get("event_type", "")
+        feedback_kind = record.get("feedback_kind")
+        checker_guided = feedback_kind == "checker" or "checker" in event_type.lower()
+        if checker_guided:
+            checker_missing = [
+                field
+                for field in CHECKER_GUIDED_ATTEMPT_FIELDS
+                if field not in record or record[field] in (None, "")
+            ]
+            if checker_missing:
+                raise ValueError(
+                    "checker-guided attempts record is missing required fields: "
+                    + ", ".join(checker_missing)
+                )
+            checker_nonstrings = [
+                field
+                for field in CHECKER_GUIDED_ATTEMPT_FIELDS
+                if not isinstance(record[field], str)
+            ]
+            if checker_nonstrings:
+                raise ValueError(
+                    "checker-guided attempts fields must be strings: "
+                    + ", ".join(checker_nonstrings)
+                )
 
 
 def init_runtime(

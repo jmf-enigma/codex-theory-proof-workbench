@@ -173,6 +173,8 @@ Use this for fragile local moves, especially after a failed attempt, tool feedba
 
 The verifier is read-only unless explicitly assigned a proof role. If the same move is challenged twice without a new artifact, route to `Route Decision Check`.
 
+When feedback comes from Lean, a solver, CAS, or another exact checker, mark the runtime attempt with `feedback_kind: checker` and preserve a diagnostic-grounded repair tuple: checker backend, failed artifact, exact diagnostic and local state, diagnosis, minimal repair, and replay result. Copy checker output without paraphrasing it away. The diagnosis is advisory; only replay through the same pinned checker can accept the repair.
+
 ## Failure Localization And Salvage
 
 Fill this only after a verifier, tool, reviewer, or counterexample rejects a multi-step attempt. Later deductions are not evidence once an earlier dependency fails.
@@ -363,6 +365,9 @@ Fill this only when the answer, object, formula, construction, or decisive conce
 - candidate representation:
 - validity gate:
 - score or evaluator:
+- evaluator scope: original theorem / exhaustive restricted instance / sampled / proxy
+- rejection implication and acceptance implication:
+- hard-witness regression set:
 - simplification ladder:
 - holdout cases:
 - promotion criterion:

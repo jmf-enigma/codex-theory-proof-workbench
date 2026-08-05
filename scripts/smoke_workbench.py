@@ -236,6 +236,7 @@ def main() -> int:
         )
         claim_template = (project / "claim.md").read_text(encoding="utf-8")
         workstreams_template = (project / "WORKSTREAMS.md").read_text(encoding="utf-8")
+        idea_template = (project / "IDEA_MAP.md").read_text(encoding="utf-8")
         checks.append(
             {
                 "name": "acceptance-and-route-family-control",
@@ -246,16 +247,26 @@ def main() -> int:
                 and "## Portfolio Checkpoint" in workstreams_template
                 and "not the current favorite" in workstreams_template
                 and "menu, not a required roster" in workstreams_template
-                and "new mechanism / invariant / construction" in workstreams_template,
+                and "new mechanism / invariant / construction" in workstreams_template
+                and "diagnostic-grounded repair tuple" in workstreams_template
+                and "evaluator scope" in idea_template
+                and "hard-witness regression set" in idea_template,
             }
         )
 
         attempt_record = {
-            "event_type": "attempt_completed",
+            "event_type": "checker_guided_attempt_completed",
             "route_family": "Bellman contraction",
             "target_lemma": "sup-norm contraction",
             "outcome": "blocked",
             "failure_witness": "discount factor domain not yet stated",
+            "feedback_kind": "checker",
+            "checker_backend": "synthetic Lean fixture",
+            "diagnostic": "missing hypothesis: 0 <= discount and discount < 1",
+            "local_state": "prove sup-norm contraction under the current MDP assumptions",
+            "diagnosis": "the contraction factor has no declared domain",
+            "repair": "add the discount-factor domain to the theorem fence",
+            "replay_result": "not-run",
             "proof_state_delta": "one missing assumption isolated",
         }
         run(
@@ -265,6 +276,22 @@ def main() -> int:
             "attempts",
             "--record",
             json.dumps(attempt_record),
+        )
+        incomplete_checker_record = dict(attempt_record)
+        incomplete_checker_record.pop("diagnosis")
+        rejected_checker_record = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "proof_runtime.py"),
+                "append",
+                str(project),
+                "attempts",
+                "--record",
+                json.dumps(incomplete_checker_record),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
         )
         run(
             str(SCRIPTS / "proof_runtime.py"),
@@ -290,7 +317,11 @@ def main() -> int:
                 "ok": runtime_brief["state"]["proof_status"] == "lemma-conditional"
                 and runtime_brief["counts"]["attempts"] == 1
                 and runtime_brief["counts"]["events"] == 2
+                and rejected_checker_record.returncode != 0
+                and "checker-guided attempts record is missing" in rejected_checker_record.stderr
                 and "discount factor domain" in runtime_markdown
+                and "missing hypothesis" in runtime_markdown
+                and "replay_result" in runtime_markdown
                 and "sup-norm contraction" in runtime_markdown,
             }
         )
@@ -1124,6 +1155,8 @@ print("mock referee completed")
                     "LeanSearch v2",
                     "Goedel-Prover-V2",
                     "Aletheia",
+                    "QEDBench",
+                    "SorryDB",
                 ]
             )
             and "Decomposition Admission Gate" in template_text
@@ -1139,7 +1172,8 @@ print("mock referee completed")
             and "solution card" in frontier_text
             and "no_authorized_pdf_found" in frontier_text
             and "PatternBoost" in discovery_text
-            and "Self-supervised theorem discovery" in discovery_text,
+            and "Self-supervised theorem discovery" in discovery_text
+            and "Hard-witness regression set" in discovery_text,
         }
     )
     checks.append(

@@ -10,6 +10,7 @@ Use this file to choose the next proof route after classification or failure.
 - Search discipline: retrieve, guess, kernelize, verify, and repair locally.
 - Decomposition admission: accept a lemma split only when it is sufficient, simpler, acyclic, faithful, and locally repairable.
 - Frontier control: compare a few non-equivalent next moves by decision value, check cost, and assembly relevance.
+- Historical revisit: retain a tiny bounded pool of under-ranked but still viable proof states when route scores are noisy.
 - Marginal value routing: after repeated failure, choose exactly one next action.
 - Novelty and decision value: continue only when a route changes evidence, object, or obstruction.
 - Switch rules and scoring: select the route whose assumptions and certificates best match the theorem.
@@ -131,6 +132,8 @@ For a research-level stuck proof, keep a small candidate frontier after the firs
 - attach one cheap evaluator to each route: toy counterexample, symbolic identity, premise match, local certificate, or formalizable leaf;
 - rank routes qualitatively by decision value, evaluator cost, assembly relevance, novelty, and circularity risk;
 - retire any route whose compact failure state matches an earlier fingerprint.
+
+Heuristic route scores can discard a viable prefix too early. Keep at most two historical revisit states outside the live frontier. Admit one only when it preserves a checked prefix, belongs to a distinct approach family, has a named reason the earlier score may be misleading, and either was pruned before a decisive probe or now gains a genuinely new premise, representation, certificate, evaluator, or witness. At a portfolio checkpoint, revisit at most one such state; retire it after an unchanged probe. This is a bounded analogy to [persistent-pool stochastic backtracking](https://arxiv.org/abs/2605.25143), not evidence that random backtracking solves research proofs, and it never overrides the no-repeat rule.
 
 If the answer or construction may be unknown, schedule an external frontier scan before discovery: exact and neighboring results, recent cited-by work, public active projects, verified source anchors, and the unresolved gap. Then require a candidate representation, validity gate, evaluator, simplification ladder, holdout set, promotion rule, and budget. Keep best-per-family candidates rather than a single scalar winner. After local stagnation, inspect another branch; after global stagnation, change representation, audit the evaluator, revise the frontier ladder, or stop. Once a candidate passes promotion, freeze it and return to the ordinary proof scheduler.
 

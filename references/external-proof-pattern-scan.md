@@ -113,6 +113,12 @@ Use these as importable proof-search mechanisms:
 - **MA-LoT**: separate whole-proof generation from feedback repair. One pass may draft the route; another pass should only analyze tool or reviewer feedback and patch the failing block.
 - **Ax-Prover**: use tool-equipped agents as artifact producers, not proof authorities. Trust the checker, counterexample, or retrieved theorem pattern over role confidence.
 - **Generative verifier studies**: verbal judges may reward proof style rather than validity, and ensembles of similar judges need not help. Triangulate fragile steps with a genuinely different evidence channel.
+- **APRIL**: preserve a diagnostic-grounded repair tuple and replay the minimal patch; do not substitute an LLM explanation for the compiler output.
+- **Beyond the Frontier**: when heuristic route scores are noisy, keep a bounded historical state pool and allow one under-ranked, mechanism-distinct state a cheap revisit. Treat this as a scheduling analogy, not proof evidence.
+- **$k$-server-bench**: turn potential or certificate discovery into counterexample-guided search. Cache hard violations, early-stop weak candidates, and distinguish a finite one-sided evaluator from a global proof.
+- **QEDBench/Axiom-Audited Lean**: an LLM judge can be systematically lenient, while a compiling proof can hide an unexpected trust base. Require problem-derived obligations, heterogeneous evidence, axiom-footprint regression, and explicit external assumptions.
+- **TacMiner**: mine reusable moves by dependency structure and replayable input-output boundaries rather than adjacent text. Keep one-off tricks local until a held-out reuse succeeds.
+- **SorryDB/Lean Finder**: for Lean-workflow evaluation, use pinned real project obligations and held-out or later snapshots in addition to synthetic smoke tests; for retrieval, model user intent rather than only theorem-statement similarity. This is a workbench design inference, not a general theorem about mathematical evaluation.
 - **Formal Conjectures**: test definitions with easy variants and boundary lemmas. A proof or disproof can reveal a translation, underspecification, or source error in the statement itself.
 
 ## Use In A Proof Project

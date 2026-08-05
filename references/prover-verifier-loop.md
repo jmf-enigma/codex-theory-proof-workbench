@@ -7,6 +7,7 @@ Use this when a proof attempt needs step-level checking, adversarial review, Lea
 - Activation: use only when a local move is fragile, repeated, challenged, or tool/Lean feedback is involved.
 - Role contract: separate proposal, verification, coordination, and memory.
 - Move protocol: make one local move, verify declared goal and logic, then record proof-state delta.
+- Diagnostic repair: preserve exact checker feedback, diagnose locally, make the smallest patch, and replay.
 - Failure localization: identify the first invalid step, preserve the verified prefix, and salvage independent artifacts.
 - Repair protocol: preserve good skeletons and revise only the failed subgraph.
 - Literature lessons: import checkability, blueprints, correction, trace-back, and retrieval as methods.
@@ -68,6 +69,17 @@ Use the cheapest decisive verifier first:
 
 When a check fails, return the earliest failing step and a witness. Do not critique later deductions as if they were independent failures.
 
+For checker-guided repair, record one tuple before retrying:
+
+- runtime marker `feedback_kind: checker` and the pinned checker backend;
+- failed proof or artifact;
+- exact diagnostic and local goal/state, preserved verbatim;
+- diagnosis grounded only in that feedback and the declared dependencies;
+- smallest proposed repair;
+- replay result from the same pinned checker.
+
+Do not silently turn a compiler message into a broader mathematical diagnosis. A natural-language explanation may route the next move, but only the replay result changes proof status.
+
 Do not treat repeated verbal approval as mathematical evidence. Use a second verifier only when it brings a different channel, such as counterexample search, source comparison, exact algebra, solver certificate, formal checking, or conditional assembly. Several similar LLM judges can share the same style bias and unsupported assumption.
 
 The referee controller accepts `correct` only when claim fidelity and assumption coverage pass, `failure_kind` is `none`, the first-error field is empty, and both error lists are empty. A missing cited premise, source excerpt, or tool certificate is `missing-packet-evidence` and therefore `uncertain`, not a visible mathematical refutation. Malformed or contradictory output is also downgraded to `uncertain`; timeouts and nonzero exits are preserved as verification records rather than silently retried. `proof_doctor.py` consumes the latest first error and passed computation claims so packet repair takes precedence over restarting proof search.
@@ -92,6 +104,7 @@ Allowed verdicts:
 - If `PROOF_TOO_HARD`, split into helper lemmas that each need at most one or two new ideas beyond their parents.
 - If a counterexample or negated sublemma is found, keep it as a diagnostic artifact and revise only affected downstream nodes.
 - If tool feedback is used, keep the exact artifact: counterexample, condition, unsat certificate, algebra identity, optimizer/KKT certificate, or Lean error/goal.
+- Keep diagnosis separate from diagnostic. If replay fails, preserve the new exact output and repair from the first changed error rather than from the old explanation.
 - An incomplete proof may still yield `partial-verified` artifacts. Promote only steps whose dependencies were checked independently of the failed suffix.
 - If the failure stage is not local proof, do not spend another local-repair round. Route decomposition failures to the blueprint, retrieval failures to a premise bundle search, assembly failures to a conditional parent proof, fidelity failures to the statement fence, and library-coverage failures to prerequisite inventory.
 - After two failed repairs on the same node, use route decision: continue only with a new premise, representation, invariant, certificate, counterexample repair, or theorem pattern.
@@ -101,6 +114,7 @@ Allowed verdicts:
 - **PVG/checkability**: optimize proofs for being easy to check, not just for reaching the right conclusion. Run a sneaky-proof pass that tries to make a false local step look plausible.
 - **Draft-Sketch-Prove**: treat informal proofs as scaffolds. Convert them into named subgoals; final proof must close the gaps independently.
 - **APOLLO/MA-LoT**: separate whole-proof drafting from feedback-conditioned correction. Use compiler/tool/reviewer feedback to isolate and repair the bad block.
+- **APRIL**: [diagnostic-conditioned Lean repair](https://arxiv.org/abs/2602.02990) supports preserving the failing proof, exact compiler output, local state, diagnosis, repair, and replay as one unit. Its evidence is single-shot repair on synthetic mutations, not general theorem discovery.
 - **Goedel-Architect/LEAP/DeepSeek-Prover-V2**: maintain a dependency graph or AND/OR DAG. Preserve solved nodes, reject orphan lemmas, and require final proof structure to match accepted subgoals or explain the change.
 - **STAR-PolyaMath**: keep control outside the proof attempt. Use challenge rounds, trace-back, re-plan caps, and a pure-reasoning mode when tool use stops shrinking the proof state.
 - **Goedel-Prover-V2/process verification**: feed the precise first error and valid prefix into correction; do not regenerate from an undifferentiated failure signal.

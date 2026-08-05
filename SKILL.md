@@ -16,11 +16,13 @@ Use `math-proof-writing` after the mathematical argument is complete. Use `math-
 - Try to refute before investing in a long proof: negate the claim, inspect boundaries, and test the smallest nontrivial case.
 - Identify a proof kernel: the smallest lemma, certificate, construction, or counterexample barrier that decides the route.
 - Count only evidence as progress: a proved/refuted kernel, smaller subgoal, counterexample, missing assumption, checked certificate, retrieved theorem pattern, new central object, or repaired theorem.
+- Before using an evaluator, record its exact target scope and what acceptance and rejection imply. Passing a sampled, finite, proxy, or otherwise incomplete evaluator does not prove a broader theorem.
 - Treat the same goal, assumptions, central object, and failure witness as the same proof state even when notation changes.
 - Preserve solved lemmas. Repair only the failed node and affected dependents.
 - Do not accept a missing lemma that restates the theorem, hides the construction, is circular, or lacks a verification hook.
 - Treat model memory as `unverified`, never as evidence that a result is known or open. Before frontier classification, search external literature and verify source anchors against DOI/publisher, arXiv, proceedings, or another official page.
 - For a known/open/new classification, require `literature/frontier-evidence.json`: executed Scholar evidence, a hashed lawful full text, exact theorem/proof anchors, and one proof-derived solution card. Hand-written status fields are not verification.
+- A model reviewer is advisory evidence. It cannot upgrade proof status without a problem-derived obligation audit and a genuinely different evidence channel; formal artifacts also need an axiom and external-trust audit.
 - Report `lemma-conditional` or `still open` when the kernel remains unproved.
 
 ## Mode Router
