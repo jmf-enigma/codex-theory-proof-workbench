@@ -334,7 +334,7 @@ The operational mapping appears in [Research-Backed Proof Loop](references/resea
 
 ## Try It On A Real Proof
 
-- [Star the repository](https://github.com/jmf-enigma/codex-theory-proof-workbench) to follow releases and make the project easier to find again.
+- [Star the repository](https://github.com/jmf-enigma/codex-theory-proof-workbench) if it is useful and you want it in your starred list. Use `Watch > Custom > Releases` for release notifications.
 - [Open an issue](https://github.com/jmf-enigma/codex-theory-proof-workbench/issues/new) with an anonymized failed-proof case. Include the exact claim, what was tried, the first known obstruction, and the evidence available. Do not upload confidential manuscripts or private research data.
 - Contribute a reproducible proof pattern, verifier, backend adapter, or failure case. New machinery should solve a named proof bottleneck and include a deterministic check or test.
 
@@ -689,7 +689,7 @@ Workbench 把 proof search、formalization 和 mathematical discovery 中的研�
 
 ## 用真实证明来测试它
 
-- 可以先 [Star 这个仓库](https://github.com/jmf-enigma/codex-theory-proof-workbench)，方便关注更新，也方便以后重新找到。
+- 如果这个项目有用，可以先 [Star 这个仓库](https://github.com/jmf-enigma/codex-theory-proof-workbench)，把它留在 starred list 中。需要接收版本通知时，使用 `Watch > Custom > Releases`。
 - 可以提交一个经过匿名化的 [failed-proof issue](https://github.com/jmf-enigma/codex-theory-proof-workbench/issues/new)。请写清准确命题、已经尝试的路线、目前最早的 obstruction 和已有证据。不要上传保密论文或私人研究数据。
 - 欢迎贡献可复现的证明套路、verifier、数学后端适配或失败案例。新增机制应针对一个明确的证明瓶颈，并带有确定性检查或测试。
 
