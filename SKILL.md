@@ -20,6 +20,7 @@ Use `math-proof-writing` after the mathematical argument is complete. Use `math-
 - Calibrate a discovery evaluator on known-valid and known-invalid candidates before recording its scope and pass/fail implications. Passing a sampled, finite, proxy, or incomplete evaluator does not prove a broader theorem.
 - Treat the same goal, assumptions, central object, and failure witness as the same proof state even when notation changes.
 - Preserve solved lemmas. Repair only the failed node and affected dependents.
+- Send only stable, dependency-declared nodes to Lean. Freeze them in a hashed handoff; a locally checked node does not upgrade its parent until assembly and fidelity gates pass.
 - Do not accept a missing lemma that restates the theorem, hides the construction, is circular, or lacks a verification hook.
 - Treat model memory as `unverified`, never as evidence that a result is known or open. Before frontier classification, search external literature and verify source anchors against DOI/publisher, arXiv, proceedings, or another official page.
 - For a known/open/new classification, require `literature/frontier-evidence.json`: executed Scholar evidence, a hashed lawful full text, exact theorem/proof anchors, and one proof-derived solution card. Hand-written status fields are not verification.
@@ -49,7 +50,7 @@ Do not open a full project for routine algebra or a standard theorem application
 4. If the route is unclear, find the failure world, central object, proof kernel, and verification hook. If the answer or object may be unknown, first run an external frontier scan for exact and neighboring results, recent cited-by work, and active public projects. Then separate discovery from proof: define what generates candidates, how they are evaluated, and what evidence freezes one candidate as the theorem target.
 5. For a hard proof, seed two to four routes independently before naming a favorite. Register them by mathematical mechanism rather than wording, give each one expected artifact and its cheapest decisive evaluator, then compare them. Keep one incompatible shadow family alive until the leading kernel is proved, refuted, or blocked, and rebalance after each bounded round.
 6. Build an AND/OR lemma graph. Admit a decomposition only when the children conditionally imply the parent, are strictly simpler, acyclic, faithful, and locally repairable. Work the least-certain required child on the current assembly path.
-7. For each fragile move, name the subgoal, move, expected artifact, check, and proof-state delta. Formal tasks begin with one generate-check-repair loop; escalate only after it stalls and only to assemblable children. Activate the prover-verifier loop after challenge, repetition, or hard-to-check feedback. For a complete challenged candidate or fragile global assembly, prepare a fresh-context referee packet. Run it only when the host permits and the user approved sharing; otherwise run a local adversarial audit plus exact replay, record `fresh-context-unavailable`, and keep status below independent review.
+7. For each fragile move, name the subgoal, move, expected artifact, check, and proof-state delta. Formal tasks begin with one generate-check-repair loop. Send a stable node through `lean_bridge.py`; integrate a passing node, let Lean repair the first local failure, and return semantic, mathematical, assembly, or repeated local failures to this workbench. Activate the prover-verifier loop after challenge, repetition, or hard-to-check feedback. For a complete challenged candidate or fragile global assembly, prepare a fresh-context referee packet. Run it only when the host permits and the user approved sharing; otherwise run a local adversarial audit plus exact replay, record `fresh-context-unavailable`, and keep status below independent review.
 8. On failure, locate the first invalid step, preserve the verified prefix and independent helper lemmas, and separate the reported diagnostic site from the inferred root cause. Then classify the failure as strategy, decomposition, premise retrieval, local proof, assembly, fidelity, or library coverage before repairing that layer.
 9. After two unchanged local attempts, choose exactly one action: repair, re-decompose, retrieve, tool-falsify, formalize locally, repair the theorem, or stop/report. Block a route that merely moves the theorem into a theorem-strength missing lemma; reopen it only with a materially new mechanism, invariant, construction, representation, or premise.
 10. Assemble only proved, checked, known, or explicitly conditional nodes into the original theorem.
@@ -87,6 +88,15 @@ codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scr
 
 This initializes `.proof_runtime` automatically for an older project. If `routing.json` or `claim.md` intentionally changes the theorem, adopt it explicitly with `proof_runtime.py revise-claim path/to/project --reason "REASON"`; this resets active proof status instead of reusing stale evidence.
 
+Freeze a stable lemma for Lean, then replay its exact target gate and return the result to the project runtime:
+
+```bash
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/lean_bridge.py" prepare path/to/project --node-id L3 --role local-lemma --statement-file lemmas/L3.md --lean-file lean/LocalLemmas.lean --target-name Project.L3 --target-kind lemma --dependency L1 --downstream-use "closes node T1"
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/lean_bridge.py" verify path/to/project path/to/project/lean/handoffs/REQUEST.request.json --runner auto
+```
+
+Read [lean-formalization-bridge.md](references/lean-formalization-bridge.md) before a full-theorem handoff or when deciding whether a Lean failure belongs to formal repair or mathematical rediscovery. Final promotion additionally requires its four evidence-bearing acceptance gates.
+
 For a complete, challenged candidate, prepare the exact fresh-context referee packet first. `--prepare-only` is local; omitting it invokes another Codex process and is allowed only after the sharing condition above is satisfied:
 
 ```bash
@@ -121,7 +131,7 @@ Read only files needed by the current decision.
 - For a hard or repeatedly failed research proof, or when adapting AI-assisted proof-search methods, read [research-backed-proof-loop.md](references/research-backed-proof-loop.md). For unfamiliar theorem families or missing standard tricks, read [external-proof-pattern-scan.md](references/external-proof-pattern-scan.md).
 - When stuck, first classify the block with [obstruction-taxonomy.md](references/obstruction-taxonomy.md), then use [proof-escalation-protocol.md](references/proof-escalation-protocol.md).
 - For a challenged, repeated, or hard-to-check local move, read [prover-verifier-loop.md](references/prover-verifier-loop.md).
-- Before CAS, SMT, optimization, simulation, or Lean work, read [tool-assisted-proof-patterns.md](references/tool-assisted-proof-patterns.md).
+- Before CAS, SMT, optimization, simulation, or Lean work, read [tool-assisted-proof-patterns.md](references/tool-assisted-proof-patterns.md). For a durable Theory-to-Lean handoff, also read [lean-formalization-bridge.md](references/lean-formalization-bridge.md).
 - For a fixed-algorithm worst-case rate, PEP certificate, or all-horizon Lyapunov construction, read [peppy-proof-bridge.md](references/peppy-proof-bridge.md) only after its eligibility gate passes, then invoke the companion `peppy` skill.
 - Before finalizing, read [verification-gate.md](references/verification-gate.md).
 
@@ -155,7 +165,7 @@ Before a tool call, name the local claim, explicit domains, negation to test, ba
 - Use Wolfram or SymPy for exact algebra, sign conditions, quantifier elimination, and counterexamples under explicit assumptions.
 - Use Python, Z3, CVXPy, OR-Tools, Sage, or NetworkX for finite witnesses, optimization certificates, and discrete structures.
 - Use Peppy/PEPFlow only for an exactly encoded fixed-algorithm performance problem. Treat Block 1 sweeps as conjecture discovery and promote a certificate only through the gates in [peppy-proof-bridge.md](references/peppy-proof-bridge.md).
-- Use Lean for stable local lemmas, not as a default wrapper around the whole research theorem.
+- Use Lean for stable local lemmas, not as a default wrapper around the whole research theorem. Use the bridge request/result pair when a proof project exists so statement identity, checker feedback, and ownership survive across skills.
 - Treat simulations as falsification or sanity checks, never as universal proof.
 - Audit formal artifacts for `sorry`, admitted axioms, unresolved obligations, and missing assembly; if reuse is intended, also audit definitions, theorem generality, namespaces, and API surface.
 - Direct tool calls may explore or falsify. Before a proof-critical computation upgrades status, put the query in a project-local script and use `computation_artifact.py record`, `replay`, and `audit` to bind its inputs, assumptions, backend version, output check, executable fingerprint, and current local presence. If a stricter artifact replaces stale evidence, append an explicit `supersede` event; never delete history or infer replacement from similar names. Exact counterexamples, symbolic identities, condition sets, and solver certificates require canonical exact-output comparison; exit code alone proves only that the process finished. A batch driver must fail on any child timeout, nonzero exit, output mismatch, or unexpected child stderr instead of reporting only a final `True`.
@@ -180,4 +190,4 @@ Keep full history in the ledger. On resume, read the compact `.proof_runtime` br
 
 ## Output Contract
 
-For hard proofs, report the proof status, essential assumptions, decisive proof pattern, proof or exact obstruction, what changed since the previous failure, and the next bounded move if still open. Keep internal boards and ledgers out of the visible answer unless they help the user assess correctness.
+For hard proofs, report the proof status, essential assumptions, decisive proof pattern, proof or exact obstruction, what changed since the previous failure, and the next bounded move if still open. For a Lean handoff, also report the node status, exact target gate, result path, and recommended owner; never collapse `formalized-local` into `formalized-complete`. Keep internal boards and ledgers out of the visible answer unless they help the user assess correctness.

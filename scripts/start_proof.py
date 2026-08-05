@@ -1468,7 +1468,16 @@ def main() -> None:
     if project.exists():
         raise SystemExit(f"proof project already exists: {project}")
 
-    for subdir in ["scratch", "lean", "lemmas", "tool_checks", "trick_cards", "literature", "writeup"]:
+    for subdir in [
+        "scratch",
+        "lean",
+        "lean/handoffs",
+        "lemmas",
+        "tool_checks",
+        "trick_cards",
+        "literature",
+        "writeup",
+    ]:
         (project / subdir).mkdir(parents=True, exist_ok=True)
 
     (project / "claim.md").write_text(CLAIM_TEMPLATE.format(claim=args.claim), encoding="utf-8")
@@ -1502,6 +1511,7 @@ def main() -> None:
                 "selected_playbooks": selected,
                 "runtime_state": ".proof_runtime/state.json",
                 "runtime_brief_command": "proof_runtime.py brief . --markdown",
+                "lean_bridge_command": "lean_bridge.py prepare|verify",
                 "entry_files": [
                     "TRIAGE.md",
                     "ATTACK_MATRIX.md",

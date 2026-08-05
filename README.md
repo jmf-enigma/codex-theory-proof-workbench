@@ -130,9 +130,15 @@ python3 scripts/start_proof.py --title "short-name" --claim "EXACT CLAIM"
 # Select one primary next move after a failure
 python3 scripts/proof_doctor.py path/to/proof_project
 
+# Freeze a stable node for Lean, then return its checked result
+python3 scripts/lean_bridge.py prepare path/to/proof_project --node-id L3 --statement "LEMMA" --target-name Project.L3 --downstream-use "closes node T1"
+python3 scripts/lean_bridge.py verify path/to/proof_project path/to/REQUEST.request.json
+
 # Run deterministic workflow checks
 python3 scripts/smoke_workbench.py
 ```
+
+The Lean bridge hashes the claim, request, and checked file, preserves the first diagnostic, and routes repeated or semantic failures back to proof discovery. Local compilation yields only `formalized-local`; full promotion also requires fidelity, assumption-lineage, assembly, and axiom evidence. See the [Lean Formalization Bridge](references/lean-formalization-bridge.md).
 
 Add `--mode recovery` or `--mode discovery` when appropriate. Full commands, state transitions, replay rules, and reference routing live in [SKILL.md](SKILL.md) and the [Proof State Machine](references/proof-state-machine.md).
 
@@ -286,9 +292,15 @@ python3 scripts/start_proof.py --title "short-name" --claim "EXACT CLAIM"
 # 失败后选择一个首要 next move
 python3 scripts/proof_doctor.py path/to/proof_project
 
+# 固化一个稳定节点交给 Lean，再回传核验结果
+python3 scripts/lean_bridge.py prepare path/to/proof_project --node-id L3 --statement "LEMMA" --target-name Project.L3 --downstream-use "closes node T1"
+python3 scripts/lean_bridge.py verify path/to/proof_project path/to/REQUEST.request.json
+
 # 运行确定性 workflow 检查
 python3 scripts/smoke_workbench.py
 ```
+
+Lean bridge 会绑定 claim、request 与已检查文件的哈希，保留第一条原始 diagnostic，并把重复失败或语义问题退回证明探索。局部编译最多得到 `formalized-local`；完整升级还要通过语义一致性、假设谱系、装配覆盖和公理审计。详见 [Lean Formalization Bridge](references/lean-formalization-bridge.md)。
 
 需要时加入 `--mode recovery` 或 `--mode discovery`。完整命令、状态转换、replay 规则和 reference routing 见 [SKILL.md](SKILL.md) 与 [Proof State Machine](references/proof-state-machine.md)。
 

@@ -231,7 +231,9 @@ def main() -> int:
         checks.append(
             {
                 "name": "project-creation",
-                "ok": project.is_dir() and all((project / name).is_file() for name in required),
+                "ok": project.is_dir()
+                and all((project / name).is_file() for name in required)
+                and (project / "lean" / "handoffs").is_dir(),
             }
         )
         claim_template = (project / "claim.md").read_text(encoding="utf-8")
@@ -269,6 +271,9 @@ def main() -> int:
             "checker_backend": "synthetic Lean fixture",
             "diagnostic": "missing hypothesis: 0 <= discount and discount < 1",
             "local_state": "prove sup-norm contraction under the current MDP assumptions",
+            "diagnostic_site": "synthetic fixture:1:1",
+            "inferred_root_cause": "the contraction factor has no declared domain",
+            "failure_class": "MISSING_ASSUMPTION",
             "diagnosis": "the contraction factor has no declared domain",
             "repair": "add the discount-factor domain to the theorem fence",
             "replay_result": "not-run",
@@ -326,8 +331,359 @@ def main() -> int:
                 and "checker-guided attempts record is missing" in rejected_checker_record.stderr
                 and "discount factor domain" in runtime_markdown
                 and "missing hypothesis" in runtime_markdown
+                and "diagnostic_site" in runtime_markdown
+                and "inferred_root_cause" in runtime_markdown
+                and "failure_class" in runtime_markdown
                 and "replay_result" in runtime_markdown
                 and "sup-norm contraction" in runtime_markdown,
+            }
+        )
+
+        lean_file = project / "lean" / "LocalLemmas.lean"
+        lean_file.write_text(
+            "namespace Smoke\n\ntheorem bellman_local : True := by trivial\n\nend Smoke\n",
+            encoding="utf-8",
+        )
+        lemma_statement_file = project / "lemmas" / "L-bellman-local.md"
+        lemma_statement_file.write_text("True\n", encoding="utf-8")
+        mock_lean_success = Path(temp_dir) / "mock_lean_status_success.py"
+        mock_lean_success.write_text(
+            """#!/usr/bin/env python3
+import json
+import sys
+
+required = "Smoke.bellman_local:theorem"
+ok = "--require-decl-kind" in sys.argv and required in sys.argv
+print(json.dumps({
+    "results": [{
+        "path": sys.argv[1],
+        "blockers": {"sorry": 0, "axiom": 0, "unsafe": 0},
+        "total_blockers": 0,
+        "declarations": [{"name": "Smoke.bellman_local", "kind": "theorem"}],
+        "missing_required_declaration_kinds": [] if ok else [required],
+        "check": {"returncode": 0 if ok else 1, "stdout": "", "stderr": ""},
+    }],
+    "exit_code": 0 if ok else 1,
+}))
+raise SystemExit(0 if ok else 1)
+""",
+            encoding="utf-8",
+        )
+        missing_downstream = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "lean_bridge.py"),
+                "prepare",
+                str(project),
+                "--node-id",
+                "L-unowned",
+                "--statement-file",
+                "lemmas/L-bellman-local.md",
+                "--target-name",
+                "Smoke.unowned",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        prepared = json.loads(
+            run(
+                str(SCRIPTS / "lean_bridge.py"),
+                "prepare",
+                str(project),
+                "--node-id",
+                "L-bellman-local",
+                "--role",
+                "local-lemma",
+                "--statement-file",
+                "lemmas/L-bellman-local.md",
+                "--lean-file",
+                "lean/LocalLemmas.lean",
+                "--target-name",
+                "Smoke.bellman_local",
+                "--target-kind",
+                "theorem",
+                "--dependency",
+                "True.intro",
+                "--downstream-use",
+                "synthetic smoke-test parent",
+            ).stdout
+        )
+        request_path = Path(prepared["request_path"])
+        request_packet = prepared["packet"]
+        lean_success = json.loads(
+            run(
+                str(SCRIPTS / "lean_bridge.py"),
+                "verify",
+                str(project),
+                str(request_path),
+                "--lean-status-script",
+                str(mock_lean_success),
+            ).stdout
+        )
+        mock_lean_outer_failure = Path(temp_dir) / "mock_lean_status_outer_failure.py"
+        mock_lean_outer_failure.write_text(
+            mock_lean_success.read_text(encoding="utf-8").replace(
+                "raise SystemExit(0 if ok else 1)",
+                "raise SystemExit(1)",
+            ),
+            encoding="utf-8",
+        )
+        outer_failure = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "lean_bridge.py"),
+                "verify",
+                str(project),
+                str(request_path),
+                "--lean-status-script",
+                str(mock_lean_outer_failure),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        outer_failure_result = json.loads(outer_failure.stdout)
+        changed_target = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "lean_bridge.py"),
+                "verify",
+                str(project),
+                str(request_path),
+                "--lean-file",
+                "claim.md",
+                "--lean-status-script",
+                str(mock_lean_success),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        original_lean_text = lean_file.read_text(encoding="utf-8")
+        mock_lean_mutating = Path(temp_dir) / "mock_lean_status_mutating.py"
+        mock_lean_mutating.write_text(
+            """#!/usr/bin/env python3
+import json
+import sys
+from pathlib import Path
+
+target = Path(sys.argv[1])
+target.write_text(target.read_text(encoding="utf-8") + "\\n-- concurrent edit\\n", encoding="utf-8")
+print(json.dumps({
+    "results": [{
+        "path": str(target),
+        "blockers": {"sorry": 0, "axiom": 0, "unsafe": 0},
+        "total_blockers": 0,
+        "missing_required_declaration_kinds": [],
+        "check": {"returncode": 0, "stdout": "", "stderr": ""},
+    }],
+    "exit_code": 0,
+}))
+""",
+            encoding="utf-8",
+        )
+        changed_during_check = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "lean_bridge.py"),
+                "verify",
+                str(project),
+                str(request_path),
+                "--lean-status-script",
+                str(mock_lean_mutating),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        changed_during_check_result = json.loads(changed_during_check.stdout)
+        lean_file.write_text(original_lean_text, encoding="utf-8")
+        local_promotion = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "lean_bridge.py"),
+                "verify",
+                str(project),
+                str(request_path),
+                "--lean-status-script",
+                str(mock_lean_success),
+                "--promote-final",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        tampered_path = project / "lean" / "handoffs" / "tampered.request.json"
+        tampered_packet = dict(request_packet)
+        tampered_packet["node"] = dict(tampered_packet["node"])
+        tampered_packet["node"]["statement"] = "True or False"
+        tampered_path.write_text(json.dumps(tampered_packet), encoding="utf-8")
+        tampered_result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "lean_bridge.py"),
+                "verify",
+                str(project),
+                str(tampered_path),
+                "--lean-status-script",
+                str(mock_lean_success),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        stale_path = project / "lean" / "handoffs" / "stale.request.json"
+        stale_packet = dict(request_packet)
+        stale_packet["claim_sha256"] = "0" * 64
+        stale_packet.pop("packet_sha256")
+        stale_packet["packet_sha256"] = hashlib.sha256(
+            json.dumps(
+                stale_packet,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+        stale_path.write_text(json.dumps(stale_packet), encoding="utf-8")
+        stale_result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "lean_bridge.py"),
+                "verify",
+                str(project),
+                str(stale_path),
+                "--lean-status-script",
+                str(mock_lean_success),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        mock_lean_failure = Path(temp_dir) / "mock_lean_status_failure.py"
+        mock_lean_failure.write_text(
+            """#!/usr/bin/env python3
+import json
+import sys
+
+print(json.dumps({
+    "results": [{
+        "path": sys.argv[1],
+        "blockers": {"sorry": 0, "axiom": 0, "unsafe": 0},
+        "total_blockers": 0,
+        "declarations": [{"name": "Smoke.bellman_local", "kind": "theorem"}],
+        "missing_required_declaration_kinds": [],
+        "check": {
+            "returncode": 1,
+            "stdout": "",
+            "stderr": "lean/LocalLemmas.lean:4:2: error: type mismatch",
+        },
+    }],
+    "exit_code": 1,
+}))
+raise SystemExit(1)
+""",
+            encoding="utf-8",
+        )
+        failed_runs = []
+        for _ in range(2):
+            failed = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPTS / "lean_bridge.py"),
+                    "verify",
+                    str(project),
+                    str(request_path),
+                    "--lean-status-script",
+                    str(mock_lean_failure),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            failed_runs.append((failed.returncode, json.loads(failed.stdout)))
+
+        full_prepared = json.loads(
+            run(
+                str(SCRIPTS / "lean_bridge.py"),
+                "prepare",
+                str(project),
+                "--node-id",
+                "T-smoke",
+                "--role",
+                "full-theorem",
+                "--statement",
+                "True",
+                "--lean-file",
+                "lean/LocalLemmas.lean",
+                "--target-name",
+                "Smoke.bellman_local",
+                "--target-kind",
+                "theorem",
+            ).stdout
+        )
+        acceptance_path = project / full_prepared["packet"]["acceptance_report"]
+        acceptance = json.loads(acceptance_path.read_text(encoding="utf-8"))
+        for name, item in acceptance["checks"].items():
+            item["status"] = "pass"
+            item["evidence"] = f"synthetic smoke evidence for {name}"
+        acceptance_path.write_text(json.dumps(acceptance), encoding="utf-8")
+        final_result = json.loads(
+            run(
+                str(SCRIPTS / "lean_bridge.py"),
+                "verify",
+                str(project),
+                full_prepared["request_path"],
+                "--lean-status-script",
+                str(mock_lean_success),
+                "--promote-final",
+            ).stdout
+        )
+        final_state = json.loads(
+            (project / ".proof_runtime" / "state.json").read_text(encoding="utf-8")
+        )
+        checks.append(
+            {
+                "name": "lean-bidirectional-handoff",
+                "ok": request_path.is_file()
+                and bool(request_packet.get("packet_sha256"))
+                and request_packet["node"]["statement_source"]["path"]
+                == "lemmas/L-bellman-local.md"
+                and request_packet["node"]["statement_source"]["sha256"]
+                == hashlib.sha256(lemma_statement_file.read_bytes()).hexdigest()
+                and missing_downstream.returncode == 2
+                and "require --downstream-use" in missing_downstream.stderr
+                and lean_success["exact_target_gate"] == "pass"
+                and lean_success["node_status"] == "formalized-local"
+                and lean_success["recommended_owner"] == "theory-integrator"
+                and Path(project / lean_success["lean_file"]).is_file()
+                and outer_failure.returncode == 1
+                and outer_failure_result["exact_target_gate"] == "fail"
+                and outer_failure_result["checker_process_exit_code"] == 1
+                and changed_target.returncode == 2
+                and "differs from the frozen handoff" in changed_target.stderr
+                and changed_during_check.returncode == 1
+                and changed_during_check_result["failure_class"]
+                == "TARGET_CHANGED_DURING_CHECK"
+                and not changed_during_check_result["lean_file_stable_during_check"]
+                and local_promotion.returncode == 2
+                and "final promotion requires" in local_promotion.stdout
+                and tampered_result.returncode == 2
+                and "tampered Lean handoff" in tampered_result.stderr
+                and stale_result.returncode == 2
+                and "stale Lean handoff" in stale_result.stderr
+                and failed_runs[0][0] == 1
+                and failed_runs[0][1]["recommended_owner"] == "lean-theorem-formalizer"
+                and failed_runs[0][1]["failure_class"] == "TYPE_COERCION"
+                and bool(failed_runs[0][1]["diagnostic_fingerprint"])
+                and failed_runs[1][0] == 1
+                and failed_runs[1][1]["prior_same_failure_count"] == 1
+                and failed_runs[1][1]["recommended_owner"] == "theory-proof-workbench"
+                and "same Lean failure signature" in failed_runs[1][1]["repair"]
+                and final_result["eligible_for_formalized_complete"]
+                and final_state["proof_status"] == "formalized-complete",
             }
         )
 
@@ -1114,6 +1470,7 @@ print("mock referee completed")
             ROOT / "SKILL.md",
             SCRIPTS / "start_proof.py",
             SCRIPTS / "proof_runtime.py",
+            SCRIPTS / "lean_bridge.py",
             SCRIPTS / "computation_artifact.py",
             SCRIPTS / "run_referee.py",
         ]
