@@ -40,6 +40,12 @@ For a full theorem, the command also creates an acceptance report. Its four gate
 
 Each passing gate needs concrete evidence text. Lean compilation alone cannot fill these fields.
 
+## Interactive Fast Lane
+
+When the current task exposes the Lean MCP tools, keep the request immutable and iterate only on the target file. Read `lean_goal`, run `lean_local_search`, test at most three materially distinct snippets with `lean_multi_attempt`, inspect `lean_code_actions`, and re-read diagnostics. Use `lean_run_code` only for self-contained elaboration experiments and `lean_verify` for an axiom/source audit.
+
+This lane is scratch and repair, not promotion. A REPL rejection is provisional because the tactic mode is experimental, and an MCP success proves only the tested state. Write the winning script into the intended file and run the exact bridge verifier below. If the state repeats or the failure concerns statement fidelity, mathematics, or global assembly, stop local repair and return ownership to Theory.
+
 ## Verify And Return
 
 ```bash

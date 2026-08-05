@@ -34,7 +34,7 @@ Use this for hard proofs where computation, CAS, SMT, optimization solvers, or L
 - **CVXPy/OR-Tools**: primal/dual optimization sanity checks, finite LP/MIP certificates, policy/capacity/matching counterexamples.
 - **Peppy/PEPFlow**: worst-case rates, PEP dual certificates, and Lyapunov discovery for exactly encoded fixed first-order or operator algorithms; use [peppy-proof-bridge.md](peppy-proof-bridge.md) before invoking it.
 - **Sage**: exact combinatorics, graph/algebra/finite-field/group computations.
-- **Lean/mathlib**: local formalization of stable lemmas once the informal statement is precise.
+- **Lean/mathlib**: use the live goal/search/multi-attempt lane for bounded local repair, then replay the winning script in the intended file and return a typed bridge result. It formalizes stable nodes; it does not own theorem discovery or global assembly.
 - **Empirical/simulation tools**: falsification and sanity checks only; they do not prove universal claims.
 
 ## Tool Plan Template
@@ -109,7 +109,7 @@ For an aggregate checker, do not trust a final summary token alone. The driver m
 - LP/MIP/SMT feasible model: use it as a counterexample or witness.
 - LP dual variables or Bellman inequalities: convert to a certificate that a human can verify line by line.
 - Peppy Block 1 returns a rate pattern: keep it as a conjecture. Later blocks may supply a finite-horizon dual certificate or an all-horizon Lyapunov identity, but only the exact artifact and its theorem mapping enter the proof.
-- Lean accepts a lemma: status becomes `formalized-local`; still explain how the lemma fits the paper proof.
+- Lean accepts a lemma through final file replay: status becomes `formalized-local`; still explain how the lemma fits the paper proof. A live MCP or REPL pass alone does not promote status.
 - Lean/API returns several verified helper lemmas but leaves the theorem open: keep the helpers, mark the theorem `lemma-conditional` or `still open`, and encode the missing global assembly lemma before claiming success.
 - Lean fails: inspect the failed subgoal; often it reveals a missing assumption, coercion/domain issue, or too-strong statement.
 - Tool returns a counterexample to a sublemma: mark the node `false-negated`; repair/drop it and rewire dependents instead of regenerating the whole proof.

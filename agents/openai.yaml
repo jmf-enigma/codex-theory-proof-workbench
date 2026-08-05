@@ -1,6 +1,6 @@
 interface:
   display_name: "Theory Proof Workbench"
   short_description: "Discover new mathematics and recover hard proofs"
-  default_prompt: "Use $theory-proof-workbench to diagnose this hard or unknown-answer problem, preserve failed-attempt memory, and choose one checkable next move."
+  default_prompt: "Use $theory-proof-workbench as the proof owner: diagnose this hard or unknown-answer problem, preserve failed-state memory, delegate only named local artifacts, and assemble only status-preserving returns."
 policy:
   allow_implicit_invocation: true

@@ -1503,6 +1503,10 @@ print("mock referee completed")
     peppy_text = (ROOT / "references" / "peppy-proof-bridge.md").read_text(
         encoding="utf-8"
     )
+    lean_bridge_text = (ROOT / "references" / "lean-formalization-bridge.md").read_text(
+        encoding="utf-8"
+    )
+    skill_text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
     template_text = (SCRIPTS / "start_proof.py").read_text(encoding="utf-8")
     checks.append(
         {
@@ -1568,6 +1572,23 @@ print("mock referee completed")
                     "lyap-closed-form",
                 ]
             ),
+        }
+    )
+    checks.append(
+        {
+            "name": "specialist-return-and-lean-fast-lane",
+            "ok": all(
+                phrase in skill_text
+                for phrase in [
+                    "Specialist Return Contract",
+                    "lean-theorem-formalizer",
+                    "lean_multi_attempt",
+                    "return-to",
+                ]
+            )
+            and "Interactive Fast Lane" in lean_bridge_text
+            and "scratch and repair, not promotion" in lean_bridge_text
+            and "exact bridge verifier" in lean_bridge_text,
         }
     )
 
