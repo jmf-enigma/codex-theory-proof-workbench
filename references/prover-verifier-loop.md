@@ -74,13 +74,15 @@ For checker-guided repair, record one tuple before retrying:
 - runtime marker `feedback_kind: checker` and the pinned checker backend;
 - failed proof or artifact;
 - exact diagnostic and local goal/state, preserved verbatim;
-- diagnosis grounded only in that feedback and the declared dependencies;
+- diagnostic site and inferred root cause, kept distinct because the reported location may be downstream of the actual defect;
+- failure class: local tactic/theorem mismatch, semantic line/multiline defect, or decomposition/assembly defect;
+- compact diagnosis grounded only in that feedback and the declared dependencies;
 - smallest proposed repair;
 - replay result from the same pinned checker.
 
-Do not silently turn a compiler message into a broader mathematical diagnosis. A natural-language explanation may route the next move, but only the replay result changes proof status.
+Do not silently turn a compiler message into a broader mathematical diagnosis. For a local tactic or theorem mismatch, make the smallest patch and replay. For a semantic or assembly failure, allow one minimal repair; if the state does not shrink, return to the statement or decomposition instead of editing the reported line repeatedly. A natural-language explanation may route the next move, but only replay changes proof status.
 
-Do not treat repeated verbal approval as mathematical evidence. Use a second verifier only when it brings a different channel, such as counterexample search, source comparison, exact algebra, solver certificate, formal checking, or conditional assembly. Several similar LLM judges can share the same style bias and unsupported assumption.
+Do not treat repeated verbal approval as mathematical evidence. Use a second verifier only when it brings a different channel, such as counterexample search, source comparison, exact algebra, solver certificate, formal checking, or conditional assembly. Several similar LLM judges can share the same style bias and unsupported assumption. A negative model verdict must expose a concrete first error or witness before it can invalidate an otherwise supported step.
 
 The referee controller accepts `correct` only when claim fidelity and assumption coverage pass, `failure_kind` is `none`, the first-error field is empty, and both error lists are empty. A missing cited premise, source excerpt, or tool certificate is `missing-packet-evidence` and therefore `uncertain`, not a visible mathematical refutation. Malformed or contradictory output is also downgraded to `uncertain`; timeouts and nonzero exits are preserved as verification records rather than silently retried. `proof_doctor.py` consumes the latest first error and passed computation claims so packet repair takes precedence over restarting proof search.
 
@@ -115,6 +117,7 @@ Allowed verdicts:
 - **Draft-Sketch-Prove**: treat informal proofs as scaffolds. Convert them into named subgoals; final proof must close the gaps independently.
 - **APOLLO/MA-LoT**: separate whole-proof drafting from feedback-conditioned correction. Use compiler/tool/reviewer feedback to isolate and repair the bad block.
 - **APRIL**: [diagnostic-conditioned Lean repair](https://arxiv.org/abs/2602.02990) supports preserving the failing proof, exact compiler output, local state, diagnosis, repair, and replay as one unit. Its evidence is single-shot repair on synthetic mutations, not general theorem discovery.
+- **SorryDB/self-modifying agents**: realistic project tasks favor iterative checker feedback, while richer tool use or decomposition can distract or fail at final assembly. Start with the smallest grounded loop and escalate only when it stops reducing the checked state.
 - **Goedel-Architect/LEAP/DeepSeek-Prover-V2**: maintain a dependency graph or AND/OR DAG. Preserve solved nodes, reject orphan lemmas, and require final proof structure to match accepted subgoals or explain the change.
 - **STAR-PolyaMath**: keep control outside the proof attempt. Use challenge rounds, trace-back, re-plan caps, and a pure-reasoning mode when tool use stops shrinking the proof state.
 - **Goedel-Prover-V2/process verification**: feed the precise first error and valid prefix into correction; do not regenerate from an undifferentiated failure signal.

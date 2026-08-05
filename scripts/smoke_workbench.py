@@ -242,6 +242,8 @@ def main() -> int:
                 "name": "acceptance-and-route-family-control",
                 "ok": "## Acceptance Contract" in claim_template
                 and "atomic semantic obligations" in claim_template
+                and "## Assumption And Definition Lineage" in claim_template
+                and "source-explicit / source-implied / encoding adapter / theorem repair" in claim_template
                 and "## Completion Coverage" in claim_template
                 and "## Approach Family Registry" in workstreams_template
                 and "## Portfolio Checkpoint" in workstreams_template
@@ -249,7 +251,10 @@ def main() -> int:
                 and "menu, not a required roster" in workstreams_template
                 and "new mechanism / invariant / construction" in workstreams_template
                 and "diagnostic-grounded repair tuple" in workstreams_template
+                and "diagnostic site" in workstreams_template
+                and "inferred root cause" in workstreams_template
                 and "evaluator scope" in idea_template
+                and "evaluator calibration" in idea_template
                 and "hard-witness regression set" in idea_template,
             }
         )

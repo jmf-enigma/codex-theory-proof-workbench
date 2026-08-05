@@ -44,6 +44,14 @@ CLAIM_TEMPLATE = """# Claim
 - atomic semantic obligations:
 - preservation checks for reductions and constructions:
 
+## Assumption And Definition Lineage
+
+Fill this only when a route adds or changes an assumption, binder, quantifier, semantic convention, or definition field. Compilation does not make an undocumented change legitimate.
+
+| item | lineage | source or justification | effect on original claim |
+| --- | --- | --- | --- |
+| H1 | original / source-explicit / source-implied / encoding adapter / theorem repair |  | unchanged / repaired |
+
 ## Completion Coverage
 
 Fill this only during assembly or final review. A required row without a proved or checked discharge prevents complete-proof status.
@@ -173,7 +181,7 @@ Use this for fragile local moves, especially after a failed attempt, tool feedba
 
 The verifier is read-only unless explicitly assigned a proof role. If the same move is challenged twice without a new artifact, route to `Route Decision Check`.
 
-When feedback comes from Lean, a solver, CAS, or another exact checker, mark the runtime attempt with `feedback_kind: checker` and preserve a diagnostic-grounded repair tuple: checker backend, failed artifact, exact diagnostic and local state, diagnosis, minimal repair, and replay result. Copy checker output without paraphrasing it away. The diagnosis is advisory; only replay through the same pinned checker can accept the repair.
+When feedback comes from Lean, a solver, CAS, or another exact checker, mark the runtime attempt with `feedback_kind: checker` and preserve a diagnostic-grounded repair tuple: checker backend, failed artifact, exact diagnostic and local state, diagnostic site, inferred root cause, failure class, compact diagnosis, minimal repair, and replay result. Copy checker output without paraphrasing it away. The reported site may be downstream of the cause; only replay through the same pinned checker can accept the repair.
 
 ## Failure Localization And Salvage
 
@@ -367,6 +375,7 @@ Fill this only when the answer, object, formula, construction, or decisive conce
 - score or evaluator:
 - evaluator scope: original theorem / exhaustive restricted instance / sampled / proxy
 - rejection implication and acceptance implication:
+- evaluator calibration: at least one known-valid and one known-invalid candidate, preferably from a solved frontier rung
 - hard-witness regression set:
 - simplification ladder:
 - holdout cases:

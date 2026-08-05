@@ -38,19 +38,21 @@ Do not launch broad candidate search until these fields are concrete:
 - **Validity gate**: an exact checker for feasibility, domains, constraints, and statement fidelity.
 - **Score or evaluator**: a scalar or ordered tuple that distinguishes progress after validity passes.
 - **Evaluator contract**: exact scope, whether checks are exhaustive or sampled, soundness/completeness direction, and what a pass or failure logically implies for the original theorem.
+- **Evaluator calibration**: at least one known-valid and one known-invalid candidate, preferably from a solved frontier rung, on which the evaluator produces the intended distinction.
 - **Hard-witness regression set**: previously violated constraints or counterexamples that every descendant must pass before receiving fresh evaluation.
 - **Simplification ladder**: solved restrictions, small cases, relaxations, and the first unresolved frontier.
 - **Holdout cases**: cases not used to generate the pattern, especially larger sizes, boundaries, adversarial parameters, and symmetry variants.
 - **Promotion criterion**: the evidence required before a candidate becomes a fixed conjecture or proof target.
 - **Budget**: candidate count, tool calls, time, or tokens, plus a plateau rule.
 
-The evaluator should be a cascade, not one vague score:
+The evaluator should be a calibrated cascade, not one vague score:
 
-1. statement and type validity;
-2. replay of hard witnesses, then exact feasibility or counterexample checks with early stopping;
-3. objective or approximation quality;
-4. holdout robustness and extrapolation;
-5. simplicity, novelty, and proof affordance.
+1. known positive/negative or solved-rung calibration;
+2. statement and type validity;
+3. replay of hard witnesses, then exact feasibility or counterexample checks with early stopping;
+4. objective or approximation quality;
+5. holdout robustness and extrapolation;
+6. simplicity, novelty, and proof affordance.
 
 If no trustworthy evaluator exists, first design a finite relaxation, falsification oracle, residual check, symbolic identity test, or conditional assembly test. Without one of these, use bounded conceptual exploration and human steering rather than evolutionary search.
 
@@ -79,7 +81,7 @@ Keep two to four candidate families, not one long monologue.
 5. **Archive diversity**. Keep the best candidate per structurally distinct family, a few informative failures, and the failure witness. Do not keep only the top scalar score.
 6. **Share across branches** only as named components. Combine a representation from one branch with a local certificate from another; do not average incompatible arguments.
 7. **Adapt the schedule**. Explore broadly early. After repeated valid improvements, concentrate on elite families while retaining one orthogonal branch.
-8. **React to stagnation**. Local stagnation triggers branch review or cross-branch transfer. Global stagnation triggers representation change, evaluator audit, frontier-ladder revision, or stop.
+8. **React to stagnation**. Local stagnation triggers branch review or cross-branch transfer. If many candidates remain nearly feasible under the same violations, inspect whether the representation or hypothesis class excludes the needed object before tuning more coefficients. Global stagnation triggers representation change, evaluator audit, frontier-ladder revision, or stop.
 
 For construction problems, alternate global pattern generation with a problem-specific local improver. For formula discovery, infer the shortest law explaining seed cases, test holdouts, then derive why that law should persist. For analytical problems, search over representations and bases as well as identities; a new basis or normalization can remove the obstruction rather than merely simplify its notation.
 
@@ -130,7 +132,7 @@ Report the strongest honest artifact: best candidate and checker, improved bound
 - [Self-supervised theorem discovery](https://arxiv.org/abs/2606.28747) reuses reached theorems and selects library additions by generality and difficulty of reproof rather than by interesting-looking prose.
 - [MLEvolve](https://arxiv.org/abs/2606.06473) motivates cross-branch references, retrospective memory, explicit stagnation triggers, and an exploration-to-exploitation schedule for long-horizon search.
 - [QED](https://arxiv.org/abs/2604.24021) motivates clean prover/verifier context, exact citation and statement checks, stable plans, and independent review for open-problem claims.
-- [$k$-server-bench](https://arxiv.org/abs/2604.07240) demonstrates counterexample-guided potential search with violation diagnostics, hard-edge caching, early stopping, and an explicitly sound-but-incomplete finite evaluator. A zero-violation finite candidate remains a proof target until the global symbolic argument is supplied.
+- [$k$-server-bench](https://arxiv.org/abs/2604.07240) demonstrates counterexample-guided potential search with calibration on a solved case, violation diagnostics, hard-edge caching, early stopping, and an explicitly sound-but-incomplete finite evaluator. A finite lookup certificate is not automatically a transferable potential, and a zero-violation finite candidate remains a proof target until the global symbolic argument is supplied.
 - [From Solvers to Research](https://arxiv.org/abs/2607.07779) identifies the remaining boundary: evaluator-driven search scales existing representations, but genuinely new mathematics may require concept invention, relational transfer, and human judgment.
 
 These systems provide useful mechanisms and case studies, not a general guarantee of solving open problems. Import only the control rule that matches the current problem and produces a checkable artifact.

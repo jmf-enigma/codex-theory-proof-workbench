@@ -19,7 +19,7 @@ It is designed for OR/MS, dynamic programming, mechanism design and economics, l
 | --- | --- | --- | --- |
 | Infer candidates from small or tight cases | Avoid equivalent retries and salvage valid lemmas | Replay CAS, solver, certificate, and Lean artifacts | Distinguish proofs, counterexamples, conditional results, and open gaps |
 
-The workbench does not guarantee that every true theorem will be proved. If the mathematics is complete and only needs exposition or LaTeX, use `math-proof-writing` instead.
+The workbench does not guarantee every true theorem. Use `math-proof-writing` when only exposition or LaTeX remains.
 
 ## Quick Start
 
@@ -41,7 +41,7 @@ git clone https://github.com/jmf-enigma/codex-theory-proof-workbench.git \
   "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench"
 ```
 
-Restart Codex or refresh skill discovery. The core skill uses only the Python standard library and supports Python 3.10 or newer. Mathematical backends are optional and are not bundled.
+Restart Codex or refresh skill discovery. The core uses Python 3.10+ and the standard library. Mathematical backends are optional and unbundled.
 
 ### Use It
 
@@ -56,7 +56,7 @@ Use $theory-proof-workbench in discovery mode. Verify the literature frontier,
 freeze one supported candidate, and then prove it.
 ```
 
-An explicit skill name is the most reliable way to request the full workflow. The skill runs only during the current proof task and starts no resident agent or Wolfram process.
+Invoke the skill explicitly. It runs only for the current task and starts no resident agent or Wolfram process.
 
 ## Workflow
 
@@ -79,7 +79,7 @@ flowchart LR
 5. Preserve valid partial results, repair the first broken dependency, and stop equivalent retries.
 6. Reassemble the original theorem and assign only the proof status supported by the evidence.
 
-Routine proofs stay lightweight. Literature search, persistent projects, multiple agents, CAS, solvers, and Lean are activated only when they can change the proof state. The complete controller is in [SKILL.md](SKILL.md); the research workflow is in [Research-Backed Proof Loop](references/research-backed-proof-loop.md).
+Routine proofs stay lightweight. Formal tasks start with the smallest checker-feedback loop. Escalate to decomposition, literature, multiple agents, CAS, solvers, or Lean only when they change the proof state and preserve final assembly. See [SKILL.md](SKILL.md) and the [Research-Backed Proof Loop](references/research-backed-proof-loop.md).
 
 ## When To Use It
 
@@ -103,7 +103,7 @@ A run may return a complete proof, counterexample, repaired theorem, conditional
 | `tool-checked` | Fragile local steps have replayable computational artifacts |
 | `formalized-complete` | The full theorem and assembly are machine-checked |
 
-Numerical experiments can falsify a claim or suggest a formula, but they do not prove a universal statement. CAS output, solver success, a local Lean lemma, or an additional model review does not repair a missing global argument. See the [Verification Gate](references/verification-gate.md) for the full acceptance rules.
+Experiments can falsify a claim or suggest a formula, but they do not prove a universal statement or repair missing assembly. Added assumptions and definitions must be sourced or marked as theorem repair. Kernel acceptance proves the encoded theorem, not the quality of a reusable API. See the [Verification Gate](references/verification-gate.md).
 
 ## Mathematical Backends
 
@@ -138,13 +138,13 @@ Add `--mode recovery` or `--mode discovery` when appropriate. Full commands, sta
 
 ## Research Basis
 
-The design adapts proof decomposition, independent verification, persistent research state, and evaluator-driven discovery from work including [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283), [Goedel-Architect](https://arxiv.org/abs/2606.06468), [Prover-Verifier Games](https://arxiv.org/abs/2407.13692), [STAR-PolyaMath](https://arxiv.org/abs/2605.19338), the [AI co-mathematician](https://arxiv.org/abs/2605.06651), [AlphaEvolve](https://arxiv.org/abs/2506.13131), and [Rethlas](https://github.com/frenzymath/Rethlas).
+This is an independent lightweight controller, not a reimplementation of one paper. [APRIL](https://arxiv.org/abs/2602.02990) and [AlphaProof Nexus](https://arxiv.org/abs/2605.22763) motivate checker-grounded repair and a simple-loop default. [$k$-server-bench](https://arxiv.org/abs/2604.07240) motivates calibrated one-sided evaluators, while [QEDBench](https://arxiv.org/abs/2602.20629) exposes model-judge bias. [Hypothesis-disciplined formalization](https://arxiv.org/abs/2606.20642) and [AI4SLT](https://arxiv.org/abs/2602.02285) motivate source and probability-semantic audits. [Sorries Are Not the Hard Part](https://arxiv.org/abs/2606.13925) separates kernel success from reusable formal-library design.
 
-The full paper-to-workflow mapping is maintained in [Research-Backed Proof Loop](references/research-backed-proof-loop.md) and [Novel Problem Discovery](references/novel-problem-discovery.md). These sources motivate control decisions; they are not proof authority for a user's theorem.
+Population, multi-agent, and evolutionary methods are optional. Full mappings are in [Research-Backed Proof Loop](references/research-backed-proof-loop.md) and [Novel Problem Discovery](references/novel-problem-discovery.md). Sources guide control decisions, not theorem proof or a workbench benchmark.
 
 ## Contributing
 
-[Star the repository](https://github.com/jmf-enigma/codex-theory-proof-workbench) if it is useful. For actionable feedback, [open an issue](https://github.com/jmf-enigma/codex-theory-proof-workbench/issues/new) with an anonymized claim, attempted route, first obstruction, and available evidence. Do not upload confidential manuscripts or private research data.
+[Star the repository](https://github.com/jmf-enigma/codex-theory-proof-workbench) if useful. [Open an issue](https://github.com/jmf-enigma/codex-theory-proof-workbench/issues/new) with an anonymized claim, route, first obstruction, and evidence. Never upload confidential work.
 
 Contributions should address a named proof bottleneck and include a reproducible check or test.
 
@@ -177,7 +177,7 @@ Theory Proof Workbench 是一个开源 Codex skill，适用于核心构造、关
 | --- | --- | --- | --- |
 | 从小规模或 tight case 中猜测候选结构 | 避免等价重试并保留有效 lemma | 重放 CAS、solver、certificate 和 Lean artifact | 区分完整证明、反例、条件结论和未闭合缺口 |
 
-Workbench 不保证每个真命题都能被证明。数学已经完成，只需要改善表达或 LaTeX 时，应使用 `math-proof-writing`。
+Workbench 不保证每个真命题都能证明。只剩表达或 LaTeX 时，请使用 `math-proof-writing`。
 
 ## 快速开始
 
@@ -197,7 +197,7 @@ git clone https://github.com/jmf-enigma/codex-theory-proof-workbench.git \
   "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench"
 ```
 
-重启 Codex 或刷新 skill discovery。核心 skill 只使用 Python 标准库，支持 Python 3.10 及以上版本。数学后端均为可选项，本仓库不会自动安装。
+重启 Codex 或刷新 skill discovery。核心使用 Python 3.10+ 标准库。数学后端均为可选项，不会自动安装。
 
 ### 开始使用
 
@@ -212,7 +212,7 @@ git clone https://github.com/jmf-enigma/codex-theory-proof-workbench.git \
 固定一个有证据支持的 candidate，然后再证明它。
 ```
 
-显式写出 skill 名称最稳定。这个 skill 只在当前证明任务中运行，不会启动常驻 Agent 或 Wolfram 进程。
+请显式调用 skill。它只在当前任务中运行，不会启动常驻 Agent 或 Wolfram 进程。
 
 ## 工作流
 
@@ -235,7 +235,7 @@ flowchart LR
 5. 保留有效局部结果，修复第一个失效依赖，并停止等价重试。
 6. 重新组装原 theorem，只报告证据真正支持的 proof status。
 
-常规证明保持轻量。只有文献检索、持久化项目、多 Agent、CAS、solver 或 Lean 能够改变 proof state 时，才会启动对应能力。完整 controller 见 [SKILL.md](SKILL.md)，研究流程见 [Research-Backed Proof Loop](references/research-backed-proof-loop.md)。
+常规证明保持轻量。形式化任务从最小 checker-feedback loop 开始。只有 decomposition、文献、多 Agent、CAS、solver 或 Lean 能改变 proof state，并保持最终 assembly 时才会升级。详见 [SKILL.md](SKILL.md) 与 [Research-Backed Proof Loop](references/research-backed-proof-loop.md)。
 
 ## 什么时候使用
 
@@ -259,7 +259,7 @@ flowchart LR
 | `tool-checked` | 脆弱局部步骤带有可重放计算 artifact |
 | `formalized-complete` | 完整 theorem 和 assembly 已通过机器检查 |
 
-数值实验可以反驳命题或提示公式，但不能证明 universal statement。CAS 输出、solver success、局部 Lean lemma 或额外模型审查都不能修复缺失的全局论证。完整标准见 [Verification Gate](references/verification-gate.md)。
+实验可以反驳命题或提示公式，但不能证明 universal statement，也不能补上缺失的 assembly。新增假设与定义必须给出来源，否则要标为 theorem repair。Lean kernel 只证明已编码 theorem，不保证 API 可复用。完整标准见 [Verification Gate](references/verification-gate.md)。
 
 ## 数学后端
 
@@ -294,13 +294,13 @@ python3 scripts/smoke_workbench.py
 
 ## 研究来源
 
-Workbench 将 proof decomposition、independent verification、persistent research state 和 evaluator-driven discovery 转化为轻量控制规则。代表性来源包括 [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283)、[Goedel-Architect](https://arxiv.org/abs/2606.06468)、[Prover-Verifier Games](https://arxiv.org/abs/2407.13692)、[STAR-PolyaMath](https://arxiv.org/abs/2605.19338)、[AI co-mathematician](https://arxiv.org/abs/2605.06651)、[AlphaEvolve](https://arxiv.org/abs/2506.13131) 和 [Rethlas](https://github.com/frenzymath/Rethlas)。
+本仓库是独立设计的轻量 proof controller，并非复刻某一篇论文。[APRIL](https://arxiv.org/abs/2602.02990) 与 [AlphaProof Nexus](https://arxiv.org/abs/2605.22763) 支持 checker-grounded repair 和简单循环优先。[$k$-server-bench](https://arxiv.org/abs/2604.07240) 支持先校准单向 evaluator，[QEDBench](https://arxiv.org/abs/2602.20629) 揭示 model judge 偏差。[Hypothesis-disciplined formalization](https://arxiv.org/abs/2606.20642) 与 [AI4SLT](https://arxiv.org/abs/2602.02285) 支持来源和概率语义审计。[Sorries Are Not the Hard Part](https://arxiv.org/abs/2606.13925) 区分 kernel success 与可复用形式化库的设计质量。
 
-完整的 paper-to-workflow 映射保存在 [Research-Backed Proof Loop](references/research-backed-proof-loop.md) 与 [Novel Problem Discovery](references/novel-problem-discovery.md)。这些来源用于支持 control decision，不会被当成用户 theorem 的证明依据。
+Population、多 Agent 和 evolutionary method 均为可选项。完整映射见 [Research-Backed Proof Loop](references/research-backed-proof-loop.md) 与 [Novel Problem Discovery](references/novel-problem-discovery.md)。论文只支持 control decision，不证明用户 theorem，也不是 Workbench benchmark。
 
 ## 参与贡献
 
-项目有用时可以 [Star 仓库](https://github.com/jmf-enigma/codex-theory-proof-workbench)。需要反馈时，请提交经过匿名化的 [issue](https://github.com/jmf-enigma/codex-theory-proof-workbench/issues/new)，并写清准确命题、已尝试路线、首个 obstruction 和已有证据。不要上传保密论文或私人研究数据。
+项目有用时可以 [Star 仓库](https://github.com/jmf-enigma/codex-theory-proof-workbench)。反馈请提交匿名化 [issue](https://github.com/jmf-enigma/codex-theory-proof-workbench/issues/new)，写明命题、路线、首个 obstruction 和证据。不要上传保密工作。
 
 新增贡献应针对一个明确的证明瓶颈，并带有可复现的检查或测试。
 

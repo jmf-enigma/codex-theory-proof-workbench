@@ -106,7 +106,7 @@ Use these as importable proof-search mechanisms:
 - **Cost-quality Lean agents**: after failed attempts, decide between continuing the node and restarting/re-decomposing by using proof-state delta, failure diversity, proof similarity, and attempt count.
 - **LeanArchitect**: use blueprint metadata to separate statement text, proof text, dependency inference, status, and discussion/not-ready notes.
 - **LeanMarathon**: stabilize target fidelity before proof discharge, then work from dynamic leaves upward. Keep source-aware repair, bounded edit scope, and low repair radius; do not use proof length as an escape condition.
-- **AlphaProof Nexus**: keep a small population of sketches; use a reviewer to score decomposition quality, novelty, plausibility, and good-gap versus bad-gap.
+- **AlphaProof Nexus**: start with a basic Lean-feedback loop. Its population and heuristic rater can schedule diverse sketches after that loop stalls, but the rater is not an acceptance channel and the paper's simple-agent comparison covered selected successful problems.
 - **MerLean-Prover/lean-collab**: separate planning, proving, and checking roles. A clean proof must still pass faithfulness to the original statement and mathematical-correctness checks.
 - **STAR-PolyaMath**: keep a non-reasoning coordinator or ledger in charge of state. Use a persistent meta-strategy note for chronic failure patterns, and review each fragile step with accept/challenge/trace-back/re-plan verdicts.
 - **Rethlas/Archon**: split informal route discovery from formal checking. Let retrieval and natural-language reasoning propose candidate lemmas, then ask the checking side to return precise missing obligations.
@@ -117,9 +117,10 @@ Use these as importable proof-search mechanisms:
 - **Beyond the Frontier**: when heuristic route scores are noisy, keep a bounded historical state pool and allow one under-ranked, mechanism-distinct state a cheap revisit. Treat this as a scheduling analogy, not proof evidence.
 - **$k$-server-bench**: turn potential or certificate discovery into counterexample-guided search. Cache hard violations, early-stop weak candidates, and distinguish a finite one-sided evaluator from a global proof.
 - **QEDBench/Axiom-Audited Lean**: an LLM judge can be systematically lenient, while a compiling proof can hide an unexpected trust base. Require problem-derived obligations, heterogeneous evidence, axiom-footprint regression, and explicit external assumptions.
-- **TacMiner**: mine reusable moves by dependency structure and replayable input-output boundaries rather than adjacent text. Keep one-off tricks local until a held-out reuse succeeds.
+- **TacMiner**: identify reusable moves by dependency structure and collapsible input-output boundaries rather than adjacent text. TacMiner studies Rocq tactic fragments; keeping an informal trick local until a second-route or held-out replay succeeds is this workbench's additional safeguard.
 - **SorryDB/Lean Finder**: for Lean-workflow evaluation, use pinned real project obligations and held-out or later snapshots in addition to synthetic smoke tests; for retrieval, model user intent rather than only theorem-statement similarity. This is a workbench design inference, not a general theorem about mathematical evaluation.
-- **Formal Conjectures**: test definitions with easy variants and boundary lemmas. A proof or disproof can reveal a translation, underspecification, or source error in the statement itself.
+- **Formal Conjectures/hypothesis-disciplined formalization/AI4SLT**: test definitions with easy variants, trace every added assumption or definition to its source, and freeze probability semantics before formal proof. A checked artifact can still encode a translation, underspecification, or source error.
+- **Sorries Are Not the Hard Part**: when the goal is reusable formal library code, review definitions, theorem generality, namespaces, and API surface after kernel correctness. Do not impose this design review on a one-off local certificate.
 
 ## Use In A Proof Project
 

@@ -34,10 +34,12 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 16. Decision-value gate: before another long proof attempt, state the artifact it is expected to produce. If there is no expected artifact, choose counterexample search, retrieval, local formalization, theorem repair, or stop.
 17. Formal artifact gate: if Lean or a formal-proving API was used, check for `sorry`, admitted or unexpected axioms, unsafe shortcuts, incomplete declarations, unproved theorem dependencies, and whether verified helper lemmas actually imply the original theorem. Record an expected axiom allowlist or footprint and isolate every external trust assumption; kernel validity, trust footprint, and statement fidelity are separate checks.
 18. Decomposition gate: before accepting child lemmas, check parent sufficiency, strict simplification, acyclicity, source fidelity, repair radius, and premise feasibility.
-19. Verifier-diversity gate: do not upgrade confidence because similar verbal reviewers agree. A model judge is never the sole acceptance channel. Derive atomic acceptance obligations from the problem and require a different evidence channel for the fragile kernel when feasible; a longer prose rubric is not additional evidence.
+19. Verifier-diversity gate: do not upgrade confidence because similar verbal reviewers agree. A model judge is never the sole acceptance or refutation channel; rejection must identify a concrete first error or witness. Derive atomic acceptance obligations from the problem and require a different evidence channel for the fragile kernel when feasible; a longer prose rubric is not additional evidence.
 20. Definition-sanity gate: when the theorem introduces custom objects or formal definitions, prove easy expected variants and boundary/API lemmas before trusting a difficult target built on them.
 21. Semantic-obligation gate: decompose custom definitions and exact counting, feasibility, closure, multiplicity, support, or object-type requirements into atomic obligations; verify that every reduction and construction preserves them.
 22. Completion-coverage gate: map every acceptance-contract item, required edge case, and reduction obligation to the proof node or certificate that discharges it. Any uncovered required row prevents complete-proof status.
+23. Hypothesis-lineage gate: classify every assumption, binder, quantifier, semantic convention, or definition field introduced after the theorem fence as original/source-explicit, source-implied, an encoding adapter, or theorem repair. Compilation must not launder an unresolved obligation into a hypothesis or definition.
+24. Reusable-formalization gate: only when the output is intended as library code, review whether definitions are mathematically natural, theorem statements have useful generality, namespaces support search, and a small API avoids downstream unfolding. This gate measures reuse quality, not theorem truth.
 
 ## Adversarial Review Checklist
 
@@ -66,6 +68,8 @@ Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`,
 - Was a numerical sweep or floating-point dual kept below proof status until an exact certificate, sign conditions, and final theorem assembly were checked?
 - Was the evaluator exhaustive for the stated theorem, or did a pass only mean no violation on a finite, sampled, or proxy suite?
 - If the proof was formalized, did the recorded axiom footprint match the allowlist, and were real-world oracle or data assumptions kept outside the proved core?
+- Did a failed proof become compilable only because its missing obligation was moved into a new hypothesis, structure field, or weakened definition?
+- If reusable formal code is claimed, would another theorem use its definitions and API without transport through application-specific wrappers?
 
 ## Missing Lemma Search
 
@@ -88,6 +92,7 @@ For a hard proof, the final answer should include:
 - proof pattern,
 - lemma graph with statuses,
 - any formal artifact status, including unresolved `sorry`/admitted obligations if present,
+- any theorem repair or non-original assumption and its lineage,
 - counterexample searches attempted,
 - proof or exact obstruction,
 - novelty since the last failed route, if applicable,
