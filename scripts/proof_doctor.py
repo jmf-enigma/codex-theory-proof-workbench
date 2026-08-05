@@ -9,7 +9,9 @@ import re
 from pathlib import Path
 
 from audit_ledger import audit_ledger_text, section_body
+from computation_artifact import audit_artifact
 from frontier_evidence import validate_frontier_bundle
+from proof_runtime import ensure_runtime, iter_channel
 from select_playbook import PLAYBOOKS, score
 
 
@@ -155,6 +157,199 @@ def read_json(path: Path) -> dict:
     if not path.exists():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def runtime_referee_feedback(project: Path) -> dict:
+    try:
+        ensure_runtime(project)
+        verification_entries = list(iter_channel(project, "verification_reports"))
+        computation_entries = list(iter_channel(project, "computations"))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return {
+            "available": False,
+            "verdict": None,
+            "raw_verdict": None,
+            "run_id": None,
+            "review_scope": None,
+            "candidate_proof_sha256": None,
+            "failure_kind": None,
+            "first_error": {},
+            "repair_hints": [],
+            "passed_claim_ids": [],
+            "passed_artifact_ids": [],
+            "invalid_computation_artifacts": [],
+            "superseded_computation_artifacts": [],
+            "computation_warnings": [],
+            "needs_packet_repair": False,
+        }
+
+    recorded_claims: dict[str, str] = {}
+    passed_artifacts: set[str] = set()
+    superseded_by: dict[str, dict] = {}
+    for envelope in computation_entries:
+        record = envelope.get("record", {})
+        artifact_id = record.get("artifact_id")
+        if not isinstance(artifact_id, str):
+            continue
+        claim_id = record.get("claim_id")
+        if isinstance(claim_id, str) and claim_id:
+            recorded_claims[artifact_id] = claim_id
+        if record.get("event_type") == "computation_replayed" and record.get("status") == "passed":
+            passed_artifacts.add(artifact_id)
+        if record.get("event_type") == "computation_superseded":
+            replacement_id = record.get("replacement_artifact_id")
+            if isinstance(replacement_id, str) and replacement_id:
+                superseded_by[artifact_id] = record
+
+    valid_artifacts: set[str] = set()
+    invalid_artifacts: list[dict] = []
+    superseded_artifacts: list[dict] = []
+    computation_warnings: list[dict] = []
+    artifact_audits: dict[str, dict] = {}
+
+    def cached_audit(artifact_id: str) -> dict:
+        if artifact_id not in artifact_audits:
+            artifact_audits[artifact_id] = audit_artifact(project, artifact_id)
+        return artifact_audits[artifact_id]
+
+    for artifact_id in sorted(passed_artifacts):
+        if artifact_id in superseded_by:
+            chain = [artifact_id]
+            cursor = artifact_id
+            seen = {artifact_id}
+            while cursor in superseded_by:
+                replacement_id = superseded_by[cursor]["replacement_artifact_id"]
+                if replacement_id in seen:
+                    invalid_artifacts.append(
+                        {
+                            "artifact_id": artifact_id,
+                            "claim_id": recorded_claims.get(artifact_id),
+                            "errors": ["computation supersession cycle detected"],
+                        }
+                    )
+                    cursor = ""
+                    break
+                seen.add(replacement_id)
+                chain.append(replacement_id)
+                cursor = replacement_id
+            if not cursor:
+                continue
+            replacement_audit = cached_audit(cursor)
+            if not replacement_audit["valid"]:
+                invalid_artifacts.append(
+                    {
+                        "artifact_id": artifact_id,
+                        "claim_id": recorded_claims.get(artifact_id),
+                        "replacement_artifact_id": cursor,
+                        "errors": [
+                            f"superseding artifact {cursor} is not currently valid",
+                            *replacement_audit["errors"],
+                        ],
+                    }
+                )
+                continue
+            valid_artifacts.add(cursor)
+            superseded_artifacts.append(
+                {
+                    "artifact_id": artifact_id,
+                    "claim_id": recorded_claims.get(artifact_id),
+                    "replacement_artifact_id": cursor,
+                    "chain": chain,
+                    "reason": superseded_by[artifact_id].get("reason"),
+                }
+            )
+            continue
+
+        artifact_audit = cached_audit(artifact_id)
+        if artifact_audit["valid"]:
+            valid_artifacts.add(artifact_id)
+            if artifact_audit["warnings"]:
+                computation_warnings.append(
+                    {
+                        "artifact_id": artifact_id,
+                        "claim_id": artifact_audit.get("claim_id") or recorded_claims.get(artifact_id),
+                        "warnings": artifact_audit["warnings"],
+                    }
+                )
+        else:
+            invalid_artifacts.append(
+                {
+                    "artifact_id": artifact_id,
+                    "claim_id": artifact_audit.get("claim_id") or recorded_claims.get(artifact_id),
+                    "errors": artifact_audit["errors"],
+                }
+            )
+    covered_claim_ids = {
+        recorded_claims[artifact_id]
+        for artifact_id in valid_artifacts
+        if artifact_id in recorded_claims
+    }
+    covered_claim_ids.update(
+        item["claim_id"] for item in superseded_artifacts if item.get("claim_id")
+    )
+    passed_claim_ids = sorted(covered_claim_ids)
+
+    if not verification_entries:
+        return {
+            "available": False,
+            "verdict": None,
+            "raw_verdict": None,
+            "run_id": None,
+            "review_scope": None,
+            "candidate_proof_sha256": None,
+            "failure_kind": None,
+            "first_error": {},
+            "repair_hints": [],
+            "passed_claim_ids": passed_claim_ids,
+            "passed_artifact_ids": sorted(valid_artifacts),
+            "invalid_computation_artifacts": invalid_artifacts,
+            "superseded_computation_artifacts": superseded_artifacts,
+            "computation_warnings": computation_warnings,
+            "needs_packet_repair": False,
+        }
+    record = verification_entries[-1].get("record", {})
+    first_error = record.get("first_error") if isinstance(record.get("first_error"), dict) else {}
+    failure_kind = record.get("failure_kind")
+    if not isinstance(failure_kind, str) or not failure_kind:
+        issue = str(first_error.get("issue", "")).lower()
+        missing_markers = (
+            "absent from the packet",
+            "not supplied",
+            "not contained",
+            "unavailable",
+            "missing evidence",
+            "cannot be verified",
+        )
+        if any(marker in issue for marker in missing_markers):
+            failure_kind = "missing-packet-evidence"
+    repair_hints = record.get("repair_hints")
+    if not isinstance(repair_hints, list):
+        repair_hints = []
+    raw_verdict = record.get("verdict")
+    effective_verdict = (
+        "uncertain"
+        if raw_verdict == "wrong"
+        and failure_kind in {"missing-packet-evidence", "tool-evidence-gap"}
+        else raw_verdict
+    )
+    return {
+        "available": True,
+        "verdict": effective_verdict,
+        "raw_verdict": raw_verdict,
+        "run_id": record.get("run_id"),
+        "review_scope": record.get("module_id") or record.get("candidate_proof_source"),
+        "candidate_proof_sha256": record.get("candidate_proof_sha256"),
+        "failure_kind": failure_kind,
+        "first_error": first_error,
+        "repair_hints": [hint for hint in repair_hints if isinstance(hint, str)][:3],
+        "passed_claim_ids": passed_claim_ids,
+        "passed_artifact_ids": sorted(valid_artifacts),
+        "invalid_computation_artifacts": invalid_artifacts,
+        "superseded_computation_artifacts": superseded_artifacts,
+        "computation_warnings": computation_warnings,
+        "needs_packet_repair": failure_kind in {"missing-packet-evidence", "tool-evidence-gap"},
+        "verification_path": record.get("verification_path"),
+    }
 
 
 def audit_text(text: str, ledger: Path) -> dict:
@@ -815,7 +1010,24 @@ def primary_action_for(
     failure_localization: dict,
     failure_stage: dict,
     audit: dict,
+    runtime_feedback: dict,
 ) -> str:
+    invalid_artifacts = runtime_feedback["invalid_computation_artifacts"]
+    if invalid_artifacts:
+        artifact_ids = ", ".join(item["artifact_id"] for item in invalid_artifacts[:3])
+        return (
+            f"Restore, re-record, or replay invalid computation artifact(s) {artifact_ids}; "
+            "their claims cannot count as checked until the local artifact audit passes."
+        )
+    if runtime_feedback["needs_packet_repair"]:
+        first_error = runtime_feedback["first_error"]
+        location = first_error.get("location") or "the referee's first unsupported dependency"
+        passed = runtime_feedback["passed_claim_ids"]
+        suffix = f" Do not rerun already passed artifacts: {', '.join(passed)}." if passed else ""
+        return (
+            f"Repair the referee packet at {location}: supply the exact missing premise, proof, or "
+            f"replayable certificate before resubmitting; do not restart proof search.{suffix}"
+        )
     if (
         mode == "recovery"
         and not fingerprints["has_real_entries"]
@@ -887,8 +1099,32 @@ def diagnose(project: Path) -> dict:
     failure_localization = failure_localization_summary(project, progress, pv_need)
     failure_stage = failure_stage_summary(project, progress, failure_localization)
     route_decision = route_decision_summary(state, progress, fingerprints, idea_map, pattern_scan)
+    runtime_feedback = runtime_referee_feedback(project)
+    audit["runtime_evidence_ready"] = not runtime_feedback["invalid_computation_artifacts"]
+    if not audit["runtime_evidence_ready"]:
+        audit["ready_for_final_proof"] = False
 
     actions = []
+    if runtime_feedback["invalid_computation_artifacts"]:
+        invalid_ids = ", ".join(
+            item["artifact_id"] for item in runtime_feedback["invalid_computation_artifacts"][:3]
+        )
+        actions.append(
+            "Computation evidence repair: restore the original project-local artifact or record and "
+            f"replay a replacement for {invalid_ids}."
+        )
+    if runtime_feedback["needs_packet_repair"]:
+        first_error = runtime_feedback["first_error"]
+        actions.append(
+            "Referee evidence repair: attach or prove the first unsupported dependency at "
+            f"{first_error.get('location') or 'the recorded first-error location'}."
+        )
+        if runtime_feedback["passed_claim_ids"]:
+            actions.append(
+                "Preserve and do not rerun passed computation claims: "
+                + ", ".join(runtime_feedback["passed_claim_ids"])
+                + "."
+            )
     if not (project / "ATTACK_MATRIX.md").exists():
         actions.append("Create ATTACK_MATRIX.md with one proof route and one falsification route.")
     if not (project / "LEMMA_QUEUE.md").exists():
@@ -959,6 +1195,9 @@ def diagnose(project: Path) -> dict:
         or fingerprints["has_real_entries"]
     ) and (project / "WORKSTREAMS.md").exists() and "WORKSTREAMS.md" not in files:
         files.insert(0, "WORKSTREAMS.md")
+    verification_path = runtime_feedback.get("verification_path")
+    if isinstance(verification_path, str) and verification_path and verification_path not in files:
+        files.insert(0, verification_path)
 
     primary_action = primary_action_for(
         mode,
@@ -973,6 +1212,7 @@ def diagnose(project: Path) -> dict:
         failure_localization,
         failure_stage,
         audit,
+        runtime_feedback,
     )
     ordered_actions = [primary_action]
     for action in actions:
@@ -1011,6 +1251,7 @@ def diagnose(project: Path) -> dict:
         "failure_localization": failure_localization,
         "failure_stage": failure_stage,
         "route_decision": route_decision,
+        "latest_referee": runtime_feedback,
         "audit": audit,
     }
 
@@ -1031,6 +1272,22 @@ def print_human(result: dict) -> None:
     print("supporting actions:")
     for action in result["next_actions"][1:]:
         print(f"- {action}")
+    referee = result["latest_referee"]
+    print("latest referee:")
+    print(f"- available: {referee['available']}")
+    print(f"- verdict: {referee['verdict']}")
+    print(f"- run_id: {referee['run_id']}")
+    print(f"- review_scope: {referee['review_scope']}")
+    print(f"- candidate_proof_sha256: {referee['candidate_proof_sha256']}")
+    if referee["raw_verdict"] != referee["verdict"]:
+        print(f"- raw_verdict: {referee['raw_verdict']}")
+    print(f"- failure_kind: {referee['failure_kind']}")
+    print(f"- first_error: {referee['first_error']}")
+    print(f"- passed_claim_ids: {referee['passed_claim_ids']}")
+    print(f"- passed_artifact_ids: {referee['passed_artifact_ids']}")
+    print(f"- invalid_computation_artifacts: {referee['invalid_computation_artifacts']}")
+    print(f"- superseded_computation_artifacts: {referee['superseded_computation_artifacts']}")
+    print(f"- computation_warnings: {referee['computation_warnings']}")
     novel = result["novel_problem"]
     print("novel problem discovery:")
     print(f"- activated: {novel['activated']}")

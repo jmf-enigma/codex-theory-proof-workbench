@@ -33,6 +33,10 @@ Skip it for routine direct proofs, standard theorem applications with matched as
 
 Use actual multi-agent parallelism only with explicit user approval. Serial role switching inside one agent is enough for most proof work.
 
+For a complete proof candidate produced after earlier failures, or a candidate whose global assembly is difficult to inspect, use `scripts/run_referee.py`. It prepares a fresh, ephemeral, read-only Codex context containing the exact claim, acceptance contract, candidate proof, and only the selected reference excerpts. Inspect it first with `--prepare-only`; do not give the referee the generator ledger or current favorite route. Running the packet through another model requires an environment that permits the call and explicit user approval to share the selected packet. This reduces anchoring and prompt carryover, but it does not provide filesystem isolation, model independence, or formal correctness. A same-model verdict remains review evidence.
+
+A nested Codex CLI may initially fail inside the parent workspace sandbox because it cannot write its state database or reach the model service. Preserve that failed verification record. Use ordinary sandbox escalation only when the host identifies a local permission or network restriction and sharing is approved. If policy rejects transferring the packet, or no independent pass is available, do not work around it. Record `fresh-context-unavailable`, run a local adversarial audit plus exact artifact replay, and cap the result at `human-proof` or `tool-checked` rather than `fresh-context-reviewed`. Never replace this with `--dangerously-bypass-approvals-and-sandbox`.
+
 ## One-Move Protocol
 
 Before the move, write:
@@ -65,6 +69,8 @@ Use the cheapest decisive verifier first:
 When a check fails, return the earliest failing step and a witness. Do not critique later deductions as if they were independent failures.
 
 Do not treat repeated verbal approval as mathematical evidence. Use a second verifier only when it brings a different channel, such as counterexample search, source comparison, exact algebra, solver certificate, formal checking, or conditional assembly. Several similar LLM judges can share the same style bias and unsupported assumption.
+
+The referee controller accepts `correct` only when claim fidelity and assumption coverage pass, `failure_kind` is `none`, the first-error field is empty, and both error lists are empty. A missing cited premise, source excerpt, or tool certificate is `missing-packet-evidence` and therefore `uncertain`, not a visible mathematical refutation. Malformed or contradictory output is also downgraded to `uncertain`; timeouts and nonzero exits are preserved as verification records rather than silently retried. `proof_doctor.py` consumes the latest first error and passed computation claims so packet repair takes precedence over restarting proof search.
 
 Allowed verdicts:
 
@@ -100,7 +106,7 @@ Allowed verdicts:
 - **Goedel-Prover-V2/process verification**: feed the precise first error and valid prefix into correction; do not regenerate from an undifferentiated failure signal.
 - **Aletheia-style separation**: let verification inspect the proposed proof rather than merely continue its reasoning. A verifier may abstain or reject when evidence is insufficient.
 - **MerLean-Prover**: enforce role authority. Planner edits the plan, prover edits one local proof object, checker answers one precise correctness or decomposition question.
-- **Rethlas/Archon**: when retrieving a theorem, inspect definitions and proof technique, not only the statement. Ask whether terminology, hypotheses, and proof route transplant cleanly.
+- **Rethlas/Archon**: separate strategy generation from verifier replay, preserve structured run artifacts, and inspect definitions and proof technique rather than only theorem statements. Import the separation and replay discipline, not the claim that a language-model verdict is a kernel proof.
 
 ## Stop Rule
 

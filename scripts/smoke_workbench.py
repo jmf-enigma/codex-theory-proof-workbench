@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -16,13 +17,19 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 
 
-def run(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, *args],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+def run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+    try:
+        return subprocess.run(
+            [sys.executable, *args],
+            check=True,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(
+            f"command failed: {exc.cmd}\nstdout:\n{exc.stdout}\nstderr:\n{exc.stderr}"
+        ) from exc
 
 
 def main() -> int:
@@ -132,6 +139,72 @@ def main() -> int:
     )
 
     with tempfile.TemporaryDirectory(prefix="proof-workbench-smoke-") as temp_dir:
+        legacy_project = Path(temp_dir) / "legacy-project"
+        legacy_project.mkdir()
+        legacy_routing = legacy_project / "routing.json"
+        legacy_routing.write_text(
+            json.dumps(
+                {
+                    "title": "legacy-project",
+                    "claim": "For every real x, x equals x.",
+                    "mode": "recovery",
+                    "status": "complete",
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        legacy_brief = json.loads(
+            run(str(SCRIPTS / "proof_runtime.py"), "brief", str(legacy_project)).stdout
+        )
+        legacy_routing.write_text(
+            json.dumps(
+                {
+                    "title": "legacy-project",
+                    "claim": "For every real x, x squared is nonnegative.",
+                    "mode": "recovery",
+                    "status": "complete",
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        stale_claim = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "proof_runtime.py"),
+                "brief",
+                str(legacy_project),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        revised_claim = json.loads(
+            run(
+                str(SCRIPTS / "proof_runtime.py"),
+                "revise-claim",
+                str(legacy_project),
+                "--reason",
+                "The legacy theorem statement was intentionally replaced.",
+            ).stdout
+        )
+        checks.append(
+            {
+                "name": "legacy-runtime-migration-and-claim-fence",
+                "ok": legacy_brief["state"]["mode"] == "recovery"
+                and legacy_brief["state"]["proof_status"] == "unresolved"
+                and legacy_brief["state"]["project_status_hint"] == "complete"
+                and legacy_brief["state"]["project_status_hint_evidence"]
+                == "unverified-routing-metadata"
+                and (legacy_project / ".proof_runtime" / "state.json").is_file()
+                and stale_claim.returncode != 0
+                and "project claim differs from runtime state" in stale_claim.stderr
+                and revised_claim["claim_revision"] == 1
+                and revised_claim["proof_status"] == "unresolved",
+            }
+        )
+
         created = run(
             str(SCRIPTS / "start_proof.py"),
             "--title",
@@ -149,6 +222,11 @@ def main() -> int:
             "IDEA_MAP.md",
             "LEMMA_QUEUE.md",
             "routing.json",
+            ".proof_runtime/state.json",
+            ".proof_runtime/channels/events.jsonl",
+            ".proof_runtime/channels/attempts.jsonl",
+            ".proof_runtime/channels/computations.jsonl",
+            ".proof_runtime/channels/verification_reports.jsonl",
         }
         checks.append(
             {
@@ -172,6 +250,508 @@ def main() -> int:
             }
         )
 
+        attempt_record = {
+            "event_type": "attempt_completed",
+            "route_family": "Bellman contraction",
+            "target_lemma": "sup-norm contraction",
+            "outcome": "blocked",
+            "failure_witness": "discount factor domain not yet stated",
+            "proof_state_delta": "one missing assumption isolated",
+        }
+        run(
+            str(SCRIPTS / "proof_runtime.py"),
+            "append",
+            str(project),
+            "attempts",
+            "--record",
+            json.dumps(attempt_record),
+        )
+        run(
+            str(SCRIPTS / "proof_runtime.py"),
+            "set",
+            str(project),
+            "--proof-status",
+            "lemma-conditional",
+            "--current-node",
+            "sup-norm contraction",
+        )
+        runtime_brief = json.loads(
+            run(str(SCRIPTS / "proof_runtime.py"), "brief", str(project)).stdout
+        )
+        runtime_markdown = run(
+            str(SCRIPTS / "proof_runtime.py"),
+            "brief",
+            str(project),
+            "--markdown",
+        ).stdout
+        checks.append(
+            {
+                "name": "compact-typed-runtime",
+                "ok": runtime_brief["state"]["proof_status"] == "lemma-conditional"
+                and runtime_brief["counts"]["attempts"] == 1
+                and runtime_brief["counts"]["events"] == 2
+                and "discount factor domain" in runtime_markdown
+                and "sup-norm contraction" in runtime_markdown,
+            }
+        )
+
+        mock_bin = Path(temp_dir) / "mock-bin"
+        mock_bin.mkdir()
+        mock_codex = mock_bin / "codex"
+        mock_codex.write_text(
+            """#!/usr/bin/env python3
+import json
+import os
+import sys
+
+output = sys.argv[sys.argv.index("--output-last-message") + 1]
+payload = {
+    "summary": "All declared obligations were checked.",
+    "claim_fidelity": {"status": "pass", "issue": ""},
+    "assumption_coverage": {"status": "pass", "issue": ""},
+    "failure_kind": "none",
+    "first_error": {"location": "", "issue": ""},
+    "critical_errors": [],
+    "gaps": [],
+    "verdict": "correct",
+    "repair_hints": [],
+}
+if os.environ.get("MOCK_REFEREE_CONTRADICTORY"):
+    payload["gaps"] = [{"location": "step 2", "issue": "unsupported implication"}]
+if os.environ.get("MOCK_REFEREE_MISSING_EVIDENCE"):
+    payload.update({
+        "summary": "A cited premise is absent from the packet.",
+        "assumption_coverage": {"status": "fail", "issue": "premise L2 is absent"},
+        "failure_kind": "missing-packet-evidence",
+        "first_error": {"location": "step 3", "issue": "premise L2 is absent from the packet"},
+        "critical_errors": [{"location": "step 3", "issue": "premise L2 is unavailable"}],
+        "gaps": [],
+        "verdict": "wrong",
+        "repair_hints": ["Supply premise L2."],
+    })
+with open(output, "w", encoding="utf-8") as handle:
+    json.dump(payload, handle)
+print("mock referee completed")
+""",
+            encoding="utf-8",
+        )
+        mock_codex.chmod(0o755)
+        tool_env = dict(os.environ)
+        tool_env["PATH"] = str(mock_bin) + os.pathsep + tool_env.get("PATH", "")
+
+        candidate_proof = project / "writeup" / "candidate.md"
+        candidate_proof.write_text(
+            "# Candidate Proof\n\nFor any value functions V and W, take the sup norm after "
+            "applying the discounted Bellman inequality.\n",
+            encoding="utf-8",
+        )
+        prepared = json.loads(
+            run(
+                str(SCRIPTS / "run_referee.py"),
+                str(project),
+                "--proof",
+                "writeup/candidate.md",
+                "--prepare-only",
+                env=tool_env,
+            ).stdout
+        )
+        prepared_dir = Path(prepared["run_dir"])
+        prepared_packet = json.loads((prepared_dir / "packet.json").read_text(encoding="utf-8"))
+        command = prepared["command"]
+        checks.append(
+            {
+                "name": "context-isolated-referee-packet",
+                "ok": prepared_packet["claim"]
+                == "In a finite discounted MDP, the Bellman operator is a contraction."
+                and prepared_packet["candidate_proof_sha256"]
+                == hashlib.sha256(candidate_proof.read_bytes()).hexdigest()
+                and "--ephemeral" in command
+                and "--ignore-user-config" in command
+                and "--ignore-rules" in command
+                and "read-only" in command
+                and not any("dangerously-bypass" in item for item in command),
+            }
+        )
+        referee_result = json.loads(
+            run(
+                str(SCRIPTS / "run_referee.py"),
+                str(project),
+                "--proof",
+                "writeup/candidate.md",
+                "--timeout",
+                "30",
+                env=tool_env,
+            ).stdout
+        )
+        checks.append(
+            {
+                "name": "mock-referee-controller",
+                "ok": referee_result["verdict"] == "correct"
+                and referee_result["controller"]["fresh_context"]
+                and referee_result["controller"]["sandbox"] == "read-only"
+                and referee_result["controller"]["filesystem_isolation_not_claimed"],
+            }
+        )
+        contradictory_env = dict(tool_env)
+        contradictory_env["MOCK_REFEREE_CONTRADICTORY"] = "1"
+        contradictory = json.loads(
+            run(
+                str(SCRIPTS / "run_referee.py"),
+                str(project),
+                "--proof",
+                "writeup/candidate.md",
+                "--timeout",
+                "30",
+                env=contradictory_env,
+            ).stdout
+        )
+        checks.append(
+            {
+                "name": "contradictory-referee-downgrade",
+                "ok": contradictory["verdict"] == "uncertain"
+                and any(
+                    "correct verdict conflicts" in problem
+                    for problem in contradictory["controller"]["validation_errors"]
+                ),
+            }
+        )
+        missing_evidence_env = dict(tool_env)
+        missing_evidence_env["MOCK_REFEREE_MISSING_EVIDENCE"] = "1"
+        gap_created = run(
+            str(SCRIPTS / "start_proof.py"),
+            "--title",
+            "smoke-referee-gap",
+            "--claim",
+            "In a finite discounted MDP, the Bellman operator is a contraction.",
+            "--dir",
+            temp_dir,
+        )
+        referee_gap_project = Path(gap_created.stdout.strip())
+        referee_gap_candidate = referee_gap_project / "writeup" / "candidate.md"
+        referee_gap_candidate.write_text(candidate_proof.read_text(encoding="utf-8"), encoding="utf-8")
+        missing_evidence = json.loads(
+            run(
+                str(SCRIPTS / "run_referee.py"),
+                str(referee_gap_project),
+                "--proof",
+                "writeup/candidate.md",
+                "--timeout",
+                "30",
+                env=missing_evidence_env,
+            ).stdout
+        )
+        missing_evidence_doctor = run(
+            str(SCRIPTS / "proof_doctor.py"), str(referee_gap_project)
+        ).stdout
+        checks.append(
+            {
+                "name": "missing-evidence-referee-routing",
+                "ok": missing_evidence["verdict"] == "uncertain"
+                and missing_evidence["failure_kind"] == "missing-packet-evidence"
+                and any(
+                    "unavailable packet or tool evidence" in problem
+                    for problem in missing_evidence["controller"]["validation_errors"]
+                )
+                and "Repair the referee packet at step 3" in missing_evidence_doctor
+                and "do not restart proof search" in missing_evidence_doctor,
+            }
+        )
+
+        replay_input = project / "tool_checks" / "replay.wl"
+        replay_input.write_text("Print[2 + 2];\n", encoding="utf-8")
+        expected_output = project / "tool_checks" / "expected.txt"
+        expected_output.write_text("4\n", encoding="utf-8")
+        mock_wmath = mock_bin / "codex-wmath"
+        mock_wmath.write_text("#!/bin/sh\nprintf '4\\n'\n", encoding="utf-8")
+        mock_wmath.chmod(0o755)
+        recorded = json.loads(
+            run(
+                str(SCRIPTS / "computation_artifact.py"),
+                "record",
+                str(project),
+                "--claim-id",
+                "L1",
+                "--local-claim",
+                "The exact test expression equals four.",
+                "--backend",
+                "mock-wolfram",
+                "--backend-version",
+                "mock-1",
+                "--result-kind",
+                "symbolic-identity",
+                "--command-json",
+                json.dumps(["codex-wmath", "-file", "tool_checks/replay.wl"]),
+                "--input",
+                "tool_checks/replay.wl",
+                "--compare",
+                "stdout-exact",
+                "--expected-output",
+                "tool_checks/expected.txt",
+                "--proof-translation",
+                "A replayed exact identity supports only local lemma L1.",
+                env=tool_env,
+            ).stdout
+        )
+        replayed = json.loads(
+            run(
+                str(SCRIPTS / "computation_artifact.py"),
+                "replay",
+                str(project),
+                recorded["artifact_id"],
+                "--timeout",
+                "30",
+                env=tool_env,
+            ).stdout
+        )
+        checks.append(
+            {
+                "name": "replayable-computation-artifact",
+                "ok": recorded["backend_version"] == "mock-1"
+                and bool(recorded["executable"]["sha256"])
+                and recorded["evidentiary_status"] == "lemma-candidate"
+                and replayed["status"] == "passed",
+            }
+        )
+        audited_artifact = json.loads(
+            run(
+                str(SCRIPTS / "computation_artifact.py"),
+                "audit",
+                str(project),
+                recorded["artifact_id"],
+                env=tool_env,
+            ).stdout
+        )
+        doctor_with_valid_artifact = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(project), "--json", env=tool_env).stdout
+        )
+        checks.append(
+            {
+                "name": "doctor-counts-only-live-valid-artifacts",
+                "ok": audited_artifact["valid"]
+                and recorded["artifact_id"]
+                in doctor_with_valid_artifact["latest_referee"]["passed_artifact_ids"]
+                and "L1" in doctor_with_valid_artifact["latest_referee"]["passed_claim_ids"]
+                and not doctor_with_valid_artifact["latest_referee"][
+                    "invalid_computation_artifacts"
+                ],
+            }
+        )
+        artifact_file = (
+            project
+            / ".proof_runtime"
+            / "computation_artifacts"
+            / recorded["artifact_id"]
+            / "artifact.json"
+        )
+        tampered_artifact = json.loads(artifact_file.read_text(encoding="utf-8"))
+        tampered_artifact["backend_version"] = "mock-2"
+        artifact_file.write_text(
+            json.dumps(tampered_artifact, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        tampered_replay = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "computation_artifact.py"),
+                "replay",
+                str(project),
+                recorded["artifact_id"],
+                "--timeout",
+                "30",
+            ],
+            capture_output=True,
+            text=True,
+            env=tool_env,
+            check=False,
+        )
+        tampered_result = json.loads(tampered_replay.stdout)
+        checks.append(
+            {
+                "name": "computation-spec-tamper-guard",
+                "ok": tampered_replay.returncode != 0
+                and tampered_result["status"] == "input-changed"
+                and "computation artifact specification hash mismatch"
+                in tampered_result["input_errors"],
+            }
+        )
+        doctor_with_tampered_artifact = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(project), "--json", env=tool_env).stdout
+        )
+        checks.append(
+            {
+                "name": "doctor-rejects-tampered-passed-artifact",
+                "ok": "L1"
+                not in doctor_with_tampered_artifact["latest_referee"]["passed_claim_ids"]
+                and any(
+                    item["artifact_id"] == recorded["artifact_id"]
+                    for item in doctor_with_tampered_artifact["latest_referee"][
+                        "invalid_computation_artifacts"
+                    ]
+                ),
+            }
+        )
+        orphaned_directory = project / "tool_checks" / "orphaned-computation-artifact"
+        artifact_file.parent.rename(orphaned_directory)
+        doctor_with_orphaned_artifact = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(project), "--json", env=tool_env).stdout
+        )
+        checks.append(
+            {
+                "name": "doctor-rejects-orphaned-computation-record",
+                "ok": "L1"
+                not in doctor_with_orphaned_artifact["latest_referee"]["passed_claim_ids"]
+                and any(
+                    "not found" in error
+                    for item in doctor_with_orphaned_artifact["latest_referee"][
+                        "invalid_computation_artifacts"
+                    ]
+                    for error in item["errors"]
+                ),
+            }
+        )
+        replacement = json.loads(
+            run(
+                str(SCRIPTS / "computation_artifact.py"),
+                "record",
+                str(project),
+                "--claim-id",
+                "L1-replacement",
+                "--local-claim",
+                "The replacement exact test expression equals four.",
+                "--backend",
+                "mock-wolfram",
+                "--backend-version",
+                "mock-1",
+                "--result-kind",
+                "symbolic-identity",
+                "--command-json",
+                json.dumps(["codex-wmath", "-file", "tool_checks/replay.wl"]),
+                "--input",
+                "tool_checks/replay.wl",
+                "--compare",
+                "stdout-exact",
+                "--expected-output",
+                "tool_checks/expected.txt",
+                "--proof-translation",
+                "This stricter replacement covers local lemma L1.",
+                env=tool_env,
+            ).stdout
+        )
+        replacement_replay = json.loads(
+            run(
+                str(SCRIPTS / "computation_artifact.py"),
+                "replay",
+                str(project),
+                replacement["artifact_id"],
+                "--timeout",
+                "30",
+                env=tool_env,
+            ).stdout
+        )
+        superseded = json.loads(
+            run(
+                str(SCRIPTS / "computation_artifact.py"),
+                "supersede",
+                str(project),
+                recorded["artifact_id"],
+                "--replacement",
+                replacement["artifact_id"],
+                "--reason",
+                "The replacement reruns the same local identity under the current inputs.",
+                env=tool_env,
+            ).stdout
+        )
+        doctor_after_supersession = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(project), "--json", env=tool_env).stdout
+        )
+        checks.append(
+            {
+                "name": "append-only-computation-supersession",
+                "ok": replacement_replay["status"] == "passed"
+                and superseded["replacement_artifact_id"] == replacement["artifact_id"]
+                and "L1" in doctor_after_supersession["latest_referee"]["passed_claim_ids"]
+                and not doctor_after_supersession["latest_referee"][
+                    "invalid_computation_artifacts"
+                ]
+                and any(
+                    item["artifact_id"] == recorded["artifact_id"]
+                    for item in doctor_after_supersession["latest_referee"][
+                        "superseded_computation_artifacts"
+                    ]
+                ),
+            }
+        )
+        unsafe = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "computation_artifact.py"),
+                "record",
+                str(project),
+                "--claim-id",
+                "L2",
+                "--local-claim",
+                "Unrecorded inline expression.",
+                "--backend",
+                "mock-wolfram",
+                "--backend-version",
+                "mock-1",
+                "--result-kind",
+                "other",
+                "--command-json",
+                json.dumps(["codex-wmath", "2+2"]),
+                "--input",
+                "tool_checks/replay.wl",
+                "--proof-translation",
+                "This unsafe fixture must be rejected before execution.",
+            ],
+            capture_output=True,
+            text=True,
+            env=tool_env,
+            check=False,
+        )
+        checks.append(
+            {
+                "name": "reject-inline-computation",
+                "ok": unsafe.returncode != 0
+                and "must name at least one recorded project-local script" in unsafe.stderr,
+            }
+        )
+        weak_math_result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "computation_artifact.py"),
+                "record",
+                str(project),
+                "--claim-id",
+                "L3",
+                "--local-claim",
+                "A symbolic identity must match a canonical result.",
+                "--backend",
+                "mock-wolfram",
+                "--backend-version",
+                "mock-1",
+                "--result-kind",
+                "symbolic-identity",
+                "--command-json",
+                json.dumps(["codex-wmath", "-file", "tool_checks/replay.wl"]),
+                "--input",
+                "tool_checks/replay.wl",
+                "--proof-translation",
+                "The identity would support local lemma L3.",
+            ],
+            capture_output=True,
+            text=True,
+            env=tool_env,
+            check=False,
+        )
+        checks.append(
+            {
+                "name": "reject-exit-only-mathematical-result",
+                "ok": weak_math_result.returncode != 0
+                and "exit-only shows process success" in weak_math_result.stderr,
+            }
+        )
+
         diagnosis = run(str(SCRIPTS / "proof_doctor.py"), str(project), "--json")
         diagnosed = json.loads(diagnosis.stdout)
         checks.append(
@@ -179,7 +759,9 @@ def main() -> int:
                 "name": "proof-diagnosis",
                 "ok": bool(diagnosed.get("primary_action"))
                 and diagnosed.get("project") == str(project)
-                and not diagnosed["novel_problem"]["activated"],
+                and not diagnosed["novel_problem"]["activated"]
+                and diagnosed["latest_referee"]["review_scope"]
+                == "writeup/candidate.md",
             }
         )
 
@@ -490,9 +1072,16 @@ def main() -> int:
             }
         )
 
-    portable_text = (ROOT / "SKILL.md").read_text(encoding="utf-8") + (
-        SCRIPTS / "start_proof.py"
-    ).read_text(encoding="utf-8")
+    portable_text = "".join(
+        path.read_text(encoding="utf-8")
+        for path in [
+            ROOT / "SKILL.md",
+            SCRIPTS / "start_proof.py",
+            SCRIPTS / "proof_runtime.py",
+            SCRIPTS / "computation_artifact.py",
+            SCRIPTS / "run_referee.py",
+        ]
+    )
     checks.append(
         {
             "name": "portable-paths",

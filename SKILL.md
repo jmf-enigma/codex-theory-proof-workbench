@@ -46,7 +46,7 @@ Do not open a full project for routine algebra or a standard theorem application
 4. If the route is unclear, find the failure world, central object, proof kernel, and verification hook. If the answer or object may be unknown, first run an external frontier scan for exact and neighboring results, recent cited-by work, and active public projects. Then separate discovery from proof: define what generates candidates, how they are evaluated, and what evidence freezes one candidate as the theorem target.
 5. For a hard proof, seed two to four routes independently before naming a favorite. Register them by mathematical mechanism rather than wording, give each one expected artifact and its cheapest decisive evaluator, then compare them. Keep one incompatible shadow family alive until the leading kernel is proved, refuted, or blocked, and rebalance after each bounded round.
 6. Build an AND/OR lemma graph. Admit a decomposition only when the children conditionally imply the parent, are strictly simpler, acyclic, faithful, and locally repairable. Work the least-certain required child on the current assembly path.
-7. For each fragile move, name the current subgoal, proposed move, expected artifact, check, and proof-state delta. Use the prover-verifier loop only after challenge, repetition, or hard-to-check feedback.
+7. For each fragile move, name the current subgoal, proposed move, expected artifact, check, and proof-state delta. Use the prover-verifier loop only after challenge, repetition, or hard-to-check feedback. For a complete candidate produced after prior failure, or one with fragile global assembly, prepare a fresh-context referee packet; do not spend that pass on routine local algebra. Run the extra model pass only when the host permits it and the user has approved sharing the selected packet. If it is blocked or unavailable, do not work around the restriction: run a local adversarial audit plus exact artifact replay, record `fresh-context-unavailable`, and keep the evidence status below independent review.
 8. On failure, locate the first invalid step, preserve the verified prefix and independent helper lemmas, then classify the failure as strategy, decomposition, premise retrieval, local proof, assembly, fidelity, or library coverage before repairing that layer.
 9. After two unchanged local attempts, choose exactly one action: repair, re-decompose, retrieve, tool-falsify, formalize locally, repair the theorem, or stop/report. Block a route that merely moves the theorem into a theorem-strength missing lemma; reopen it only with a materially new mechanism, invariant, construction, representation, or premise.
 10. Assemble only proved, checked, known, or explicitly conditional nodes into the original theorem.
@@ -76,15 +76,32 @@ Diagnose one primary next move before resuming a project:
 codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/proof_doctor.py" path/to/project
 ```
 
+Load only compact active state when resuming:
+
+```bash
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/proof_runtime.py" brief path/to/project --markdown
+```
+
+This initializes `.proof_runtime` automatically for an older project. If `routing.json` or `claim.md` intentionally changes the theorem, adopt it explicitly with `proof_runtime.py revise-claim path/to/project --reason "REASON"`; this resets active proof status instead of reusing stale evidence.
+
+For a complete, challenged candidate, prepare the exact fresh-context referee packet first. `--prepare-only` is local; omitting it invokes another Codex process and is allowed only after the sharing condition above is satisfied:
+
+```bash
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/run_referee.py" path/to/project --proof writeup/candidate.md --prepare-only
+```
+
+Missing packet premises are `uncertain`, not a mathematical refutation. After a referee pass, rerun `proof_doctor.py`: it targets the recorded first unsupported dependency and lists passed computation claims that must not be retried.
+
 Check a possibly repeated attempt only when the match is ambiguous:
 
 ```bash
 codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/check_attempt.py" path/to/project --route-family "ROUTE" --central-object "OBJECT" --target-lemma "LEMMA" --failure-witness "WITNESS"
 ```
 
-Audit the ledger before claiming a final proof:
+Before claiming a final proof, rerun the doctor so missing or tampered runtime evidence cannot survive on ledger text alone, then audit the ledger:
 
 ```bash
+codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/proof_doctor.py" path/to/project
 codex-math-python "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench/scripts/audit_ledger.py" path/to/project/LEDGER.md
 ```
 
@@ -138,6 +155,8 @@ Before a tool call, name the local claim, explicit domains, negation to test, ba
 - Use Lean for stable local lemmas, not as a default wrapper around the whole research theorem.
 - Treat simulations as falsification or sanity checks, never as universal proof.
 - Audit formal artifacts for `sorry`, admitted axioms, unresolved obligations, and missing global assembly.
+- Direct tool calls may explore or falsify. Before a proof-critical computation upgrades status, put the query in a project-local script and use `computation_artifact.py record`, `replay`, and `audit` to bind its inputs, assumptions, backend version, output check, executable fingerprint, and current local presence. If a stricter artifact replaces stale evidence, append an explicit `supersede` event; never delete history or infer replacement from similar names. Exact counterexamples, symbolic identities, condition sets, and solver certificates require canonical exact-output comparison; exit code alone proves only that the process finished. A batch driver must fail on any child timeout, nonzero exit, output mismatch, or unexpected child stderr instead of reporting only a final `True`.
+- A fresh-context referee reduces anchoring but is still model review, not formal verification. Promote only the mathematical artifacts it actually checks.
 
 Stop a tool route after two timeouts or two outputs that do not shrink or decide the proof state. Change the lemma or artifact type before calling again.
 
@@ -154,7 +173,7 @@ Record only compact, decision-relevant state:
 - accepted counterexamples, certificates, theorem patterns, and local tricks;
 - next allowed action and expected artifact.
 
-Keep full history in the ledger, but feed the next repair only the node statement, dependencies, previous attempt signature, previous feedback, and proposed new evidence.
+Keep full history in the ledger. On resume, read the compact `.proof_runtime` brief first; open older ledger sections only when the current node needs them. Feed the next repair only the node statement, dependencies, previous attempt signature, previous feedback, and proposed new evidence.
 
 ## Output Contract
 

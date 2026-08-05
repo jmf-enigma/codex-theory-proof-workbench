@@ -10,6 +10,7 @@ from pathlib import Path
 
 from frontier_evidence import write_frontier_template
 from new_ledger import TEMPLATE as LEDGER_TEMPLATE
+from proof_runtime import init_runtime
 from select_playbook import PLAYBOOKS, score
 
 
@@ -1485,6 +1486,8 @@ def main() -> None:
                 "claim": args.claim,
                 "mode": args.mode,
                 "selected_playbooks": selected,
+                "runtime_state": ".proof_runtime/state.json",
+                "runtime_brief_command": "proof_runtime.py brief . --markdown",
                 "entry_files": [
                     "TRIAGE.md",
                     "ATTACK_MATRIX.md",
@@ -1496,6 +1499,7 @@ def main() -> None:
         ),
         encoding="utf-8",
     )
+    init_runtime(project, args.claim, args.mode)
 
     print(project)
 

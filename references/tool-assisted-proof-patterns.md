@@ -6,7 +6,7 @@ Use this for hard proofs where computation, CAS, SMT, optimization solvers, or L
 
 - Imported patterns and tool roles: choose the backend by expected artifact.
 - Tool plan and default loop: refute, shrink, run the narrowest query, translate.
-- Artifact translation and domain recipes: convert output into a proof step or repair.
+- Artifact translation and replay: convert output into a proof step or repair, then preserve proof-critical runs.
 - Stop rules: avoid trusting numerical evidence or repeated timeouts.
 
 ## Imported Patterns
@@ -16,6 +16,7 @@ Use this for hard proofs where computation, CAS, SMT, optimization solvers, or L
 - **Flyspeck pattern**: combine a human proof with formal verification and external computations only when every computational step has a checked certificate or proof object.
 - **CAS refutation pattern**: before simplifying a theorem, ask for a counterexample to the theorem's negation under explicit domains.
 - **Certificate pattern**: prefer certificates that can be independently checked: dual variables, KKT conditions, exact rational identities, interval bounds, SMT models/unsat cores, or Lean proof terms.
+- **Rethlas-style replay pattern**: keep computation outside the prose transcript. Save the exact local claim, assumptions, backend and version, script hashes, executable fingerprint, output comparator, evidence level, and replay result so a verifier can inspect the same artifact.
 - **Premise-retrieval pattern**: when a lemma feels standard, search for the nearest theorem pattern or library lemma before inventing a new proof.
 - **Global-premise pattern**: for a multi-step route, retrieve premises by proof-sketch subqueries and judge the set jointly. A topically similar theorem that cannot enter the assembly is not useful retrieval.
 - **Repair-loop pattern**: when a tool rejects a step, preserve the failed subgoal, extract the smallest missing lemma, then retry only that lemma.
@@ -63,8 +64,40 @@ If the expected artifact is only "numerical evidence," the step is not proof-rea
 7. **Run the narrowest query**: avoid global simplification on a full theorem. For multiple candidate lemmas, try the hardest boundary case or the most certificate-friendly subgoal first.
 8. **Translate** tool output into a lemma, missing assumption, counterexample, or certificate.
 9. **Independently check** proof-critical artifacts when feasible: symbolic plus numeric, CAS plus exact arithmetic, LP solution plus dual certificate, informal proof plus Lean.
-10. **Record** command, assumptions, result, and translation in `TOOL_PLAN.md` and `LEDGER.md`.
+10. **Record** command, assumptions, result, and translation in `TOOL_PLAN.md` and `LEDGER.md`. For a proof-critical run, also create and replay a machine-readable artifact before upgrading proof status.
 11. **Local repair** if the check fails: preserve any proved parent nodes, isolate the first false or too-hard block, and retry only after adding a new parent, repaired statement, counterexample, theorem pattern, or certificate.
+
+## Replayable Computation
+
+Keep the computation in a project-local `.py`, `.wl`, `.wls`, `.sage`, or `.lean` file. Inline expressions are suitable for exploration but are deliberately rejected by the replay recorder. A minimal Wolfram-backed record is:
+
+Before the first proof-critical call in a run, execute a minimal backend probe and record its version. An activation error, nonzero exit, timeout, or printed result followed by a nonzero exit is a backend failure, not mathematical evidence. Repair or reroute the backend before recording the claim artifact.
+
+```bash
+python3 scripts/computation_artifact.py record path/to/project \
+  --claim-id L3 --local-claim "EXACT LOCAL CLAIM" \
+  --assumption "x is real and x > 0" \
+  --backend Wolfram --backend-version "ENGINE VERSION" \
+  --result-kind symbolic-identity \
+  --command-json '["codex-wmath","-file","tool_checks/L3.wl"]' \
+  --input tool_checks/L3.wl \
+  --compare stdout-exact \
+  --expected-output tool_checks/L3.expected.txt \
+  --proof-translation "HOW THIS OUTPUT ENTERS THE PROOF"
+```
+
+Replay the returned artifact id with:
+
+```bash
+python3 scripts/computation_artifact.py replay path/to/project ARTIFACT_ID
+python3 scripts/computation_artifact.py audit path/to/project ARTIFACT_ID
+```
+
+The runner uses no shell, allows only named math backends, requires an installed executable outside the project, verifies input and executable fingerprints, applies a timeout with process-group cleanup, and records stdout and stderr. `audit` additionally checks that the artifact still lives in the current project, its hashes and latest replay files agree, and its latest passed replay has a matching runtime event. A copied JSON summary or stale ledger event is not a live artifact. It executes trusted proof-project scripts; it is an audit and replay boundary, not a sandbox for hostile code. Exact counterexamples, symbolic identities, condition sets, and solver certificates must match a canonical expected stdout; `exit-only` is retained only for numerical exploration, unclassified runs, or formal-tool process checks and never establishes a mathematical output by itself. `numerical-evidence` remains conjectural, and every symbolic, solver, or formal result remains a candidate artifact until translated and independently checked.
+
+When a new artifact genuinely covers an old one, record and replay the replacement first, then preserve the append-only history with `computation_artifact.py supersede PROJECT OLD_ID --replacement NEW_ID --reason "COVERAGE ARGUMENT"`. The command accepts only a currently valid replacement; the reason remains a semantic obligation for the proof reviewer.
+
+For an aggregate checker, do not trust a final summary token alone. The driver must reject every child timeout, nonzero exit, exact-output mismatch, and unexpected child stderr, then exit nonzero itself. Record the manifest, all child scripts, canonical expected output, and the driver as inputs. This makes a batch pass an auditable conjunction of local checks rather than a wrapper that can hide a failed child.
 
 ## Artifact Translation
 

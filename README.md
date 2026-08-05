@@ -139,7 +139,7 @@ Numerical experiments can falsify a claim or suggest a formula. They do not prov
 | `counterexample-tested` | Bounded tests found no counterexample |
 | `lemma-conditional` | The theorem follows only if named missing lemmas hold |
 | `human-proof` | Every nontrivial step has a stated mathematical justification |
-| `tool-checked` | Fragile local steps have independent computational artifacts |
+| `tool-checked` | Fragile local steps have replayed or independently checkable computational artifacts |
 | `formalized-local` | Important local lemmas are machine-checked |
 | `formalized-complete` | The full theorem and its assembly are machine-checked |
 
@@ -157,8 +157,9 @@ Numerical experiments can falsify a claim or suggest a formula. They do not prov
 | `PATTERN_SCAN.md`, `TOOL_PLAN.md` | Bounded theorem/trick retrieval and expected computational artifacts |
 | `LEDGER.md`, `ESCALATION.md` | Persistent evidence, failed states, proof status, and legal next moves |
 | `literature/frontier-evidence.json` | Hashed discovery evidence, exact source anchors, solution cards, and frontier status |
+| `.proof_runtime/` | Compact active state, append-only typed events, referee packets, and computation replays |
 
-`proof_doctor.py` reads the current state and recommends one primary next action. The full history remains in the ledger. A repair pass receives only the local node, dependencies, prior failure, and proposed new evidence.
+`proof_doctor.py` recommends one primary next action. `proof_runtime.py brief` exposes only the active status and recent decision-relevant records; it also initializes runtime state for older proof projects. A legacy status such as `complete` is displayed only as an unverified project hint and never silently upgrades runtime evidence. If the theorem in `routing.json` or `claim.md` changes, the runtime refuses stale evidence until `revise-claim --reason ...` records the revision and resets active proof status. After referee review, missing packet evidence is treated as uncertainty, and the doctor targets the first missing dependency while preserving only computation claims whose project-local artifacts still pass the integrity audit. The full history remains in the ledger.
 
 ## Command-Line Helpers
 
@@ -176,11 +177,20 @@ python3 scripts/start_proof.py --title "short-name" --claim "EXACT CLAIM"
 # One primary next move
 python3 scripts/proof_doctor.py path/to/proof_project
 
+# Compact resume context
+python3 scripts/proof_runtime.py brief path/to/proof_project --markdown
+
+# Inspect a fresh-context referee packet before spending another model pass
+python3 scripts/run_referee.py path/to/proof_project --proof writeup/candidate.md --prepare-only
+
+# Audit a proof-critical computation after recording and replaying it
+python3 scripts/computation_artifact.py audit path/to/proof_project ARTIFACT_ID
+
 # Final ledger audit
 python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
 ```
 
-Add `--full` to `plan_idea.py` only when the compact pass does not reveal a useful kernel. Add `--json` to `proof_doctor.py` for machine-readable output.
+Add `--full` to `plan_idea.py` only when the compact pass does not reveal a useful kernel. Add `--json` to `proof_doctor.py` for machine-readable output. Preparing a referee packet is local. Running it through another model requires host permission and user approval to share the selected packet; when unavailable, the workbench records that limit and falls back to local adversarial review plus exact replay without claiming independent review.
 
 | Script | Purpose |
 | --- | --- |
@@ -190,6 +200,9 @@ Add `--full` to `plan_idea.py` only when the compact pass does not reveal a usef
 | `new_lemma_card.py` | Save a lemma that has proved useful in a real route |
 | `new_trick_card.py` | Save a validated paper or proof trick |
 | `frontier_evidence.py` | Fetch, hash, anchor, and validate frontier literature evidence |
+| `proof_runtime.py` | Maintain compact active state and append-only decision records |
+| `run_referee.py` | Prepare or run a fresh-context, read-only referee pass on a complete candidate |
+| `computation_artifact.py` | Record, replay, audit, and explicitly supersede proof-critical artifacts |
 
 Discovery projects use `frontier_evidence.py` to record executed Scholar evidence, retrieve lawful open full text, hash local copies, and preserve exact theorem or proof anchors. Its SSRN route resolves stable identities and verified open mirrors instead of manufacturing temporary signed URLs. Its DOI route supports INFORMS records and compares working-paper versions with the published record. See [Full-Text Frontier Evidence](references/full-text-frontier-evidence.md).
 
@@ -198,6 +211,8 @@ If the mathematical environment provides `codex-math-python`, it can replace `py
 ## Mathematical Backends
 
 Before a tool call, the workbench names the local claim, domains, negation to test, backend, expected artifact, and how the result would change the proof state. A route stops after repeated timeouts or outputs that do not decide or shrink the subgoal.
+
+Direct one-line calls remain available for cheap exploration and falsification. A proof-critical result is promoted only after its project-local script, assumptions, backend version, expected check, and executable fingerprint are recorded, replayed, and audited in the current project. Exact counterexamples, symbolic identities, condition sets, and solver certificates must match canonical expected output; process exit alone is not mathematical agreement. Aggregate drivers must reject child timeouts, nonzero exits, output mismatches, and unexpected child stderr rather than trust a final summary token. This layer audits trusted mathematical scripts; it is not a sandbox for hostile code.
 
 Typical roles include:
 
@@ -236,6 +251,8 @@ PEPFlow remains a separate [Apache-2.0 project](https://github.com/pepflow-lib/P
 
 Parallel agents are opt-in. When requested, split them by artifact: planner, falsifier, retriever, local tool-checker or formalizer, and reviewer. One integrator remains responsible for statement fidelity, route choice, and final proof status. Several agents should not produce competing prose versions of the same route.
 
+The runtime layer is also opt-in and one-shot. It starts no daemon, resident agent pool, or Wolfram kernel; a referee or computation process exists only for its bounded invocation.
+
 For open-ended strategy search, independent scouts may instead return one compact route card each. They receive the same theorem fence but not the current favorite or one another's narratives. The integrator groups cards by mathematical mechanism, redirects saturated families, and shares ideas only after each live family has exposed a concrete artifact or exact gap.
 
 ## Repository Layout
@@ -254,6 +271,9 @@ For open-ended strategy search, independent scouts may instead return one compac
 └── scripts/
     ├── start_proof.py
     ├── proof_doctor.py
+    ├── proof_runtime.py
+    ├── run_referee.py
+    ├── computation_artifact.py
     ├── frontier_evidence.py
     ├── smoke_workbench.py
     └── focused state and pattern helpers
@@ -267,7 +287,7 @@ The workbench converts ideas from proof search, formalization, and mathematical 
 
 - Proof decomposition and graph repair draw on [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283), [Goedel-Architect](https://arxiv.org/abs/2606.06468), and [LEAP](https://arxiv.org/abs/2606.03303).
 - Formal feedback, premise retrieval, and source fidelity draw on [Aristotle](https://arxiv.org/abs/2510.01346), [Goedel-Prover-V2](https://arxiv.org/abs/2508.03613), [process-verified theorem proving](https://arxiv.org/abs/2606.20068), [LeanSearch v2](https://arxiv.org/abs/2605.13137), [LeanMarathon](https://arxiv.org/abs/2606.05400), and [MerLean-Prover](https://arxiv.org/abs/2605.26959).
-- Independent checking and honest failure outcomes draw on [Prover-Verifier Games](https://arxiv.org/abs/2407.13692), [Aletheia](https://arxiv.org/abs/2602.10177), [Scaling Generative Verifiers](https://arxiv.org/abs/2511.13027), and [Formal Conjectures](https://arxiv.org/abs/2605.13171).
+- Independent checking and honest failure outcomes draw on [Prover-Verifier Games](https://arxiv.org/abs/2407.13692), [Aletheia](https://arxiv.org/abs/2602.10177), [Scaling Generative Verifiers](https://arxiv.org/abs/2511.13027), [Formal Conjectures](https://arxiv.org/abs/2605.13171), and the verifier-replay separation in [Rethlas](https://github.com/frenzymath/Rethlas).
 - Persistent research state and stage-aware repair draw on [STAR-PolyaMath](https://arxiv.org/abs/2605.19338), the [AI co-mathematician](https://arxiv.org/abs/2605.06651), [Prover Agent](https://arxiv.org/abs/2506.19923), [Delta Prover](https://arxiv.org/abs/2507.15225), and [Hilbert](https://arxiv.org/abs/2509.22819).
 - Evaluator-driven discovery draws on [AlphaEvolve](https://arxiv.org/abs/2506.13131), [Discover and Prove](https://arxiv.org/abs/2604.15839), [PatternBoost](https://arxiv.org/abs/2411.00566), [Generative Modelling for Mathematical Discovery](https://arxiv.org/abs/2503.11061), [AI-assisted open-problem discovery](https://arxiv.org/abs/2603.04735), [self-supervised theorem discovery](https://arxiv.org/abs/2606.28747), [MLEvolve](https://arxiv.org/abs/2606.06473), [QED](https://arxiv.org/abs/2604.24021), and [From Solvers to Research](https://arxiv.org/abs/2607.07779).
 
@@ -285,7 +305,7 @@ python3 scripts/smoke_workbench.py
 python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 
-The smoke test checks deterministic behavior such as routing, recovery activation, first-error salvage, discovery evidence gates, Peppy routing and attribution, portable paths, and proof handoff. It does not claim a measured theorem-solving benchmark gain. The tested improvements are narrower: equivalent retries are rejected, repairs stay local, and checked artifacts remain distinct from unfinished proofs.
+The smoke test checks routing, recovery activation, first-error salvage, discovery evidence gates, Peppy attribution, compact runtime state, fresh-context referee controls, replayed computation artifacts, portable paths, and proof handoff. Referee and Wolfram paths use mock executables, so the test consumes no model call and launches no Wolfram kernel. It does not claim a measured theorem-solving benchmark gain.
 
 ## License
 
@@ -434,7 +454,7 @@ Workbench 会选择足以产生下一个决定性 artifact 的最轻模式。
 | `counterexample-tested` | 有限测试中没有发现反例 |
 | `lemma-conditional` | Theorem 只有在明确列出的 missing lemma 成立时才成立 |
 | `human-proof` | 每个非平凡步骤都有明确的数学依据 |
-| `tool-checked` | 脆弱局部步骤有独立计算 artifact |
+| `tool-checked` | 脆弱局部步骤有可重放或可独立检查的计算 artifact |
 | `formalized-local` | 重要 local lemma 已经 machine-checked |
 | `formalized-complete` | 完整 theorem 及其 assembly 已经 machine-checked |
 
@@ -452,8 +472,9 @@ Workbench 会选择足以产生下一个决定性 artifact 的最轻模式。
 | `PATTERN_SCAN.md`、`TOOL_PLAN.md` | 有边界的 theorem/trick 检索和 expected computational artifact |
 | `LEDGER.md`、`ESCALATION.md` | 持久证据、失败状态、proof status 和合法 next move |
 | `literature/frontier-evidence.json` | 带哈希的 discovery evidence、精确 source anchor、solution card 和 frontier status |
+| `.proof_runtime/` | 精简 active state、append-only typed event、referee packet 和 computation replay |
 
-`proof_doctor.py` 会读取当前状态并推荐一个首要 next action。完整历史保留在 ledger 中，局部 repair 只接收当前节点、dependency、之前的失败和准备引入的新证据。
+`proof_doctor.py` 会推荐一个首要 next action。`proof_runtime.py brief` 只暴露 active status 和最近的 decision-relevant record，同时会为旧 proof project 自动建立 runtime。旧项目的 `complete` 等状态只显示为未验证提示，不会静默升级 runtime 证据。如果 `routing.json` 或 `claim.md` 中的 theorem 改变，runtime 会拒绝沿用旧证据，直到 `revise-claim --reason ...` 记录这次修改并重置 active proof status。referee 发现 packet 缺材料时会判为 `uncertain`，doctor 随后只补首个缺失依赖，并且只保留当前项目中仍通过完整性审计的 computation claim。完整历史仍保留在 ledger 中。
 
 ## 命令行辅助工具
 
@@ -471,11 +492,20 @@ python3 scripts/start_proof.py --title "short-name" --claim "EXACT CLAIM"
 # 一个首要 next move
 python3 scripts/proof_doctor.py path/to/proof_project
 
+# 精简的续跑上下文
+python3 scripts/proof_runtime.py brief path/to/proof_project --markdown
+
+# 再花一次模型调用前，先检查 fresh-context referee packet
+python3 scripts/run_referee.py path/to/proof_project --proof writeup/candidate.md --prepare-only
+
+# 记录并重放 proof-critical computation 后，再审计其当前完整性
+python3 scripts/computation_artifact.py audit path/to/proof_project ARTIFACT_ID
+
 # 最终 ledger audit
 python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
 ```
 
-只有精简的 `plan_idea.py` 找不到 useful kernel 时才加入 `--full`。`proof_doctor.py` 可以使用 `--json` 输出机器可读结果。
+只有精简的 `plan_idea.py` 找不到 useful kernel 时才加入 `--full`。`proof_doctor.py` 可以使用 `--json` 输出机器可读结果。准备 referee packet 是本地操作；把 packet 交给另一个模型需要运行环境许可和用户同意共享所选内容。该步骤不可用时，workbench 会记录限制，改做本地 adversarial review 和精确 replay，并且不会冒充 independent review。
 
 | Script | 用途 |
 | --- | --- |
@@ -485,6 +515,9 @@ python3 scripts/audit_ledger.py path/to/proof_project/LEDGER.md
 | `new_lemma_card.py` | 保存已经在真实路线中发挥作用的 lemma |
 | `new_trick_card.py` | 保存经过验证的论文或证明 trick |
 | `frontier_evidence.py` | 获取、哈希、定位并验证 frontier 文献证据 |
+| `proof_runtime.py` | 保存精简 active state 和 append-only decision record |
+| `run_referee.py` | 为完整候选证明准备或运行 fresh-context、read-only referee |
+| `computation_artifact.py` | 记录、重放、审计并显式替换 proof-critical artifact |
 
 Discovery project 使用 `frontier_evidence.py` 保存真实执行过的 Scholar 证据，获取合法公开全文，对本地文件计算哈希，并记录精确 theorem 或 proof anchor。SSRN 路由会解析稳定 identity 和经过核验的公开镜像，不会制造临时 signed URL。DOI 路由支持 INFORMS 记录，并比较 working paper 与正式发表版本。细节见 [全文 Frontier 证据](references/full-text-frontier-evidence.md)。
 
@@ -493,6 +526,8 @@ Discovery project 使用 `frontier_evidence.py` 保存真实执行过的 Scholar
 ## 数学后端
 
 每次工具调用之前，workbench 都会声明 local claim、domain、准备测试的 negation、backend、expected artifact，以及结果将如何改变 proof state。如果连续 timeout 或输出不能决定或缩小 subgoal，这条工具路线就会停止。
+
+便宜的探索和反驳仍可直接使用一行命令。只有把 project-local script、assumption、backend version、expected check 和 executable fingerprint 记录，在当前项目中成功 replay 并通过 audit 后，proof-critical result 才能升级状态。精确反例、symbolic identity、condition set 和 solver certificate 必须匹配 canonical expected output；程序正常退出本身不代表数学结果一致。批量 driver 还必须拒绝任何 child timeout、nonzero exit、output mismatch 和意外 child stderr，不能只相信最后一个 summary token。这一层审计的是可信数学脚本，并不是运行恶意代码的 sandbox。
 
 常见分工包括：
 
@@ -531,6 +566,8 @@ PEPFlow 是独立的 [Apache-2.0 项目](https://github.com/pepflow-lib/PEPFlow/
 
 并行 Agent 只在用户要求时启用。合理分工按照 artifact 划分，包括 planner、falsifier、retriever、local tool-checker 或 formalizer、reviewer。始终由一个 integrator 负责 statement fidelity、route choice 和最终 proof status。多个 Agent 不应同时为同一路线撰写互相竞争的 prose 版本。
 
+Runtime layer 同样按需、一次性启动。它不会常驻 daemon、agent pool 或 Wolfram kernel。Referee 与 computation process 只在有 timeout 的单次调用中存在。
+
 开放式策略搜索可以改用 independent scout。每个 scout 只返回一张紧凑的 route card，拿到相同 theorem fence，但不会看到当前 favorite 或其他 scout 的叙述。Integrator 先按数学机制合并同 family 路线，把新增搜索转向尚未充分探索的 family，等每条 live family 都给出具体 artifact 或精确 gap 后再交流思路。
 
 ## 仓库结构
@@ -549,6 +586,9 @@ PEPFlow 是独立的 [Apache-2.0 项目](https://github.com/pepflow-lib/PEPFlow/
 └── scripts/
     ├── start_proof.py
     ├── proof_doctor.py
+    ├── proof_runtime.py
+    ├── run_referee.py
+    ├── computation_artifact.py
     ├── frontier_evidence.py
     ├── smoke_workbench.py
     └── focused state and pattern helpers
@@ -562,7 +602,7 @@ Workbench 把 proof search、formalization 和 mathematical discovery 中的研�
 
 - Proof decomposition 与 graph repair 参考 [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283)、[Goedel-Architect](https://arxiv.org/abs/2606.06468) 和 [LEAP](https://arxiv.org/abs/2606.03303)。
 - Formal feedback、premise retrieval 和 source fidelity 参考 [Aristotle](https://arxiv.org/abs/2510.01346)、[Goedel-Prover-V2](https://arxiv.org/abs/2508.03613)、[process-verified theorem proving](https://arxiv.org/abs/2606.20068)、[LeanSearch v2](https://arxiv.org/abs/2605.13137)、[LeanMarathon](https://arxiv.org/abs/2606.05400) 和 [MerLean-Prover](https://arxiv.org/abs/2605.26959)。
-- Independent checking 与诚实 failure outcome 参考 [Prover-Verifier Games](https://arxiv.org/abs/2407.13692)、[Aletheia](https://arxiv.org/abs/2602.10177)、[Scaling Generative Verifiers](https://arxiv.org/abs/2511.13027) 和 [Formal Conjectures](https://arxiv.org/abs/2605.13171)。
+- Independent checking 与诚实 failure outcome 参考 [Prover-Verifier Games](https://arxiv.org/abs/2407.13692)、[Aletheia](https://arxiv.org/abs/2602.10177)、[Scaling Generative Verifiers](https://arxiv.org/abs/2511.13027)、[Formal Conjectures](https://arxiv.org/abs/2605.13171)，以及 [Rethlas](https://github.com/frenzymath/Rethlas) 的 verifier-replay 分离设计。
 - 持久化 research state 与 stage-aware repair 参考 [STAR-PolyaMath](https://arxiv.org/abs/2605.19338)、[AI co-mathematician](https://arxiv.org/abs/2605.06651)、[Prover Agent](https://arxiv.org/abs/2506.19923)、[Delta Prover](https://arxiv.org/abs/2507.15225) 和 [Hilbert](https://arxiv.org/abs/2509.22819)。
 - Evaluator-driven discovery 参考 [AlphaEvolve](https://arxiv.org/abs/2506.13131)、[Discover and Prove](https://arxiv.org/abs/2604.15839)、[PatternBoost](https://arxiv.org/abs/2411.00566)、[Generative Modelling for Mathematical Discovery](https://arxiv.org/abs/2503.11061)、[AI-assisted open-problem discovery](https://arxiv.org/abs/2603.04735)、[self-supervised theorem discovery](https://arxiv.org/abs/2606.28747)、[MLEvolve](https://arxiv.org/abs/2606.06473)、[QED](https://arxiv.org/abs/2604.24021) 和 [From Solvers to Research](https://arxiv.org/abs/2607.07779)。
 
@@ -580,7 +620,7 @@ python3 scripts/smoke_workbench.py
 python3 scripts/pattern_miner.py --seq "1,4,9,16,25" --start 1
 ```
 
-Smoke test 检查确定性行为，包括 routing、recovery activation、first-error salvage、discovery evidence gate、Peppy 路由与归属、portable path 和 proof handoff。它不声称已经测得 theorem-solving benchmark 的提升。能够直接验证的改进更具体，包括拒绝等价重试、保持局部 repair，以及区分 checked artifact 与 unfinished proof。
+Smoke test 检查 routing、recovery activation、first-error salvage、discovery evidence gate、Peppy 归属、精简 runtime state、fresh-context referee control、可重放 computation artifact、portable path 和 proof handoff。Referee 与 Wolfram 路线使用 mock executable，因此测试不会消耗模型调用，也不会启动 Wolfram kernel。它不声称已经测得 theorem-solving benchmark 的提升。
 
 ## 许可证
 
