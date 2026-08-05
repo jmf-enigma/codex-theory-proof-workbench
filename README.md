@@ -1,16 +1,39 @@
 # Codex Theory Proof Workbench
 
-[中文说明](#codex-理论证明工作台)
+[![Codex Skill](https://img.shields.io/badge/Codex-skill-111827?logo=openai&logoColor=white)](SKILL.md)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](#development)
+[![MIT License](https://img.shields.io/badge/License-MIT-2EA44F.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/jmf-enigma/codex-theory-proof-workbench?style=social)](https://github.com/jmf-enigma/codex-theory-proof-workbench/stargazers)
 
-A Codex skill for hard theory problems whose mathematical core is still unresolved.
+[Install](#quick-start) · [Workflow](#from-a-stuck-proof-to-a-decisive-artifact) · [Evidence](#evidence-and-proof-status) · [Research basis](#research-basis) · [中文说明](#codex-理论证明工作台)
 
-Proof attempts often stall before the writing stage. The statement drifts, a guessed construction is treated as a lemma, or several attempts return to the same obstruction under different notation. Theory Proof Workbench keeps an explicit proof state, tests the claim before expanding it, preserves valid partial results, and chooses the next move by the artifact it can produce.
+![Theory Proof Workbench: auditable proof discovery and recovery](.github/social-preview.png)
 
-A run may end with a complete proof, a counterexample, a repaired theorem, a conditional result, or the smallest remaining obstruction. Each outcome carries an explicit proof status. For mathematics that is already complete and only needs exposition or LaTeX, use `math-proof-writing` instead.
+**Auditable proof discovery and recovery for hard mathematical problems.**
+
+Theory Proof Workbench is an open Codex skill for proofs whose core construction, lemma, or even answer is still unknown. It turns repeated drafting into a controlled search for one decisive artifact: a construction, counterexample, lemma, certificate, retrieved theorem pattern, or exact obstruction.
+
+It is built for AI-assisted proof search and proof debugging in OR/MS, dynamic programming, mechanism design and economics, learning theory, bandits, optimization, games, and probabilistic methods. It can coordinate literature retrieval, small-case discovery, Wolfram or SymPy, Z3, CVXPy, Sage, Peppy/PEPFlow, and Lean while keeping evidence levels explicit.
+
+| Discover | Recover | Verify | Report |
+| --- | --- | --- | --- |
+| Infer candidates from small or tight cases | Detect equivalent retries and salvage valid lemmas | Replay CAS, solver, certificate, and Lean artifacts | Separate proofs, counterexamples, conditional results, and open gaps |
+
+A run may end with a complete proof, a counterexample, a repaired theorem, a conditional result, or the smallest remaining obstruction. Each outcome carries an explicit proof status. The workbench does not guarantee that every true theorem will be proved. For mathematics that is already complete and only needs exposition or LaTeX, use `math-proof-writing` instead.
 
 ## Quick Start
 
-### Install
+### Install With Codex
+
+Paste this into Codex:
+
+```text
+Use $skill-installer to install the repository-root skill from
+https://github.com/jmf-enigma/codex-theory-proof-workbench
+as theory-proof-workbench.
+```
+
+### Install Manually
 
 Clone the repository into the Codex skills directory:
 
@@ -28,7 +51,7 @@ git -C "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench" pull --ff-onl
 
 The skill itself has no third-party Python dependencies. Its helper scripts support Python 3.10 or newer. Wolfram, Lean, Sage, Z3, CVXPy, Peppy/PEPFlow, and other mathematical backends are optional and are not bundled here.
 
-### Ask Codex
+### Run A Proof
 
 For a hard proof:
 
@@ -59,6 +82,22 @@ central object, proof kernel, and one checkable next move.
 ```
 
 Codex can invoke the skill implicitly, but an explicit skill name is the most reliable way to request its full workflow. The workbench runs only while Codex handles a proof task and has no resident background process.
+
+## From A Stuck Proof To A Decisive Artifact
+
+```mermaid
+flowchart LR
+    A["Freeze the exact claim"] --> B{"Direct proof or refutation?"}
+    B -->|No| C["Find the failure world and proof kernel"]
+    C --> D["Compare distinct route families"]
+    D --> E["Retrieve, compute, solve, or formalize"]
+    E --> F{"Decisive artifact?"}
+    F -->|Yes| G["Assemble and audit the proof"]
+    F -->|No| H["Record the exact obstruction"]
+    H --> C
+```
+
+The loop is deliberately selective. It uses literature, computation, multiple agents, or formalization only when one of them can produce a named artifact that changes the proof state.
 
 ## Scope
 
@@ -293,6 +332,14 @@ The workbench converts ideas from proof search, formalization, and mathematical 
 
 The operational mapping appears in [Research-Backed Proof Loop](references/research-backed-proof-loop.md) and [Novel Problem Discovery](references/novel-problem-discovery.md). These papers motivate workflow decisions. They do not serve as proof authority for a user's theorem.
 
+## Try It On A Real Proof
+
+- [Star the repository](https://github.com/jmf-enigma/codex-theory-proof-workbench) to follow releases and make the project easier to find again.
+- [Open an issue](https://github.com/jmf-enigma/codex-theory-proof-workbench/issues/new) with an anonymized failed-proof case. Include the exact claim, what was tried, the first known obstruction, and the evidence available. Do not upload confidential manuscripts or private research data.
+- Contribute a reproducible proof pattern, verifier, backend adapter, or failure case. New machinery should solve a named proof bottleneck and include a deterministic check or test.
+
+The most useful feedback is not “the answer was bad.” It is a small, inspectable case showing where routing, discovery, verification, or proof-state recovery failed.
+
 ## Development
 
 The helper scripts use the Python standard library. The Codex skill validator additionally needs PyYAML.
@@ -315,17 +362,33 @@ This repository is released under the MIT License. See [LICENSE](LICENSE). Optio
 
 # Codex 理论证明工作台
 
-[Back to English](#codex-theory-proof-workbench)
+[English](#codex-theory-proof-workbench) · [安装](#快速开始) · [工作流](#从卡住的证明到决定性-artifact) · [证据标准](#证据与证明状态)
 
-这是一个面向困难理论问题的 Codex skill，适用于核心数学仍未解决的证明任务。
+**面向 Codex 的可审计证明发现与失败恢复。**
 
-很多证明在写作之前就已经卡住。命题可能在推导中悄悄改变，尚未证明的构造可能被当成 lemma，同一个 obstruction 也可能换一套符号后反复出现。Theory Proof Workbench 会保存明确的 proof state，先检验命题，再扩展证明，同时保留已经有效的局部结果，并根据下一步能够产生的 artifact 选择路线。
+Theory Proof Workbench 是一个开源 Codex skill，面向核心构造、关键 lemma，甚至答案本身仍未知的困难证明。它不靠反复扩写证明，而是把任务变成对一个决定性 artifact 的受控搜索。这个 artifact 可以是构造、反例、lemma、certificate、从论文中核实的 theorem pattern，或者精确的 obstruction。
 
-一次运行可能得到完整证明、反例、修正后的 theorem、条件性结论，或者当前最小的未解决 obstruction。每种结果都会带有明确的 proof status。数学内容已经完成，只需要改善表述或 LaTeX 时，应使用 `math-proof-writing`。
+它主要服务于 OR/MS、动态规划、机制设计与经济理论、learning theory、bandits、优化、博弈和概率方法中的 AI 辅助证明搜索与 proof debugging。它可以按需协调文献检索、小规模规律发现、Wolfram 或 SymPy、Z3、CVXPy、Sage、Peppy/PEPFlow 和 Lean，同时明确区分不同证据等级。
+
+| 发现 | 恢复 | 核验 | 报告 |
+| --- | --- | --- | --- |
+| 从小规模或紧例中猜出候选结构 | 识别等价重试并保留有效 lemma | 重放 CAS、solver、certificate 和 Lean artifact | 区分完整证明、反例、条件结论与未闭合缺口 |
+
+一次运行可能得到完整证明、反例、修正后的 theorem、条件性结论，或者当前最小的未解决 obstruction。每种结果都会带有明确的 proof status。Workbench 不保证每个真命题都能被证明。数学内容已经完成，只需要改善表述或 LaTeX 时，应使用 `math-proof-writing`。
 
 ## 快速开始
 
-### 安装
+### 让 Codex 安装
+
+把下面这段直接发给 Codex：
+
+```text
+使用 $skill-installer 安装这个仓库根目录中的 skill：
+https://github.com/jmf-enigma/codex-theory-proof-workbench
+安装名称使用 theory-proof-workbench。
+```
+
+### 手动安装
 
 把仓库克隆到 Codex 的 skills 目录：
 
@@ -343,7 +406,7 @@ git -C "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench" pull --ff-onl
 
 Skill 本身不依赖第三方 Python package，辅助脚本支持 Python 3.10 及以上版本。Wolfram、Lean、Sage、Z3、CVXPy、Peppy/PEPFlow 等数学后端都是可选项，本仓库不会自动安装。
 
-### 在 Codex 中调用
+### 开始证明
 
 证明一个困难 theorem：
 
@@ -374,6 +437,22 @@ proof kernel 和一个可以检查的 next move。
 ```
 
 Codex 可以隐式触发这个 skill，但显式写出 skill 名称最稳定。Workbench 只在 Codex 处理当前证明任务时运行，不是常驻后台服务。
+
+## 从卡住的证明到决定性 Artifact
+
+```mermaid
+flowchart LR
+    A["冻结准确命题"] --> B{"能否直接证明或反驳？"}
+    B -->|不能| C["定位 failure world 与 proof kernel"]
+    C --> D["比较不同机制的路线"]
+    D --> E["检索、计算、求解或形式化"]
+    E --> F{"得到决定性 artifact？"}
+    F -->|是| G["组装并审计完整证明"]
+    F -->|否| H["记录精确 obstruction"]
+    H --> C
+```
+
+这个循环会有选择地升级。只有当文献、计算、多 Agent 或形式化工具能够产生一个会改变 proof state 的明确 artifact 时，才调用相应能力。
 
 ## 适用范围
 
@@ -607,6 +686,14 @@ Workbench 把 proof search、formalization 和 mathematical discovery 中的研�
 - Evaluator-driven discovery 参考 [AlphaEvolve](https://arxiv.org/abs/2506.13131)、[Discover and Prove](https://arxiv.org/abs/2604.15839)、[PatternBoost](https://arxiv.org/abs/2411.00566)、[Generative Modelling for Mathematical Discovery](https://arxiv.org/abs/2503.11061)、[AI-assisted open-problem discovery](https://arxiv.org/abs/2603.04735)、[self-supervised theorem discovery](https://arxiv.org/abs/2606.28747)、[MLEvolve](https://arxiv.org/abs/2606.06473)、[QED](https://arxiv.org/abs/2604.24021) 和 [From Solvers to Research](https://arxiv.org/abs/2607.07779)。
 
 具体的流程映射见 [Research-Backed Proof Loop](references/research-backed-proof-loop.md) 和 [Novel Problem Discovery](references/novel-problem-discovery.md)。这些论文用于支持 workflow decision，不会被当成用户 theorem 的证明依据。
+
+## 用真实证明来测试它
+
+- 可以先 [Star 这个仓库](https://github.com/jmf-enigma/codex-theory-proof-workbench)，方便关注更新，也方便以后重新找到。
+- 可以提交一个经过匿名化的 [failed-proof issue](https://github.com/jmf-enigma/codex-theory-proof-workbench/issues/new)。请写清准确命题、已经尝试的路线、目前最早的 obstruction 和已有证据。不要上传保密论文或私人研究数据。
+- 欢迎贡献可复现的证明套路、verifier、数学后端适配或失败案例。新增机制应针对一个明确的证明瓶颈，并带有确定性检查或测试。
+
+最有价值的反馈不是简单说“答案不好”，而是给出一个可检查的小案例，说明 routing、discovery、verification 或 proof-state recovery 在哪里失效。
 
 ## 开发检查
 
