@@ -136,11 +136,11 @@ python3 scripts/smoke_workbench.py
 
 Add `--mode recovery` or `--mode discovery` when appropriate. Full commands, state transitions, replay rules, and reference routing live in [SKILL.md](SKILL.md) and the [Proof State Machine](references/proof-state-machine.md).
 
-## Research Basis
+## Research Foundations And Refinements
 
-This is an independent lightweight controller, not a reimplementation of one paper. [APRIL](https://arxiv.org/abs/2602.02990) and [AlphaProof Nexus](https://arxiv.org/abs/2605.22763) motivate checker-grounded repair and a simple-loop default. [$k$-server-bench](https://arxiv.org/abs/2604.07240) motivates calibrated one-sided evaluators, while [QEDBench](https://arxiv.org/abs/2602.20629) exposes model-judge bias. [Hypothesis-disciplined formalization](https://arxiv.org/abs/2606.20642) and [AI4SLT](https://arxiv.org/abs/2602.02285) motivate source and probability-semantic audits. [Sorries Are Not the Hard Part](https://arxiv.org/abs/2606.13925) separates kernel success from reusable formal-library design.
+**Foundations.** [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283), [Goedel-Architect](https://arxiv.org/abs/2606.06468), the [AI co-mathematician](https://arxiv.org/abs/2605.06651), [STAR-PolyaMath](https://arxiv.org/abs/2605.19338), [AlphaEvolve](https://arxiv.org/abs/2506.13131), [Aristotle](https://arxiv.org/abs/2510.01346), and [Rethlas](https://github.com/frenzymath/Rethlas) motivate decomposition, persistent state, coordinated routes, evaluator-driven discovery, AND/OR search, and separation of exploration from verification. The workbench recombines these ideas rather than reimplementing any system.
 
-Population, multi-agent, and evolutionary methods are optional. Full mappings are in [Research-Backed Proof Loop](references/research-backed-proof-loop.md) and [Novel Problem Discovery](references/novel-problem-discovery.md). Sources guide control decisions, not theorem proof or a workbench benchmark.
+**Refinements.** [APRIL](https://arxiv.org/abs/2602.02990) and [AlphaProof Nexus](https://arxiv.org/abs/2605.22763) refine checker-grounded repair and the simple-loop default. [$k$-server-bench](https://arxiv.org/abs/2604.07240) and [QEDBench](https://arxiv.org/abs/2602.20629) sharpen evaluator and reviewer limits. [Hypothesis-disciplined formalization](https://arxiv.org/abs/2606.20642), [AI4SLT](https://arxiv.org/abs/2602.02285), and [Sorries Are Not the Hard Part](https://arxiv.org/abs/2606.13925) add source, semantic, trust, and reuse audits. These studies extend rather than replace the foundations. Full mappings are in [Research-Backed Proof Loop](references/research-backed-proof-loop.md) and [Novel Problem Discovery](references/novel-problem-discovery.md). Sources guide control decisions, not theorem proof or a workbench benchmark.
 
 ## Contributing
 
@@ -292,11 +292,11 @@ python3 scripts/smoke_workbench.py
 
 需要时加入 `--mode recovery` 或 `--mode discovery`。完整命令、状态转换、replay 规则和 reference routing 见 [SKILL.md](SKILL.md) 与 [Proof State Machine](references/proof-state-machine.md)。
 
-## 研究来源
+## 研究基础与后续校准
 
-本仓库是独立设计的轻量 proof controller，并非复刻某一篇论文。[APRIL](https://arxiv.org/abs/2602.02990) 与 [AlphaProof Nexus](https://arxiv.org/abs/2605.22763) 支持 checker-grounded repair 和简单循环优先。[$k$-server-bench](https://arxiv.org/abs/2604.07240) 支持先校准单向 evaluator，[QEDBench](https://arxiv.org/abs/2602.20629) 揭示 model judge 偏差。[Hypothesis-disciplined formalization](https://arxiv.org/abs/2606.20642) 与 [AI4SLT](https://arxiv.org/abs/2602.02285) 支持来源和概率语义审计。[Sorries Are Not the Hard Part](https://arxiv.org/abs/2606.13925) 区分 kernel success 与可复用形式化库的设计质量。
+**基础架构。** [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283)、[Goedel-Architect](https://arxiv.org/abs/2606.06468)、[AI co-mathematician](https://arxiv.org/abs/2605.06651)、[STAR-PolyaMath](https://arxiv.org/abs/2605.19338)、[AlphaEvolve](https://arxiv.org/abs/2506.13131)、[Aristotle](https://arxiv.org/abs/2510.01346) 与 [Rethlas](https://github.com/frenzymath/Rethlas) 支持 decomposition、持久状态、路线协作、evaluator-driven discovery、AND/OR search，以及探索与验证分离。Workbench 对这些机制进行重新组合，并不复刻任何一个系统。
 
-Population、多 Agent 和 evolutionary method 均为可选项。完整映射见 [Research-Backed Proof Loop](references/research-backed-proof-loop.md) 与 [Novel Problem Discovery](references/novel-problem-discovery.md)。论文只支持 control decision，不证明用户 theorem，也不是 Workbench benchmark。
+**后续校准。** [APRIL](https://arxiv.org/abs/2602.02990) 与 [AlphaProof Nexus](https://arxiv.org/abs/2605.22763) 校准 checker-grounded repair 和简单循环优先。[$k$-server-bench](https://arxiv.org/abs/2604.07240) 与 [QEDBench](https://arxiv.org/abs/2602.20629) 补充 evaluator 和 reviewer 的边界。[Hypothesis-disciplined formalization](https://arxiv.org/abs/2606.20642)、[AI4SLT](https://arxiv.org/abs/2602.02285) 与 [Sorries Are Not the Hard Part](https://arxiv.org/abs/2606.13925) 加入来源、语义、trust 与复用审计。这些研究是在扩展基础架构，并非替换它。完整映射见 [Research-Backed Proof Loop](references/research-backed-proof-loop.md) 与 [Novel Problem Discovery](references/novel-problem-discovery.md)。论文只支持 control decision，不证明用户 theorem，也不是 Workbench benchmark。
 
 ## 参与贡献
 
