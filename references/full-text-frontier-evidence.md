@@ -2,6 +2,8 @@
 
 Use this only when a claim is being classified as known, open, or new, or when a nearby paper may supply a proof route. It turns literature work into a small auditable bundle rather than a prose claim that papers were checked.
 
+A Matlas or TheoremSearch packet may seed candidate papers and exact statement searches, but it is not Scholar evidence, current-coverage evidence, verified metadata, or a source-text anchor. Start the ladder below from the candidates it suggests.
+
 ## Evidence Ladder
 
 1. Discover candidates through Google Scholar. Model memory may suggest search terms but is not a search result.

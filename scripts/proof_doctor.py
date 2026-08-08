@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from datetime import date
 from pathlib import Path
 
 from audit_ledger import audit_ledger_text, section_body
@@ -60,6 +61,17 @@ PATTERN_QUERIES = {
 }
 
 
+CAPABILITY_QUERIES = {
+    "strategy-discovery": "recent mathematical proof discovery construction counterexample system",
+    "decomposition": "Lean proof decomposition standalone lemma extraction dependency merge",
+    "premise-retrieval": "global premise retrieval semantic theorem search formal mathematics",
+    "local-proof": "Lean compiler feedback proof repair isolated sublemma",
+    "assembly": "strict Lean proof verification signature axiom assembly",
+    "fidelity": "autoformalization statement fidelity hypothesis audit",
+    "library-coverage": "Lean research mathematics custom definition auxiliary lemma package coverage",
+}
+
+
 STATE_ACTIONS = {
     "S0-parse": [
         "Make variables, domains, quantifiers, assumptions, and desired conclusion explicit in claim.md.",
@@ -78,7 +90,7 @@ STATE_ACTIONS = {
     "S2-stress-test": [
         "If direct solve failed, record the mismatch in LEDGER.md.",
         "Write the negation and smallest toy model in counterexamples.md.",
-        "Try one boundary case and one relaxed-assumption counterexample search.",
+        "Try one boundary case, then ablate at most one high-leverage suspect hypothesis; seek an explicit witness and record where the original assumption blocks it.",
         "If no route has a pattern guess, chosen central object, or proof kernel, fill IDEA_MAP.md before drafting another proof.",
         "If the route is still unclear, first do a micro pattern check; create a workstream card only if the branch is hard, repeated, tool-assisted, or literature-dependent.",
     ],
@@ -897,8 +909,10 @@ def failure_stage_summary(project: Path, progress: dict, localization: dict) -> 
             "assumptions, domains, and quantifiers."
         ),
         "library-coverage": (
-            "Inventory missing prerequisite definitions and theory; build them explicitly or continue "
-            "informally without dummy objects, fake instances, or unproved axioms."
+            "Inventory missing prerequisite definitions and theory. For each project-specific type, "
+            "check a positive witness, an exclusion or characterization lemma, and the downstream "
+            "properties before building it explicitly; otherwise continue informally without dummy "
+            "objects, fake instances, or unproved axioms."
         ),
     }
     needed = activated and stage not in actions and not localization["needed"]
@@ -954,8 +968,14 @@ def route_decision_summary(state: str, progress: dict, fingerprints: dict, idea_
     }
 
 
-def external_pattern_queries(claim: str, selected: list[tuple[str, int]]) -> list[str]:
+def external_pattern_queries(
+    claim: str,
+    selected: list[tuple[str, int]],
+    failure_stage: str | None = None,
+) -> list[str]:
     queries = []
+    if failure_stage in CAPABILITY_QUERIES:
+        queries.append(f"{CAPABILITY_QUERIES[failure_stage]} {date.today().year}")
     for name, _ in selected[:2]:
         queries.extend(PATTERN_QUERIES.get(name, []))
     if claim:
@@ -1168,6 +1188,8 @@ def diagnose(project: Path) -> dict:
     if idea_map["needed"] or pattern_scan["needed"]:
         actions.append("If direct solve is unavailable, mine prior papers, local drafts, appendices, or ledgers for a transferable proof architecture.")
         actions.append("Save only useful paper tricks as short local trick cards; do not promote them globally until validated or reused.")
+    if pattern_scan["needed"]:
+        actions.append("Derive one capability query from the missing artifact and failure stage; do not wait for the user to name a tool, database, or paper.")
     if (project / "ESCALATION.md").exists() and filled_field_count(text, "obstruction type") >= 2:
         actions.append("Two or more failed-route slots are present; run the escalation ladder before trying another route.")
     if audit["placeholder_count"]:
@@ -1234,7 +1256,17 @@ def diagnose(project: Path) -> dict:
         "idea_map": idea_map,
         "external_pattern_scan": {
             **pattern_scan,
-            "queries": external_pattern_queries(claim, selected) if pattern_scan["needed"] else [],
+            "queries": external_pattern_queries(
+                claim,
+                selected,
+                failure_stage.get("stage"),
+            ) if pattern_scan["needed"] else [],
+            "capability_admission": [
+                "adds a missing artifact or independent evidence channel",
+                "has a primary source and an inspectable active implementation",
+                "fits the project's privacy and trust boundary",
+                "passes one bounded live probe before adoption",
+            ],
             "scorecard_fields": [
                 "route",
                 "retrieved premise or theorem",

@@ -230,6 +230,7 @@ Use this after two local attempts on a node, one repeated failure signature, or 
 | N1 |  | smaller / unchanged / larger | new / same / mixed | low / medium / high | proof / counterexample / certificate / theorem pattern / repair / none | continue / repair / re-decompose / retrieve / tool-falsify / stop-report |  |
 
 Use the table to avoid repeated small edits to the same failed idea. Continue only when the next attempt has a new premise, central object, representation, certificate, counterexample, theorem repair, or a smaller proof state.
+Count `smaller` only when a required obligation disappears, the worst active gap weakens, or an opaque gap becomes a checkable leaf. More goals or harder goals are not progress.
 
 ## Workstream Card Template
 
@@ -301,6 +302,14 @@ What would falsify the claim?
 ## Numerical / Finite Searches
 
 ## Relaxed Assumptions
+
+## Hypothesis Ablation
+
+Remove or weaken only one high-leverage suspect assumption at a time.
+
+| assumption | ablated claim | explicit witness or failed search | where the original assumption blocks the witness | decision |
+| --- | --- | --- | --- | --- |
+|  |  |  |  | keep / repair / counterexample route |
 """
 
 
@@ -1166,6 +1175,17 @@ def pattern_scan_text(title: str, claim: str, selected: list[tuple[str, int]]) -
 
 Fill this only when the proof is unfamiliar, has failed twice, or needs outside theorem/proof-agent patterns.
 Read `external-proof-pattern-scan.md` before broad literature or skill browsing.
+
+## Autonomous Capability Check
+
+- missing artifact or evidence channel:
+- failure stage:
+- derived current-method query:
+- candidate system and primary source:
+- non-duplicated capability:
+- privacy/trust boundary:
+- bounded live probe:
+- admit / defer / reject and why:
 
 ## Extraction Cards
 

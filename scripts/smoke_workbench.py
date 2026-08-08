@@ -35,6 +35,150 @@ def run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedPr
 def main() -> int:
     checks: list[dict[str, object]] = []
 
+    with tempfile.TemporaryDirectory(prefix="statement-retrieval-smoke-") as retrieval_temp:
+        retrieval_root = Path(retrieval_temp)
+        matlas_fixture = retrieval_root / "matlas-response.json"
+        matlas_fixture.write_text(
+            json.dumps(
+                [
+                    {
+                        "type": "paper",
+                        "entity_name": "Theorem 3",
+                        "doi": "doi.org/10.1287/moor.2020.1086",
+                        "title": "Stochastic comparative statics in Markov decision processes",
+                        "authors": "Light, Bar",
+                        "journal": "Math. Oper. Res.",
+                        "year": "2021",
+                        "statement": "Increasing differences and a monotone transition imply a monotone policy.",
+                        "candidate_id": "paper:Theorem:3",
+                    },
+                    {
+                        "type": "paper",
+                        "entity_name": "Theorem 3",
+                        "doi": "https://doi.org/10.1287/MOOR.2020.1086",
+                        "title": "Stochastic comparative statics in Markov decision processes",
+                        "authors": "Light, Bar",
+                        "journal": "Math. Oper. Res.",
+                        "year": "2021",
+                        "statement": "Increasing differences and a monotone transition imply a monotone policy.",
+                        "candidate_id": "paper:Duplicate:3",
+                    },
+                    {"type": "paper", "title": "Malformed result"},
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        matlas_run = run(
+            str(SCRIPTS / "statement_search.py"),
+            "Increasing differences and monotone transitions imply a monotone policy.",
+            "--intent",
+            "theorem",
+            "--response-file",
+            str(matlas_fixture),
+            "--project",
+            str(retrieval_root / "project"),
+        )
+        matlas_summary = json.loads(matlas_run.stdout)
+        matlas_packet_path = Path(matlas_summary["output_path"])
+        matlas_packet = json.loads(matlas_packet_path.read_text(encoding="utf-8"))
+        remote_guard = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "statement_search.py"),
+                "A public mathematical query.",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        checks.append(
+            {
+                "name": "matlas-candidate-packet-and-privacy-guard",
+                "ok": matlas_summary["evidence_status"] == "retrieved-unverified"
+                and matlas_summary["proof_effect"] == "none"
+                and matlas_summary["result_count_raw"] == 3
+                and matlas_summary["result_count_unique"] == 1
+                and matlas_packet["duplicates_removed"] == 1
+                and matlas_packet["invalid_results_skipped"] == 1
+                and matlas_packet["candidates"][0]["identifiers"]["doi"]
+                == "10.1287/moor.2020.1086"
+                and matlas_packet["candidates"][0]["verification"]["proof_read"]
+                == "pending"
+                and remote_guard.returncode == 2
+                and "pass --remote-ok" in remote_guard.stderr,
+            }
+        )
+
+        theoremsearch_fixture = retrieval_root / "theoremsearch-response.json"
+        theoremsearch_fixture.write_text(
+            json.dumps(
+                {
+                    "theorems": [
+                        {
+                            "slogan_id": 41,
+                            "theorem_id": 17,
+                            "name": "Corollary 3.3",
+                            "body": "A concave value function implies a monotone optimal policy.",
+                            "slogan": "Concavity yields a monotone policy.",
+                            "theorem_type": "Corollary",
+                            "paper": {
+                                "paper_id": "2511.08523v1",
+                                "source": "arXiv",
+                                "title": "Service Rate Control in Queues with Abandonments",
+                                "authors": ["Runhua Wu", "Hayriye Ayhan"],
+                                "link": "http://arxiv.org/abs/2511.08523v1",
+                                "year": 2025,
+                                "citations": 0,
+                            },
+                            "similarity": 0.64,
+                            "score": 0.64,
+                        },
+                        {"name": "Malformed result"},
+                    ]
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        theoremsearch_run = run(
+            str(SCRIPTS / "statement_search.py"),
+            "A concave value function implies a monotone optimal policy.",
+            "--service",
+            "theoremsearch",
+            "--intent",
+            "theorem",
+            "--tag",
+            "math.OC",
+            "--response-file",
+            str(theoremsearch_fixture),
+            "--project",
+            str(retrieval_root / "project"),
+        )
+        theoremsearch_summary = json.loads(theoremsearch_run.stdout)
+        theoremsearch_packet = json.loads(
+            Path(theoremsearch_summary["output_path"]).read_text(encoding="utf-8")
+        )
+        checks.append(
+            {
+                "name": "theoremsearch-candidate-packet-and-filter-record",
+                "ok": theoremsearch_summary["service"] == "theoremsearch"
+                and theoremsearch_summary["evidence_status"] == "retrieved-unverified"
+                and theoremsearch_summary["proof_effect"] == "none"
+                and theoremsearch_summary["result_count_raw"] == 2
+                and theoremsearch_summary["result_count_unique"] == 1
+                and theoremsearch_packet["invalid_results_skipped"] == 1
+                and theoremsearch_packet["query"]["filters"]["tags"] == ["math.OC"]
+                and theoremsearch_packet["candidates"][0]["identifiers"]["arxiv_id"]
+                == "2511.08523v1"
+                and theoremsearch_packet["candidates"][0]["source_url"]
+                == "https://arxiv.org/abs/2511.08523v1"
+                and theoremsearch_packet["candidates"][0]["verification"]["proof_read"]
+                == "pending"
+                and "logs query text" in theoremsearch_packet["warnings"][0],
+            }
+        )
+
     frontier_spec = importlib.util.spec_from_file_location(
         "frontier_evidence_smoke",
         SCRIPTS / "frontier_evidence.py",
@@ -239,6 +383,8 @@ def main() -> int:
         claim_template = (project / "claim.md").read_text(encoding="utf-8")
         workstreams_template = (project / "WORKSTREAMS.md").read_text(encoding="utf-8")
         idea_template = (project / "IDEA_MAP.md").read_text(encoding="utf-8")
+        counterexample_template = (project / "counterexamples.md").read_text(encoding="utf-8")
+        pattern_template = (project / "PATTERN_SCAN.md").read_text(encoding="utf-8")
         checks.append(
             {
                 "name": "acceptance-and-route-family-control",
@@ -255,9 +401,29 @@ def main() -> int:
                 and "diagnostic-grounded repair tuple" in workstreams_template
                 and "diagnostic site" in workstreams_template
                 and "inferred root cause" in workstreams_template
+                and "worst active gap weakens" in workstreams_template
                 and "evaluator scope" in idea_template
                 and "evaluator calibration" in idea_template
-                and "hard-witness regression set" in idea_template,
+                and "hard-witness regression set" in idea_template
+                and "## Hypothesis Ablation" in counterexample_template
+                and "## Autonomous Capability Check" in pattern_template,
+            }
+        )
+
+        trick_path = Path(
+            run(
+                str(SCRIPTS / "new_trick_card.py"),
+                "bounded-ablation",
+                "--project",
+                str(project),
+            ).stdout.strip()
+        )
+        trick_text = trick_path.read_text(encoding="utf-8")
+        checks.append(
+            {
+                "name": "trick-applicability-and-replay-contract",
+                "ok": "## Applicability Contract" in trick_text
+                and "## Independent Replay" in trick_text,
             }
         )
 
@@ -1228,6 +1394,33 @@ print("mock referee completed")
                 "ok": retrieval_diagnosis["failure_stage"]["stage"] == "premise-retrieval"
                 and retrieval_diagnosis["primary_action"].startswith(
                     "Run sketch-retrieve-reflect"
+                )
+                and any(
+                    "global premise retrieval" in query
+                    for query in retrieval_diagnosis["external_pattern_scan"]["queries"]
+                )
+                and len(
+                    retrieval_diagnosis["external_pattern_scan"]["capability_admission"]
+                ) == 4,
+            }
+        )
+
+        library_failure = retrieval_failure.replace(
+            "- failure stage: retrieval\n",
+            "- failure stage: library\n",
+        )
+        workstreams.write_text(library_failure, encoding="utf-8")
+        library_diagnosis = json.loads(
+            run(str(SCRIPTS / "proof_doctor.py"), str(project), "--json").stdout
+        )
+        checks.append(
+            {
+                "name": "formal-vocabulary-gate-routing",
+                "ok": library_diagnosis["failure_stage"]["stage"] == "library-coverage"
+                and "positive witness" in library_diagnosis["primary_action"]
+                and any(
+                    "custom definition auxiliary lemma" in query
+                    for query in library_diagnosis["external_pattern_scan"]["queries"]
                 ),
             }
         )

@@ -33,11 +33,22 @@ candidate
 
 - 
 
+## Applicability Contract
+
+- needs:
+- guarantees:
+- mismatch traps:
+
 ## Transplant Step
 
 
 ## Verification Hook
 
+
+## Independent Replay
+
+- current problem check:
+- held-out or second-route check:
 
 ## Failure Mode
 

@@ -14,6 +14,12 @@ Send a node to Lean only when it has:
 
 Keep discovery in Theory Workbench when the statement, central object, construction, or mathematical route is still moving.
 
+## Vocabulary Gate
+
+Research mathematics often needs project-specific structures or predicates that Mathlib does not provide. Before the main theorem uses one, freeze its intended informal meaning and require a small characterization suite: at least one positive witness or constructor, one exclusion or boundary example, and the exact auxiliary properties consumed downstream. Compile and inspect these checks independently. A definition that makes the theorem easy by becoming empty, vacuous, over-strong, or semantically shifted fails the gate even if Lean accepts it.
+
+When a prover edits a proof, replay it against the frozen original declaration rather than accepting a rewritten statement. Record any definition or type change in the assumption-and-definition lineage before preparing a new handoff.
+
 ## Prepare A Request
 
 ```bash
@@ -45,6 +51,12 @@ Each passing gate needs concrete evidence text. Lean compilation alone cannot fi
 When the current task exposes the Lean MCP tools, keep the request immutable and iterate only on the target file. Read `lean_goal`, run `lean_local_search`, test at most three materially distinct snippets with `lean_multi_attempt`, inspect `lean_code_actions`, and re-read diagnostics. Use `lean_run_code` only for self-contained elaboration experiments and `lean_verify` for an axiom/source audit.
 
 This lane is scratch and repair, not promotion. A REPL rejection is provisional because the tactic mode is experimental, and an MCP success proves only the tested state. Write the winning script into the intended file and run the exact bridge verifier below. If the state repeats or the failure concerns statement fidelity, mathematics, or global assembly, stop local repair and return ownership to Theory.
+
+## Isolate And Reassemble
+
+When a coherent Lean skeleton has one failing `have` or placeholder, extract that block as a standalone declaration with the exact local variables, hypotheses, imports, and target. Solve the declaration independently, expose its dependencies, then replace the block and replay the original frozen theorem. This reduces repair radius without changing the theorem fence.
+
+AXLE-style remote extraction and verification may be useful for a non-sensitive, standard single-file target when the user explicitly approves source sharing. Local checking remains the default. A remote pass cannot replace the bridge's claim-fidelity, assumption-lineage, assembly-coverage, or axiom gates, and a service limitation or stricter-verifier gap must be recorded in the result packet.
 
 ## Verify And Return
 
