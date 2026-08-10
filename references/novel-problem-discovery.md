@@ -5,7 +5,7 @@ Use this only when the answer, extremal object, constant, formula, construction,
 ## Map
 
 - Status gate: distinguish unknown-to-us from apparently open or genuinely new.
-- Discovery contract: define what is generated, how it is checked, and when it is promoted.
+- Discovery contract: define what is generated, how it is checked, and when it is promoted; use an answer-hole contract when the output itself is unknown.
 - Frontier ladder: connect solved neighbors to the first unresolved case.
 - Search cycle: alternate diverse global proposals with local repair under exact feedback.
 - Concept and theorem extraction: turn patterns and failed searches into reusable mathematics.
@@ -34,6 +34,7 @@ Do not launch broad candidate search until these fields are concrete:
 
 - **Frontier evidence**: executed Scholar records, verified metadata, hashed lawful full text, statement/proof anchors, a solution card, active-work checks, and the exact unresolved gap.
 - **Discovery target**: answer, threshold, formula, construction, policy, invariant, counterexample, intermediate theorem, or new representation.
+- **Answer-hole contract**: for construct, find, optimize, or find-all tasks, specify the answer type, admissible encoding, and forbidden self-reference or target restatement. State separately what proves witness feasibility or soundness and what proves optimality, completeness, uniqueness, or canonicity.
 - **Candidate representation**: the smallest object the search is allowed to modify, such as a graph, priority function, recurrence, basis, dual certificate, or lemma statement.
 - **Validity gate**: an exact checker for feasibility, domains, constraints, and statement fidelity.
 - **Score or evaluator**: a scalar or ordered tuple that distinguishes progress after validity passes.
@@ -101,7 +102,7 @@ Treat every reached, independently verified intermediate statement as a theorem 
 
 Discovery and proof are separate stages:
 
-1. Record one explicit candidate object, answer, formula, or theorem statement.
+1. Record one explicit candidate object, answer, formula, or theorem statement in the frozen answer-hole representation.
 2. Run validity, holdout, boundary, and novelty checks.
 3. Freeze the candidate. Subsequent proof attempts may repair the theorem openly but may not silently move the answer.
 4. Rewrite the unknown-answer problem as a fixed theorem about that candidate.
@@ -126,11 +127,13 @@ Report the strongest honest artifact: best candidate and checker, improved bound
 ## Paper-Grounded Lessons
 
 - [Discover and Prove](https://arxiv.org/abs/2604.15839) separates unknown-answer discovery from formal proving; its ablation supports freezing the discovered answer before rewriting the formal goal.
+- [Beyond Theorem Proving](https://arxiv.org/abs/2505.04528) exposes a formal-answer loophole: a kernel-checked answer can merely restate the target predicate. [ComBench](https://arxiv.org/abs/2606.10479) separately verifies a construction payload and its proof. Together they motivate the answer-hole contract and separate soundness, realization, and completeness gates.
 - [AlphaEvolve](https://arxiv.org/abs/2506.13131) and [Generative Modelling for Mathematical Discovery](https://arxiv.org/abs/2503.11061) use executable evaluators, diverse program populations, and human-controlled validity-preserving solvers.
 - [PatternBoost](https://arxiv.org/abs/2411.00566) alternates global pattern generation with local problem-specific improvement; either side alone can be much weaker.
 - [AI-assisted open-problem discovery](https://arxiv.org/abs/2603.04735) searches across analytical representations, prunes most branches with high-precision numerical feedback, and then uses a separate rigorous refinement pass.
 - [Self-supervised theorem discovery](https://arxiv.org/abs/2606.28747) reuses reached theorems and selects library additions by generality and difficulty of reproof rather than by interesting-looking prose.
 - [MLEvolve](https://arxiv.org/abs/2606.06473) motivates cross-branch references, retrospective memory, explicit stagnation triggers, and an exploration-to-exploitation schedule for long-horizon search.
+- [Evolutionary Ensemble of Agents](https://arxiv.org/abs/2605.09018) separates candidate solvers from mutable guidance and compares guidance on matched solver baselines as the search stage changes. Its experiments concern ICON code search, not proof discovery, so import only the matched-baseline scheduling rule and require a held-out proof-state gain before making guidance reusable.
 - [QED](https://arxiv.org/abs/2604.24021) motivates clean prover/verifier context, exact citation and statement checks, stable plans, and independent review for open-problem claims.
 - [$k$-server-bench](https://arxiv.org/abs/2604.07240) demonstrates counterexample-guided potential search with calibration on a solved case, violation diagnostics, hard-edge caching, early stopping, and an explicitly sound-but-incomplete finite evaluator. A finite lookup certificate is not automatically a transferable potential, and a zero-violation finite candidate remains a proof target until the global symbolic argument is supplied.
 - [From Solvers to Research](https://arxiv.org/abs/2607.07779) identifies the remaining boundary: evaluator-driven search scales existing representations, but genuinely new mathematics may require concept invention, relational transfer, and human judgment.

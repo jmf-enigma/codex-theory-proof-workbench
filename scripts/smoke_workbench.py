@@ -252,9 +252,18 @@ def main() -> int:
                 phrase in idea_full.stdout
                 for phrase in [
                     "Evidence-layered search packet",
+                    "Optional matched strategy trial",
+                    "same proof-state baseline",
                     "proof_effect=none",
+                    "falsifiable local prediction",
+                    "representation ladder",
+                    "rigidity or invariant conjecture",
+                    "theorem-preserving symmetries",
+                    "verification-and-assembly tail budget",
+                    "solver-owned digest",
                     "Near-miss frontier",
                     "independent route or held-out check",
+                    "target-restating answers",
                     "surjectivity",
                 ]
             ),
@@ -410,6 +419,7 @@ def main() -> int:
                 "name": "acceptance-and-route-family-control",
                 "ok": "## Acceptance Contract" in claim_template
                 and "atomic semantic obligations" in claim_template
+                and "answer or witness contract" in claim_template
                 and "## Assumption And Definition Lineage" in claim_template
                 and "source-explicit / source-implied / encoding adapter / theorem repair" in claim_template
                 and "## Completion Coverage" in claim_template
@@ -418,6 +428,7 @@ def main() -> int:
                 and "not the current favorite" in workstreams_template
                 and "menu, not a required roster" in workstreams_template
                 and "new mechanism / invariant / construction" in workstreams_template
+                and "answer-hole contract when applicable" in idea_template
                 and "diagnostic-grounded repair tuple" in workstreams_template
                 and "diagnostic site" in workstreams_template
                 and "inferred root cause" in workstreams_template
@@ -427,6 +438,128 @@ def main() -> int:
                 and "hard-witness regression set" in idea_template
                 and "## Hypothesis Ablation" in counterexample_template
                 and "## Autonomous Capability Check" in pattern_template,
+            }
+        )
+
+        find_all_idea = run(
+            str(SCRIPTS / "plan_idea.py"),
+            "--full",
+            "Find all real triples (a,b,c) satisfying a+b+c=3 and a^2+b^2+c^2=3.",
+        ).stdout
+        checks.append(
+            {
+                "name": "answer-hole-forward-control",
+                "ok": "For construct or find-all tasks, freeze the answer type" in find_all_idea
+                and "forbid target-restating answers" in find_all_idea
+                and "separate witness soundness from completeness" in find_all_idea
+                and "candidate: Find all real triples" not in find_all_idea,
+            }
+        )
+
+        decomposition_created = run(
+            str(SCRIPTS / "start_proof.py"),
+            "--title",
+            "smoke-decomposition",
+            "--claim",
+            "A parent theorem follows from two required local lemmas.",
+            "--dir",
+            temp_dir,
+        )
+        decomposition_project = Path(decomposition_created.stdout.strip())
+        decomposition_ledger = decomposition_project / "LEDGER.md"
+        decomposition_ledger.write_text(
+            decomposition_ledger.read_text(encoding="utf-8").replace(
+                "S2-stress-test", "S4-lemma-graph", 1
+            ),
+            encoding="utf-8",
+        )
+        decomposition_queue = decomposition_project / "LEMMA_QUEUE.md"
+        decomposition_queue.write_text(
+            """# Lemma Queue: smoke-decomposition
+
+## Blueprint Dependency Graph
+
+| node id | type | status | statement / role | statement deps | proof deps | used by assembly | expected artifact | gap grade | failure diagnosis | compact repair state | suggested fix |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| P | theorem | missing | parent theorem |  | L1, L2 | yes | human proof | good |  |  |  |
+| L1 | lemma | proved | first required bridge |  |  | yes | human proof | good |  |  |  |
+| L2 | lemma | missing | second required bridge |  |  | yes | human proof | good |  |  |  |
+| A1 | lemma | checked | auxiliary identity |  |  | no | tool check | good |  |  |  |
+
+## Blueprint Metadata Audit
+
+- statement status: intended
+
+## Decomposition Admission Gate
+
+- parent node: P
+- conditional parent assembly: assume L1 and L2, then execute parent steps 1 and 2
+- exact use site for each required child:
+- post-proof parent replay: not-run / passed / failed
+- why each required child is strictly simpler: each is one local implication
+- ancestor-equivalence and cycle check: no child restates P and the graph is acyclic
+- source or statement-fence anchor: claim.md acceptance contract
+- expected repair radius if one child fails: only that child and its use site
+- jointly sufficient premise bundle or retrieval plan: L1 and L2 jointly close P
+- reviewer verdict: admit
+""",
+            encoding="utf-8",
+        )
+        blocked_decomposition = json.loads(
+            run(
+                str(SCRIPTS / "proof_doctor.py"),
+                str(decomposition_project),
+                "--json",
+            ).stdout
+        )
+        checks.append(
+            {
+                "name": "decomposition-consumption-gate-blocks-unmapped-child",
+                "ok": blocked_decomposition["decomposition_admission"]["active"]
+                and blocked_decomposition["decomposition_admission"]["blocks_progress"]
+                and "exact use site for each required child"
+                in blocked_decomposition["decomposition_admission"]["missing_fields"]
+                and blocked_decomposition["primary_action"].startswith(
+                    "Complete decomposition admission"
+                ),
+            }
+        )
+        admitted_queue = decomposition_queue.read_text(encoding="utf-8").replace(
+            "- exact use site for each required child:\n",
+            "- exact use site for each required child: L1 at parent step 1; L2 at parent step 2\n",
+        ).replace(
+            "- post-proof parent replay: not-run / passed / failed\n",
+            "- post-proof parent replay: passed conditionally with L2 still assumed\n",
+        )
+        decomposition_queue.write_text(admitted_queue, encoding="utf-8")
+        admitted_decomposition = json.loads(
+            run(
+                str(SCRIPTS / "proof_doctor.py"),
+                str(decomposition_project),
+                "--json",
+            ).stdout
+        )
+        checks.append(
+            {
+                "name": "decomposition-consumption-gate-replays-parent",
+                "ok": admitted_decomposition["decomposition_admission"]["admitted"]
+                and not admitted_decomposition["decomposition_admission"]["blocks_progress"]
+                and admitted_decomposition["decomposition_admission"][
+                    "parent_replay_status"
+                ]
+                == "passed"
+                and admitted_decomposition["decomposition_admission"][
+                    "required_child_ids"
+                ]
+                == ["L1", "L2"]
+                and admitted_decomposition["decomposition_admission"][
+                    "proved_unused_nodes"
+                ]
+                == ["A1"]
+                and any(
+                    "Do not count proved-but-unused nodes" in action
+                    for action in admitted_decomposition["next_actions"]
+                ),
             }
         )
 
@@ -1802,12 +1935,23 @@ print("mock referee completed")
             )
             and "Decomposition Admission Gate" in template_text
             and "jointly sufficient premise bundle" in template_text
+            and "post-proof parent replay" in template_text
             and "incompatible shadow family" in strategy_text
             and "Roles are a menu, not fixed quotas" in strategy_text
+            and "Stage-Conditioned Strategy Trial" in strategy_text
+            and "matched-baseline improvement" in strategy_text
+            and "Exact Symmetry Quotient" in strategy_text
+            and "Progressive Budget Grants" in strategy_text
+            and "Information-Ordered Representation Switch" in strategy_text
+            and "exact checker result or replayable witness" in strategy_text
+            and "solver-owned attempt digest" in strategy_text
+            and "Guarded proof-template reuse" in strategy_text
+            and "Consumption gate" in strategy_text
             and "Semantic-obligation gate" in verification_text
             and "Completion-coverage gate" in verification_text
             and "underexplored family" in escalation_text
             and "Discover-To-Prove Handoff" in discovery_text
+            and "Answer-hole contract" in discovery_text
             and "Google Scholar-backed discovery" in discovery_text
             and "SHA-256" in frontier_text
             and "solution card" in frontier_text
@@ -1864,8 +2008,14 @@ print("mock referee completed")
                     "Audit semantic range",
                 ]
             )
-            and "SAIR evidence-layer lesson" in research_text
+            and "EvE matched-baseline guidance lesson" in research_text
+            and "SAIR Stage 1 evidence-layer lesson" in research_text
+            and "SAIR Stage 2 structural-context lesson" in research_text
+            and "SAIR Stage 2 public-source synthesis" in research_text
+            and "Search-compilation lesson" in research_text
             and "Dynamic-context lesson" in research_text
+            and "An idea is an executable hypothesis" in proof_idea_text
+            and "creates a new proof obligation" in proof_idea_text
             and "Promotion And Reuse Gate" in trick_template_text
             and "allowed to seed future search" in trick_template_text,
         }

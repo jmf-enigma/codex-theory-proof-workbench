@@ -4,6 +4,8 @@ Use this optional pass when the proof route is not obvious, the theorem has fail
 
 The goal is not to force another checklist. The goal is to find a central object or central lemma that makes the theorem almost automatic.
 
+An idea is an executable hypothesis, not a persuasive narrative. It must predict one local mathematical fact, name the cheapest observation that would support or kill it, and specify how either outcome changes the next move.
+
 ## Map
 
 - Use/skip rules: decide whether an idea pass is worth the tokens.
@@ -42,7 +44,9 @@ For a hard proof, optionally fill these before the final proof route:
 - Central object: what quantity, correspondence, certificate, event, or potential controls that failure?
 - Assumption engine: which stated assumptions can control that object?
 - Central lemma: what one lemma would make the theorem straightforward?
+- Local prediction: what observable identity, sign, witness, normal form, or proof state should appear if the idea is right?
 - Verification hook: how can the lemma be tested, retrieved, tool-checked, or locally formalized?
+- Decision consequence: what result keeps, repairs, or retires this route?
 - Paper pattern: what proof architecture from a prior paper, local draft, or known theorem family can be transplanted?
 - Paper trick: what local trick from a paper can be reused, and what assumptions make it legal?
 - Gap grade: is the current missing step a good gap or bad gap?
@@ -111,9 +115,10 @@ Use this when the proof keeps circling one missing lemma. The goal is to change 
 
 1. Shrink: state the smallest local lemma where the obstruction first appears.
 2. Flip: write the negation or equality/tight case of that lemma.
-3. Change representation: try one alternate object such as a dual, slack, Bellman gap, envelope term, deviation graph, coupling, KL bridge, potential, or telescope.
-4. Certify or falsify: search for a finite witness, algebra identity, LP/SMT/CVX certificate, known theorem, or local formalization.
-5. Repair: if the surgery reveals an extra condition or weaker conclusion, state the repaired theorem before continuing.
+3. Explain the survivors: if a bounded counterexample search finds nothing, identify the structure shared by the surviving cases and formulate a rigidity or invariant conjecture. This creates a new proof obligation; it does not support the original theorem by itself.
+4. Move one rung on a representation ladder: direct expression, difference/slack or equality case, structural lemma, then dual/countermodel/certificate or formal leaf. Choose the rung that exposes the recorded obstruction.
+5. Certify or falsify: search for a finite witness, algebra identity, LP/SMT/CVX certificate, known theorem, or local formalization.
+6. Repair: if the surgery reveals an extra condition or weaker conclusion, state the repaired theorem before continuing.
 
 Stop surgery after one decisive artifact or two failed local moves. Then either switch route or mark the theorem `lemma-conditional` or `still open`.
 
@@ -147,9 +152,9 @@ Use this only after the direct pass fails and the search becomes noisy, repetiti
 
 Build and use the packet in this order:
 
-1. Freeze the exact statement signature: objects, types, domains, assumptions, quantifiers, conclusion, structural form, symmetry or dual transforms, and boundary or equality regimes. For symbolic identities, parse exact expression trees rather than relying on visual or character similarity.
-2. Run an exact or direct route, then the cheapest executable falsifier. For a proposed finite countermodel, verify every premise under every required assignment before checking one explicit target failure. Label finite sampling as sampling, never universal verification.
-3. If neither decides the claim, run one bounded forward/backward proof-state search or premise-retrieval pass. Seed it with the verified prefix and useful intermediate terms from failed attempts, but do not treat those seeds as evidence.
+1. Freeze the exact statement signature: objects, types, domains, assumptions, quantifiers, conclusion, structural form, symmetry or dual transforms, and boundary or equality regimes. For symbolic identities, parse and canonicalize the exact expression trees once; every rule, cached witness, and rewrite must consume that representation rather than visual or character similarity.
+2. Run an exact or direct route, then a cheap witness cascade ordered by the structural mismatch it can expose. For a proposed finite countermodel, recheck the cached or generated table against the current statement, verify every premise under every required assignment, and only then exhibit one explicit target failure. Label finite sampling as sampling, never universal verification.
+3. If neither decides the claim, run one bounded forward/backward proof-state search or premise-retrieval pass. A rejected proof may donate its independently checked prefix and intermediate terms to deterministic local search, but neither the rejected proof nor those search seeds are evidence.
 4. Repair the first local failure. If two moves preserve the same gap, change representation or route instead of adding more examples or prompt text.
 5. Stop on a decisive artifact or two unchanged moves. Keep at most two verified examples in active context, deduplicate equivalent rules, and retire routes whose only support is a heuristic score.
 

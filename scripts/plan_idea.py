@@ -40,6 +40,7 @@ def print_compact(claim: str, selected: list[tuple[str, int]]) -> None:
 
     print("\nChoose one next artifact")
     print("- State one kernel: local claim, implication for the theorem, evidence type, and failure shape.")
+    print("- Make one falsifiable local prediction and name the cheapest observation that would keep or retire the idea.")
     print("- Compare one proof route, one falsification route, and one orthogonal evidence route.")
     print("- Continue only with a route that controls the failure world and has a verification hook.")
     print("- If no kernel appears, retrieve one close theorem pattern or repair the statement; do not draft a long proof.")
@@ -48,17 +49,28 @@ def print_compact(claim: str, selected: list[tuple[str, int]]) -> None:
 def print_full() -> None:
     print("\nExtended search")
     print("- Discovery: if a threshold, potential, policy, hard instance, active set, coefficient, or exact answer is unknown, infer it from tiny/tight cases and reserve a holdout check.")
-    print("- Novel problem: treat memory as unverified; first scan Scholar/recent public work and verify the closest result and frontier gap, then define the candidate representation, exact evaluator, simplification ladder, promotion rule, and budget.")
-    print("- Bottleneck surgery: shrink the missing lemma, negate it, change representation once, then prove, falsify, retrieve, certify, or repair it.")
+    print("- Novel problem: treat memory as unverified; first scan Scholar/recent public work and verify the closest result and frontier gap, then define the candidate representation, exact evaluator, simplification ladder, promotion rule, and budget. For construct or find-all tasks, freeze the answer type, forbid target-restating answers, and separate witness soundness from completeness.")
+    print("- Bottleneck surgery: shrink and negate the missing lemma, then move one rung on the representation ladder before proving, falsifying, retrieving, certifying, or repairing it.")
+    print("- A failed bounded witness search may suggest a rigidity or invariant conjecture; it creates a new proof obligation and never proves the target.")
     print("- Construction seeds: dual/slack, Bellman gap, envelope term, deviation graph, coupling, KL bridge, potential, benchmark, or hard instance.")
     print("- Algebra forms: add-subtract benchmark, gap/telescope, completing square, conjugate/dual, log/KL/determinant, symmetrization, or conditioning on a good event.")
     print("- Good-gap test: require the kernel to be smaller, non-circular, assumption-explicit, and locally checkable.")
 
     print("\nOne-move control")
     print("- Record current subgoal, proposed move, expected artifact, check, and proof-state delta.")
+    print("- Quotient exact theorem-preserving symmetries before counting routes; replay transported artifacts on the original statement.")
+    print("- Reserve a verification-and-assembly tail budget; renew an expensive route only after a checked proof-state delta.")
     print("- After two unchanged moves, choose repair, re-decompose, retrieve, tool-falsify, theorem repair, or stop-report.")
+    print("- Do not count a new prompt, agent, temperature, or larger sample as a new route unless it strengthens the evaluator or changes the artifact type.")
     print("- Use a prover-verifier contract only for challenged, repeated, or hard-to-check moves.")
     print("- Merge attempts with the same goal, assumptions, central object, and failure witness.")
+    print("- Build retries from a solver-owned digest of exact checker output; reuse prior wins only as precondition-matched templates with exact replay.")
+
+    print("\nOptional matched strategy trial")
+    print("- Activate only when repeated project cycles make route control itself the bottleneck.")
+    print("- Compare at most two stage-appropriate policies on the same proof-state baseline, references, tools, and budget.")
+    print("- Record one artifact, first failure, and proof-state delta per policy; relative ratings have proof_effect=none.")
+    print("- Promote guidance only after a second-state or held-out gain, and retire it when the stage or failure fingerprint changes.")
 
     print("\nEvidence-layered search packet")
     print("- Activate only after direct solve fails and candidate rules become noisy or repetitive; keep it to one screen.")

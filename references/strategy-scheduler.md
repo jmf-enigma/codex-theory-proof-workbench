@@ -5,10 +5,14 @@ Use this file to choose the next proof route after classification or failure.
 ## Map
 
 - Normalize first: make objects, quantifiers, and the smallest nontrivial case explicit.
+- Exact symmetry quotient: merge routes related by a proved statement-preserving transform before allocating search.
 - Portfolio routes: choose genuinely different proof architectures before converging.
 - Diversity control: seed routes independently, register mathematical families, and redirect saturated search.
+- Stage-conditioned trial: compare guidance policies on one frozen proof state only when route control itself is uncertain.
+- Progressive budget grants: reserve the verification tail and renew expensive routes only for checked progress.
+- Information-ordered representation switch: interpret failures by evidential strength, then change the mathematical object rather than the prose.
 - Search discipline: retrieve, guess, kernelize, verify, and repair locally.
-- Decomposition admission: accept a lemma split only when it is sufficient, simpler, acyclic, faithful, and locally repairable.
+- Decomposition admission: accept a lemma split only when it is sufficient, simpler, acyclic, faithful, locally repairable, and consumable by the parent.
 - Frontier control: compare a few non-equivalent next moves by decision value, check cost, and assembly relevance.
 - Historical revisit: retain a tiny bounded pool of under-ranked but still viable proof states when route scores are noisy.
 - Marginal value routing: after repeated failure, choose exactly one next action.
@@ -22,6 +26,14 @@ Use this file to choose the next proof route after classification or failure.
 - Mark quantifier type: pointwise, uniform, in expectation, high probability, almost surely, asymptotic.
 - Identify whether the desired statement is existence, uniqueness, monotonicity, optimality, incentive compatibility, regret, or lower bound.
 - Create the simplest nontrivial instance: scalar, two actions, two types, one period, finite state, deterministic noise, or symmetric case.
+
+## Exact Symmetry Quotient
+
+- List only transforms that preserve the full theorem fence, including domains, quantifiers, assumptions, and conclusion. Examples include relabeling, left-right duality, sign reversal, time reversal, or player permutation when explicitly valid.
+- Choose one canonical representative for each exact orbit. A mirrored derivation is not an independent route and does not add diversity by itself.
+- Transport a checked witness, lemma, or proof only with the inverse map and a replay on the original statement. A suggestive analogy or approximate symmetry schedules exploration only.
+- When the transform exchanges assumptions or boundary cases, record the exchanged obligations instead of silently declaring equivalence.
+- Use symmetry to reduce duplicate search and to generate one targeted shadow route, not to multiply cosmetically different attempts.
 
 ## Portfolio Routes
 
@@ -48,9 +60,41 @@ For a hard problem, separate independent route seeding from later synthesis.
 - A route ending at a lemma comparable in strength to the theorem is blocked, not nearly solved. Reopen it only when a new mechanism, invariant, construction, representation, premise bundle, or verification hook makes that lemma genuinely more tractable.
 - Keep one incompatible shadow family alive through the next portfolio checkpoint while the leading kernel remains unresolved. The shadow gets one bounded decisive probe, not continuous equal funding.
 - After each bounded round, the integrator updates live, saturated, blocked, and retired families; records returned artifacts; and allocates the next role or tool to the highest-value missing artifact. Roles are a menu, not fixed quotas.
+- Parallelize across families while the route is unknown. Once a conditional assembly identifies one stable bottleneck, focus independent workers on alternative attacks to that child and stop their siblings after one checked proof; do not pre-prove later children that replanning may discard.
 - Before `stop/report`, inspect the registry for an underexplored family with a cheap high-decision probe. Run at most one such probe; exhausting the favorite route is not portfolio exhaustion, but the registry is not a license for unbounded search.
 
 Keep the live frontier small. Independent serial passes can supply diversity; agent count is not a progress metric.
+
+## Stage-Conditioned Strategy Trial
+
+Use this only after repeated project cycles make strategy selection, rather than one mathematical node, the bottleneck. It is not a default multi-agent mode.
+
+1. Label the current stage as `explore` (find a route or object), `consolidate` (merge checked prefixes and eliminate dominated families), `certify-repair` (close the first failing node), or `assemble` (map every theorem obligation to evidence).
+2. Freeze one matched baseline: theorem fence, proof-state fingerprint, verified prefix, live gaps, allowed references and tools, privacy boundary, and budget. Compare at most two guidance policies on that identical baseline.
+3. Require each trial to return one candidate artifact, its proof-state delta, first failure if any, and a vector audit of obligation coverage, mathematical evidence, dependency fidelity, decision value, and cost.
+4. Use relative scores or Elo only to schedule the next trial. They have `proof_effect=none`; only the returned derivation, witness, certificate, checked premise, or formal artifact can change proof status.
+5. Keep proof-candidate lineage separate from guidance lineage. Credit a guidance change only for a matched-baseline improvement, then test it on a second proof state or held-out problem before making it reusable.
+6. Retire or revise guidance when the stage changes, the same failure fingerprint returns, or its marginal gain disappears. Preserve the compact local log, not every transcript, and never let an active run rewrite the global skill directly.
+
+This is a bounded adaptation of EvE's synchronous race and stage-dependent guidance. EvE's paper evaluates ICON code search, while its public math-proof configuration uses model-generated score dimensions. Neither source makes the scheduling score a proof verifier.
+
+## Progressive Budget Grants
+
+Use this only for expensive routes or project mode.
+
+1. Set aside a verification-and-assembly tail before exploration. It must cover exact replay of the winning artifacts, obligation mapping, and one adversarial final check.
+2. Give each expensive route the smallest initial grant that can reach its cheapest decisive evaluator. A grant should target an artifact, not merely more reasoning time.
+3. Renew a route only after a checked proof-state delta, a new premise or certificate, a smaller gap, or a verified artifact that unlocks another required node.
+4. Stop renewing when the same failure fingerprint returns, prerequisites are absent, or the route consumes budget without changing an obligation. Transfer unused budget to a different family or the verification tail.
+5. Keep predictors, route scores, small-model absence, and prior success as scheduling inputs with `proof_effect=none`. Never spend the reserved tail to rescue a favored but unchanged route.
+
+## Information-Ordered Representation Switch
+
+- Read feedback in descending evidential strength: an exact checker result or replayable witness, an exhaustive result within a declared finite scope, sampled or randomized absence, then a model score or critique. A weaker signal may schedule work but cannot inherit the proof effect of a stronger one.
+- One valid witness can refute. Failure to find a witness can only suggest a candidate obstruction, rigidity law, or invariant; that candidate becomes a separate lemma to prove.
+- After the same failure fingerprint appears twice, move one rung away from the current representation: direct formula to a difference, gap, slack, or equality case; then to a structural lemma; then to a dual, countermodel, certificate, or formal leaf.
+- Choose the switch from the obstruction. Boundary failures suggest case separation or KKT conditions; global algebra failures suggest a telescope, potential, conjugate, or invariant; quantifier failures suggest a witness, minimax swap audit, or uniformization lemma.
+- A new prompt, agent, temperature, or larger sample is not a representation switch unless it creates a stronger evaluator or a genuinely different artifact.
 
 ## Search Discipline
 
@@ -64,7 +108,8 @@ Keep the live frontier small. Independent serial passes can supply diversity; ag
 - One-step verifier loop: for a fragile subgoal, try one move, predict the new subgoal, check it, and record whether the proof state became smaller.
 - Repair by isolation: when a route fails, find the earliest false or unproved step, preserve the verified prefix, and rewrite only the affected subgraph.
 - First-error rule: downstream steps after the first invalid inference are not evidence. Earlier checked steps and independent helper lemmas remain reusable artifacts.
-- Compact feedback repair: when retrying a failed node, use the node statement, retrieved pattern, previous attempt signature, and previous feedback. Do not reload the whole failed history into the next attempt.
+- Compact feedback repair: when retrying a failed node, use the node statement, retrieved pattern, previous attempt signature, and a solver-owned attempt digest built from exact checker output. Do not rely on provider-rendered history, and do not reload the whole failed transcript.
+- Guarded proof-template reuse: store an accepted schema as its preconditions, substitution map, dependency interface, certificate type, and replay check, not as a raw proof body. Match those preconditions to the current node and replay the instantiated artifact; structural similarity alone is insufficient.
 - Progress estimate: after each route, mark whether the remaining obstacle is smaller, unchanged, or bigger; stop or switch after two unchanged/bigger cycles.
 - Recombine only after local checks: a final proof is allowed only when each sketch lemma has a status and the assembly matches the original quantifiers.
 - Gap reviewer: before accepting a missing lemma, classify it as a good gap or bad gap. A bad gap is equivalent to the theorem, hides the core construction, is circular, or lacks a verification hook.
@@ -76,13 +121,14 @@ Keep the live frontier small. Independent serial passes can supply diversity; ag
 Before committing new child lemmas to the graph, require:
 
 - **Parent sufficiency**: a conditional assembly explicitly derives the parent from the proposed children.
+- **Consumption gate**: every required child has an exact use site in that assembly. Before expensive proof, confirm the parent would close if the child were assumed; after proof, record a passed or failed replay of the parent with the actual child and retire any proved-but-unused node. `proof_doctor.py` blocks further child work when the active gate is incomplete or a proved required child lacks a passed replay.
 - **Strict simplification**: each required child removes a quantifier, dimension, case family, unknown object, or proof technique; it is not the parent under new notation.
 - **Acyclicity**: no child depends on its parent or an equivalent ancestor state.
 - **Fidelity**: child statements preserve the source definitions, intended role, and legal assumptions.
 - **Repair radius**: if one child is false, only a small connected subgraph should need revision.
 - **Premise feasibility**: known results, tools, or a bounded retrieval query can plausibly discharge each child.
 
-Reject the decomposition when the conditional assembly is missing, a child is not easier, or the expected repair radius is broad. A formally admissible sketch can still be mathematically useless.
+Reject the decomposition when the conditional assembly or use site is missing, a child is not easier, or the expected repair radius is broad. A formally admissible sketch can still be mathematically useless.
 
 ## Marginal Value Routing
 

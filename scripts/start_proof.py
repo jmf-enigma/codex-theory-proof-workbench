@@ -43,6 +43,7 @@ CLAIM_TEMPLATE = """# Claim
 - near-misses that do not count:
 - atomic semantic obligations:
 - preservation checks for reductions and constructions:
+- answer or witness contract when applicable: type, encoding, forbidden self-reference, soundness, completeness or canonicity
 
 ## Assumption And Definition Lineage
 
@@ -379,6 +380,7 @@ Fill this only when the answer, object, formula, construction, or decisive conce
 - known-solution status: not assessed / known / likely known / apparently open / genuinely new
 - status evidence:
 - discovery target: answer / threshold / formula / construction / policy / invariant / counterexample / intermediate theorem / new representation
+- answer-hole contract when applicable: admissible representation, forbidden target restatement, and separate soundness / completeness / optimality obligations
 - candidate representation:
 - validity gate:
 - score or evaluator:
@@ -1098,6 +1100,8 @@ Fill this only before committing a new multi-lemma decomposition, especially aft
 
 - parent node:
 - conditional parent assembly:
+- exact use site for each required child:
+- post-proof parent replay: not-run / passed / failed
 - why each required child is strictly simpler:
 - ancestor-equivalence and cycle check:
 - source or statement-fence anchor:
@@ -1105,7 +1109,7 @@ Fill this only before committing a new multi-lemma decomposition, especially aft
 - jointly sufficient premise bundle or retrieval plan:
 - reviewer verdict: admit / revise / reject
 
-Do not admit the split when the parent assembly is missing, a child merely restates an ancestor, or one failure would force a wholesale rewrite.
+Do not admit the split when the parent assembly or a required child's exact use site is missing, a child merely restates an ancestor, or one failure would force a wholesale rewrite. After a required child is proved, replay the conditional parent assembly and record whether it passed or failed.
 
 ## Candidate Lemmas To Prove Or Refute
 
