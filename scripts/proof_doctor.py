@@ -511,6 +511,207 @@ def looks_like_template_choice(value: str) -> bool:
     return False
 
 
+def blueprint_rows(text: str) -> list[dict[str, str]]:
+    match = re.search(
+        r"## Blueprint Dependency Graph(?P<body>.*?)(?:\n## Blueprint Metadata Audit|\Z)",
+        text,
+        flags=re.S,
+    )
+    body = match.group("body") if match else ""
+    rows = []
+    for line in body.splitlines():
+        if not line.lstrip().startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) < 7:
+            continue
+        node_id, node_type, status, statement = cells[:4]
+        if (
+            not node_id
+            or node_id.lower() == "node id"
+            or set(node_id) <= {"-", ":"}
+            or not statement
+        ):
+            continue
+        rows.append(
+            {
+                "node_id": node_id,
+                "type": node_type,
+                "status": status.lower(),
+                "statement": statement,
+                "used_by_assembly": cells[6],
+            }
+        )
+    return rows
+
+
+def decomposition_admission_summary(project: Path, state: str) -> dict:
+    path = project / "LEMMA_QUEUE.md"
+    if not path.exists():
+        return {
+            "active": False,
+            "admitted": False,
+            "blocks_progress": False,
+            "missing_fields": [],
+            "required_child_ids": [],
+            "unmapped_child_ids": [],
+            "proved_required_child_ids": [],
+            "proved_unused_nodes": [],
+            "parent_replay_status": "not-applicable",
+            "recommended_action": "create LEMMA_QUEUE.md before decomposing the theorem",
+        }
+
+    text = path.read_text(encoding="utf-8")
+    rows = blueprint_rows(text)
+
+    def concrete(field: str) -> str:
+        for value in filled_field_values(text, field):
+            if not looks_like_template_choice(value):
+                return value
+        return ""
+
+    parent = concrete("parent node")
+    assembly = concrete("conditional parent assembly")
+    exact_use = concrete("exact use site for each required child")
+    legacy_consumption = concrete("exact use site for each child and post-proof parent replay")
+    if not exact_use:
+        exact_use = legacy_consumption
+    replay = concrete("post-proof parent replay")
+    if not replay and legacy_consumption and re.search(
+        r"\b(replay|recheck|re-check|verified|passed|failed)\b",
+        legacy_consumption,
+        flags=re.I,
+    ):
+        replay = legacy_consumption
+
+    fields = {
+        "parent node": parent,
+        "conditional parent assembly": assembly,
+        "exact use site for each required child": exact_use,
+        "why each required child is strictly simpler": concrete(
+            "why each required child is strictly simpler"
+        ),
+        "ancestor-equivalence and cycle check": concrete(
+            "ancestor-equivalence and cycle check"
+        ),
+        "source or statement-fence anchor": concrete("source or statement-fence anchor"),
+        "expected repair radius if one child fails": concrete(
+            "expected repair radius if one child fails"
+        ),
+        "jointly sufficient premise bundle or retrieval plan": concrete(
+            "jointly sufficient premise bundle or retrieval plan"
+        ),
+        "reviewer verdict": concrete("reviewer verdict"),
+    }
+    active_states = {
+        "S4-lemma-graph",
+        "S5-local-certification",
+        "S6-assembly",
+        "S7-adversarial-review",
+        "S8-finalize",
+        "S9-stuck",
+    }
+    active = any(fields.values()) or (state in active_states and len(rows) >= 2)
+    missing = [name for name, value in fields.items() if active and not value]
+
+    def feeds_assembly(value: str) -> bool:
+        lower = value.strip().lower()
+        return bool(lower) and lower not in {
+            "no",
+            "false",
+            "unknown",
+            "n/a",
+            "none",
+            "yes / no / unknown",
+        }
+
+    required_children = [
+        row
+        for row in rows
+        if row["node_id"] != parent and feeds_assembly(row["used_by_assembly"])
+    ]
+    unmapped = []
+    for row in required_children:
+        node_id = row["node_id"]
+        if exact_use and not re.search(
+            rf"(?<![A-Za-z0-9_]){re.escape(node_id)}(?![A-Za-z0-9_])",
+            exact_use,
+            flags=re.I,
+        ):
+            unmapped.append(node_id)
+
+    proved_statuses = {"checked", "proved", "tool-checked", "formalized"}
+    proved_required = [
+        row["node_id"] for row in required_children if row["status"] in proved_statuses
+    ]
+    proved_unused = [
+        row["node_id"]
+        for row in rows
+        if row["node_id"] != parent
+        and row["status"] in proved_statuses
+        and not feeds_assembly(row["used_by_assembly"])
+    ]
+
+    replay_lower = replay.lower()
+    if not replay:
+        replay_status = "missing" if proved_required else "not-yet-required"
+    elif re.search(r"\b(fail|failed|broken|counterexample)\b", replay_lower):
+        replay_status = "failed"
+    elif re.search(r"\b(pending|not[- ]?run|todo|unknown|missing)\b", replay_lower):
+        replay_status = "pending"
+    elif re.search(r"\b(pass|passed|verified|checked|closed|holds|success)\b", replay_lower):
+        replay_status = "passed"
+    else:
+        replay_status = "unclear"
+
+    verdict = fields["reviewer verdict"].lower()
+    verdict_admits = bool(re.search(r"\badmit(?:ted)?\b", verdict))
+    admitted = active and not missing and not unmapped and verdict_admits
+    replay_complete = not proved_required or replay_status == "passed"
+    blocks_progress = active and (not admitted or not replay_complete)
+
+    if missing:
+        action = "Complete decomposition admission before proving another child: fill " + ", ".join(
+            missing
+        ) + "."
+    elif unmapped:
+        action = (
+            "Map every required child to an exact parent-proof use site before funding it: "
+            + ", ".join(unmapped)
+            + "."
+        )
+    elif not verdict_admits:
+        action = "Revise or reject the decomposition; the reviewer verdict does not admit it."
+    elif proved_required and replay_status != "passed":
+        action = (
+            "Replay the conditional parent assembly with the proved child lemmas and record a passed "
+            "or failed parent replay before counting them as progress."
+        )
+    elif proved_unused:
+        action = (
+            "Retire or rewire proved-but-unused node(s) before funding more side lemmas: "
+            + ", ".join(proved_unused)
+            + "."
+        )
+    elif active:
+        action = "Proceed with the least-certain required child on the admitted parent assembly path."
+    else:
+        action = "not activated"
+
+    return {
+        "active": active,
+        "admitted": admitted,
+        "blocks_progress": blocks_progress,
+        "missing_fields": missing,
+        "required_child_ids": [row["node_id"] for row in required_children],
+        "unmapped_child_ids": unmapped,
+        "proved_required_child_ids": proved_required,
+        "proved_unused_nodes": proved_unused,
+        "parent_replay_status": replay_status,
+        "recommended_action": action,
+    }
+
+
 def novel_problem_summary(project: Path, mode: str) -> dict:
     path = project / "IDEA_MAP.md"
     text = path.read_text(encoding="utf-8") if path.exists() else ""
@@ -1031,6 +1232,7 @@ def primary_action_for(
     pv_need: dict,
     failure_localization: dict,
     failure_stage: dict,
+    decomposition: dict,
     audit: dict,
     runtime_feedback: dict,
 ) -> str:
@@ -1057,6 +1259,8 @@ def primary_action_for(
         and progress["blocked_retries"] == 0
     ):
         return "Import the prior failed routes, failure witnesses, and reusable lemmas before proposing a new proof route."
+    if decomposition["blocks_progress"]:
+        return decomposition["recommended_action"]
     if state == "S8-finalize" and audit["ready_for_final_proof"]:
         return "Present the proof with its verified status and essential assumptions."
     if state in {"S7-adversarial-review", "S8-finalize"} and not audit["ready_for_final_proof"]:
@@ -1120,10 +1324,14 @@ def diagnose(project: Path) -> dict:
     pv_need = prover_verifier_need(project, progress, prover_verifier)
     failure_localization = failure_localization_summary(project, progress, pv_need)
     failure_stage = failure_stage_summary(project, progress, failure_localization)
+    decomposition = decomposition_admission_summary(project, state)
     route_decision = route_decision_summary(state, progress, fingerprints, idea_map, pattern_scan)
     runtime_feedback = runtime_referee_feedback(project)
     audit["runtime_evidence_ready"] = not runtime_feedback["invalid_computation_artifacts"]
+    audit["decomposition_ready"] = not decomposition["blocks_progress"]
     if not audit["runtime_evidence_ready"]:
+        audit["ready_for_final_proof"] = False
+    if not audit["decomposition_ready"]:
         audit["ready_for_final_proof"] = False
 
     actions = []
@@ -1151,6 +1359,8 @@ def diagnose(project: Path) -> dict:
         actions.append("Create ATTACK_MATRIX.md with one proof route and one falsification route.")
     if not (project / "LEMMA_QUEUE.md").exists():
         actions.append("Create LEMMA_QUEUE.md as a blueprint DAG with nodes, statement deps, proof deps, downstream use, statuses, and failure diagnoses.")
+    elif decomposition["active"]:
+        actions.append(f"Decomposition admission: {decomposition['recommended_action']}")
     if novel_problem["frontier_scan_needed"] or novel_problem["activated"]:
         actions.append(f"Novel-problem discovery: {novel_problem['recommended_action']}")
     if not (project / "WORKSTREAMS.md").exists() and state in {"S3-route-portfolio", "S5-local-certification", "S7-adversarial-review", "S9-stuck"}:
@@ -1174,6 +1384,12 @@ def diagnose(project: Path) -> dict:
         actions.append("No-progress threshold met: do not retry prose. Switch to counterexample search, tools, retrieval, local formalization, theorem repair, or user steering.")
     if state in {"S4-lemma-graph", "S5-local-certification", "S9-stuck"}:
         actions.append(f"Route decision: {route_decision['decision']}; expected artifact: {route_decision['next_artifact']}.")
+    if decomposition["proved_unused_nodes"]:
+        actions.append(
+            "Do not count proved-but-unused nodes as parent progress; retire or rewire: "
+            + ", ".join(decomposition["proved_unused_nodes"])
+            + "."
+        )
     if pv_need["needed"]:
         actions.append("Fill the Prover-Verifier Move Contract for the fragile move before another prose retry.")
     if failure_localization["needed"]:
@@ -1219,6 +1435,8 @@ def diagnose(project: Path) -> dict:
         or fingerprints["has_real_entries"]
     ) and (project / "WORKSTREAMS.md").exists() and "WORKSTREAMS.md" not in files:
         files.insert(0, "WORKSTREAMS.md")
+    if decomposition["active"] and (project / "LEMMA_QUEUE.md").exists() and "LEMMA_QUEUE.md" not in files:
+        files.insert(0, "LEMMA_QUEUE.md")
     verification_path = runtime_feedback.get("verification_path")
     if isinstance(verification_path, str) and verification_path and verification_path not in files:
         files.insert(0, verification_path)
@@ -1235,6 +1453,7 @@ def diagnose(project: Path) -> dict:
         pv_need,
         failure_localization,
         failure_stage,
+        decomposition,
         audit,
         runtime_feedback,
     )
@@ -1284,6 +1503,7 @@ def diagnose(project: Path) -> dict:
         "prover_verifier": {**prover_verifier, **pv_need},
         "failure_localization": failure_localization,
         "failure_stage": failure_stage,
+        "decomposition_admission": decomposition,
         "route_decision": route_decision,
         "latest_referee": runtime_feedback,
         "audit": audit,
@@ -1379,6 +1599,16 @@ def print_human(result: dict) -> None:
     print(f"- stage: {failure_stage['stage']}")
     print(f"- recognized: {failure_stage['recognized']}")
     print(f"- recommended_action: {failure_stage['recommended_action']}")
+    decomposition = result["decomposition_admission"]
+    print("decomposition admission:")
+    print(f"- active: {decomposition['active']}")
+    print(f"- admitted: {decomposition['admitted']}")
+    print(f"- blocks_progress: {decomposition['blocks_progress']}")
+    print(f"- missing_fields: {decomposition['missing_fields']}")
+    print(f"- unmapped_child_ids: {decomposition['unmapped_child_ids']}")
+    print(f"- proved_unused_nodes: {decomposition['proved_unused_nodes']}")
+    print(f"- parent_replay_status: {decomposition['parent_replay_status']}")
+    print(f"- recommended_action: {decomposition['recommended_action']}")
     route = result["route_decision"]
     print("route decision:")
     print(f"- decision: {route['decision']}")
