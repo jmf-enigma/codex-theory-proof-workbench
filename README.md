@@ -89,6 +89,8 @@ The default is a simple prove-check-repair loop. Decomposition, multiple agents,
 
 Experiments may refute a claim or suggest a formula, but they do not prove a universal statement. A checked local lemma does not prove its parent until the dependency path is assembled. New assumptions and definitions must be sourced or marked as theorem repair.
 
+Search scores, similarity, rankings, default labels, and failed bounded searches only schedule work. They never change proof status without a replayable derivation, counterexample, certificate, source-checked theorem application, or formal check.
+
 ## Tool Routing
 
 | Backend | Expected artifact |
@@ -130,7 +132,7 @@ Detailed state transitions and evidence rules live in [SKILL.md](SKILL.md). The 
 
 ## Design Lineage
 
-The workbench recombines ideas from [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283), [Rethlas](https://github.com/frenzymath/Rethlas), [OpenProver](https://arxiv.org/abs/2607.09217), [LeanProgress](https://arxiv.org/abs/2502.17925), [Learning to Disprove](https://arxiv.org/abs/2603.19514), [Beyond the Library](https://arxiv.org/abs/2606.31134), and [AXLE](https://arxiv.org/abs/2606.26442). These sources guide workflow design. They do not prove a user's theorem or establish a benchmark result for this repository.
+The workbench recombines ideas from [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283), [Rethlas](https://github.com/frenzymath/Rethlas), [OpenProver](https://arxiv.org/abs/2607.09217), [LeanProgress](https://arxiv.org/abs/2502.17925), [Learning to Disprove](https://arxiv.org/abs/2603.19514), [Beyond the Library](https://arxiv.org/abs/2606.31134), and [AXLE](https://arxiv.org/abs/2606.26442). [Mechanic/MechMath](https://arxiv.org/abs/2603.24465) and [MechMath Agent Team](https://arxiv.org/abs/2607.04394) inform first-error proof surgery, semantic checks on extracted subgoals, typed scratch artifacts, and single-integrator assembly. Public methods from the [SAIR Stage 1 challenge](https://competition.sair.foundation/competitions/mathematics-distillation-challenge-equational-theories-stage1/leaderboard) and [official Stage 2 solvers](https://github.com/SAIRcompetition/equational-theories-lean-stage2) inform deterministic-first search, executable falsification, structured repair, and verified retrieval memory. [Less Is More](https://arxiv.org/abs/2604.18897) informs compact dynamic context. These sources guide workflow design. They do not prove a user's theorem or establish a benchmark result for this repository.
 
 ## Development
 
@@ -229,6 +231,8 @@ flowchart LR
 
 实验可以反驳命题或提示公式，但不能证明 universal statement。局部 lemma 通过检查，也要沿 dependency path 组装后才能升级 parent theorem。新增假设和定义必须有来源，否则只能标记为 theorem repair。
 
+搜索分数、相似度、排名、默认标签和失败的有界搜索只用于调度。除非得到可重放推导、反例、certificate、经来源核对的定理应用或形式检查，否则它们不能改变 proof status。
+
 ## 工具调度
 
 | 后端 | 应返回的 artifact |
@@ -258,7 +262,7 @@ python3 scripts/proof_runtime.py brief path/to/proof_project --markdown
 
 ## 设计来源
 
-Workbench 吸收了 [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283)、[Rethlas](https://github.com/frenzymath/Rethlas)、[OpenProver](https://arxiv.org/abs/2607.09217)、[LeanProgress](https://arxiv.org/abs/2502.17925)、[Learning to Disprove](https://arxiv.org/abs/2603.19514)、[Beyond the Library](https://arxiv.org/abs/2606.31134) 与 [AXLE](https://arxiv.org/abs/2606.26442) 的部分控制机制。这些来源只支持 workflow 设计，不会自动证明用户 theorem，也不代表本仓库已经取得相同 benchmark 结果。
+Workbench 吸收了 [Draft, Sketch, and Prove](https://arxiv.org/abs/2210.12283)、[Rethlas](https://github.com/frenzymath/Rethlas)、[OpenProver](https://arxiv.org/abs/2607.09217)、[LeanProgress](https://arxiv.org/abs/2502.17925)、[Learning to Disprove](https://arxiv.org/abs/2603.19514)、[Beyond the Library](https://arxiv.org/abs/2606.31134) 与 [AXLE](https://arxiv.org/abs/2606.26442) 的部分控制机制。[Mechanic/MechMath](https://arxiv.org/abs/2603.24465) 和 [MechMath Agent Team](https://arxiv.org/abs/2607.04394) 启发了首错局部手术、提取子目标的语义检查、分类型草稿 artifact 与单一 integrator 组装。[SAIR Stage 1](https://competition.sair.foundation/competitions/mathematics-distillation-challenge-equational-theories-stage1/leaderboard) 的公开方法和 [官方 Stage 2 求解器](https://github.com/SAIRcompetition/equational-theories-lean-stage2) 启发了确定性优先搜索、可执行反驳、结构化修复和经过验证的检索记忆。[Less Is More](https://arxiv.org/abs/2604.18897) 启发了精简的动态上下文。这些来源只支持 workflow 设计，不会自动证明用户 theorem，也不代表本仓库已经取得相同 benchmark 结果。
 
 ## 开发与许可
 

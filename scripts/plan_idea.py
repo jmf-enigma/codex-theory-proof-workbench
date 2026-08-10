@@ -60,6 +60,16 @@ def print_full() -> None:
     print("- Use a prover-verifier contract only for challenged, repeated, or hard-to-check moves.")
     print("- Merge attempts with the same goal, assumptions, central object, and failure witness.")
 
+    print("\nEvidence-layered search packet")
+    print("- Activate only after direct solve fails and candidate rules become noisy or repetitive; keep it to one screen.")
+    print("- Sound shortcuts: record preconditions, resulting obligation, checker, and exact proof effect.")
+    print("- Executable falsifiers: verify every premise over every required assignment, exhibit target failure, and label exhaustive versus sampled scope.")
+    print("- Scheduler priors: similarity, size, source hits, scores, and failure history always have proof_effect=none.")
+    print("- Near-miss frontier: keep 2-4 checked or rejected states with verified prefix, exact gap, and candidate bridge.")
+    print("- Promote only a replayable derivation, counterexample/certificate, source-checked theorem use, or formal check.")
+    print("- Seed reusable trick memory only after exact replay plus an independent route or held-out check.")
+    print("- Audit term ranges before arbitrary substitution: prove surjectivity, and keep diagonal laws distinct from global laws.")
+
     print("\nOutside patterns and tools")
     print("- Scan one to three close sources only when the theorem family, central object, or standard lemma is missing.")
     print("- Extract assumptions, proof decomposition, local trick, verification hook, and mismatch; do not import prose as proof.")

@@ -49,6 +49,15 @@ candidate
 
 - current problem check:
 - held-out or second-route check:
+- proof effect: none / scheduler / local lemma / theorem
+- cache status: candidate / verified / reusable
+
+## Promotion And Reuse Gate
+
+- source and assumptions checked:
+- exact replay artifact:
+- independent check artifact:
+- allowed to seed future search: no / yes
 
 ## Failure Mode
 

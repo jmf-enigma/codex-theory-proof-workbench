@@ -52,9 +52,18 @@ When the current task exposes the Lean MCP tools, keep the request immutable and
 
 This lane is scratch and repair, not promotion. A REPL rejection is provisional because the tactic mode is experimental, and an MCP success proves only the tested state. Write the winning script into the intended file and run the exact bridge verifier below. If the state repeats or the failure concerns statement fidelity, mathematics, or global assembly, stop local repair and return ownership to Theory.
 
-## Isolate And Reassemble
+## Formal Failure Surgery
 
-When a coherent Lean skeleton has one failing `have` or placeholder, extract that block as a standalone declaration with the exact local variables, hypotheses, imports, and target. Solve the declaration independently, expose its dependencies, then replace the block and replay the original frozen theorem. This reduces repair radius without changing the theorem fence.
+Activate this only when the theorem target is frozen, the proof skeleton is coherent, and bounded local repair has left a proof-block failure. A parse, import, type, premise, fidelity, mathematical, or assembly failure goes back to its own layer instead.
+
+1. Read the first primary diagnostic and find the smallest enclosing structured block. For nested `have` or `replace` blocks, replace only the failing proof body. Replace a failing `calc` or `choose` block as one unit. If no parsed block exists, cut only at the reported site. Make one edit and recompile immediately; later messages may be cascade noise from the first error.
+2. Continue until the frozen skeleton is structurally valid with a small number of `sorry` placeholders or until the code repeats, times out, stops changing, or exceeds the repair budget. “Valid allowing `sorry`” is skeleton salvage only. It is not evidence for the child goal or parent theorem.
+3. At each placeholder, extract the exact tactic state as a standalone declaration. Preserve all local variables, hypotheses, typeclass assumptions, imports, and the intended parent use. A hypothesis may be removed only after showing that both the child theorem and its reassembly remain faithful.
+4. Gate the extracted child twice. First require Lean well-formedness. Then audit semantic entailment from the frozen local context, attack it for a counterexample or missing premise, and check the exact reassembly interface. Mechanical extraction can faithfully isolate a false step from a bad strategy.
+5. Solve a validated child independently and recurse only when it is strictly simpler. Stop if the child is equivalent to its parent, the same failure fingerprint returns, or a bounded retry creates no proof-state delta.
+6. Reinsert only a verified child. Replay the original frozen target, scan for `sorry` and admitted or unexpected axioms, then rerun claim-fidelity, assumption-lineage, assembly-coverage, and axiom gates.
+
+`lean_bridge.py verify` writes this bounded repair policy into `formal_failure_surgery` when it classifies a first local-proof failure. A repeated identical local failure returns ownership to Theory Workbench rather than starting the same surgery again.
 
 AXLE-style remote extraction and verification may be useful for a non-sensitive, standard single-file target when the user explicitly approves source sharing. Local checking remains the default. A remote pass cannot replace the bridge's claim-fidelity, assumption-lineage, assembly-coverage, or axiom gates, and a service limitation or stricter-verifier gap must be recorded in the result packet.
 
@@ -91,6 +100,7 @@ The Lean-to-Theory result records:
 - target gate and node status;
 - raw diagnostic and diagnostic site;
 - failure class, diagnostic fingerprint, inferred root cause, repair, and proof-state delta;
+- a formal-failure-surgery contract for a first local-proof failure, including its semantic child gates and recursion stop;
 - prior count of the same failure signature;
 - recommended owner and final-promotion eligibility.
 

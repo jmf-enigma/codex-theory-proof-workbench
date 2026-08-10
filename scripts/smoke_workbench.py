@@ -240,6 +240,26 @@ def main() -> int:
             "ok": "dp-proof-playbook.md" in idea.stdout and "Proof Kernel" not in idea.stdout,
         }
     )
+    idea_full = run(
+        str(SCRIPTS / "plan_idea.py"),
+        "In a finite discounted MDP, the Bellman operator is a contraction.",
+        "--full",
+    )
+    checks.append(
+        {
+            "name": "evidence-layered-idea-search",
+            "ok": all(
+                phrase in idea_full.stdout
+                for phrase in [
+                    "Evidence-layered search packet",
+                    "proof_effect=none",
+                    "Near-miss frontier",
+                    "independent route or held-out check",
+                    "surjectivity",
+                ]
+            ),
+        }
+    )
 
     mechanism = run(
         str(SCRIPTS / "select_playbook.py"),
@@ -771,6 +791,47 @@ raise SystemExit(1)
             )
             failed_runs.append((failed.returncode, json.loads(failed.stdout)))
 
+        mock_lean_local_failure = Path(temp_dir) / "mock_lean_status_local_failure.py"
+        mock_lean_local_failure.write_text(
+            mock_lean_failure.read_text(encoding="utf-8").replace(
+                "error: type mismatch",
+                "error: tactic 'linarith' failed",
+            ),
+            encoding="utf-8",
+        )
+        local_failure = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "lean_bridge.py"),
+                "verify",
+                str(project),
+                str(request_path),
+                "--lean-status-script",
+                str(mock_lean_local_failure),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        local_failure_result = json.loads(local_failure.stdout)
+        mathematical_failure = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "lean_bridge.py"),
+                "verify",
+                str(project),
+                str(request_path),
+                "--lean-status-script",
+                str(mock_lean_local_failure),
+                "--failure-stage",
+                "mathematical",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        mathematical_failure_result = json.loads(mathematical_failure.stdout)
+
         full_prepared = json.loads(
             run(
                 str(SCRIPTS / "lean_bridge.py"),
@@ -848,6 +909,23 @@ raise SystemExit(1)
                 and failed_runs[1][1]["prior_same_failure_count"] == 1
                 and failed_runs[1][1]["recommended_owner"] == "theory-proof-workbench"
                 and "same Lean failure signature" in failed_runs[1][1]["repair"]
+                and local_failure.returncode == 1
+                and local_failure_result["failure_class"] == "LOCAL_PROOF"
+                and local_failure_result["formal_failure_surgery"]["activation"]
+                == "candidate"
+                and "innermost failing structured proof block"
+                in local_failure_result["formal_failure_surgery"]["repair_scope"]
+                and len(
+                    local_failure_result["formal_failure_surgery"]["required_subgoal_gates"]
+                )
+                == 4
+                and mathematical_failure.returncode == 1
+                and mathematical_failure_result["recommended_owner"]
+                == "theory-proof-workbench"
+                and mathematical_failure_result["formal_failure_surgery"]["activation"]
+                == "not-applicable"
+                and "declared failure stage is mathematical"
+                in mathematical_failure_result["formal_failure_surgery"]["reason"]
                 and final_result["eligible_for_formalized_complete"]
                 and final_state["proof_status"] == "formalized-complete",
             }
@@ -1678,6 +1756,9 @@ print("mock referee completed")
     research_text = (ROOT / "references" / "research-backed-proof-loop.md").read_text(
         encoding="utf-8"
     )
+    proof_idea_text = (ROOT / "references" / "proof-idea-generator.md").read_text(
+        encoding="utf-8"
+    )
     strategy_text = (ROOT / "references" / "strategy-scheduler.md").read_text(
         encoding="utf-8"
     )
@@ -1701,6 +1782,7 @@ print("mock referee completed")
     )
     skill_text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
     template_text = (SCRIPTS / "start_proof.py").read_text(encoding="utf-8")
+    trick_template_text = (SCRIPTS / "new_trick_card.py").read_text(encoding="utf-8")
     checks.append(
         {
             "name": "research-control-rules",
@@ -1769,6 +1851,27 @@ print("mock referee completed")
     )
     checks.append(
         {
+            "name": "evidence-layer-and-cache-poisoning-guards",
+            "ok": all(
+                phrase in proof_idea_text
+                for phrase in [
+                    "sound shortcuts",
+                    "executable falsifiers",
+                    "scheduler priors",
+                    "near-miss frontier",
+                    "No-small-counterexample results",
+                    "poisoning later searches",
+                    "Audit semantic range",
+                ]
+            )
+            and "SAIR evidence-layer lesson" in research_text
+            and "Dynamic-context lesson" in research_text
+            and "Promotion And Reuse Gate" in trick_template_text
+            and "allowed to seed future search" in trick_template_text,
+        }
+    )
+    checks.append(
+        {
             "name": "specialist-return-and-lean-fast-lane",
             "ok": all(
                 phrase in skill_text
@@ -1780,8 +1883,13 @@ print("mock referee completed")
                 ]
             )
             and "Interactive Fast Lane" in lean_bridge_text
+            and "Formal Failure Surgery" in lean_bridge_text
+            and "Valid allowing `sorry`" in lean_bridge_text
+            and "equivalent to its parent" in lean_bridge_text
             and "scratch and repair, not promotion" in lean_bridge_text
-            and "exact bridge verifier" in lean_bridge_text,
+            and "exact bridge verifier" in lean_bridge_text
+            and "MechMath/Mechanic surgery lesson" in research_text
+            and "MMAT harness lesson" in research_text,
         }
     )
 

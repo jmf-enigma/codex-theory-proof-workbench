@@ -134,6 +134,31 @@ If two moves leave the same subgoal unchanged, stop proving in prose. Record the
 
 Before the next attempt, make a route decision. Continue only if the next move has a new expected artifact such as a smaller subgoal, verified identity, counterexample, theorem pattern, certificate, repaired statement, or genuinely new central object.
 
+## Evidence-Layered Search Packet
+
+Use this only after the direct pass fails and the search becomes noisy, repetitive, or crowded with candidate rules. It is a one-screen view inside the current idea map or ledger, not a new mandatory file.
+
+| layer | keep | required annotation | proof effect |
+| --- | --- | --- | --- |
+| sound shortcuts | exact theorem, rewrite, invariant, duality, symmetry, or decomposition | preconditions, resulting obligation, replay check | only after the applicability check passes |
+| executable falsifiers | concrete witness, finite model, generator, separating algebra, or exact checker | full premise check, target-failure trace, exhaustive or sampled scope | refutation only when the certificate is replayable and covers the claimed scope |
+| scheduler priors | similarity, size, source hit, score, motif, or failure history | cost, expected artifact, and `proof_effect=none` | none |
+| near-miss frontier | two to four checked or rejected intermediate states | verified prefix, exact remaining gap, candidate bridge | none until the bridge is proved or checked |
+
+Build and use the packet in this order:
+
+1. Freeze the exact statement signature: objects, types, domains, assumptions, quantifiers, conclusion, structural form, symmetry or dual transforms, and boundary or equality regimes. For symbolic identities, parse exact expression trees rather than relying on visual or character similarity.
+2. Run an exact or direct route, then the cheapest executable falsifier. For a proposed finite countermodel, verify every premise under every required assignment before checking one explicit target failure. Label finite sampling as sampling, never universal verification.
+3. If neither decides the claim, run one bounded forward/backward proof-state search or premise-retrieval pass. Seed it with the verified prefix and useful intermediate terms from failed attempts, but do not treat those seeds as evidence.
+4. Repair the first local failure. If two moves preserve the same gap, change representation or route instead of adding more examples or prompt text.
+5. Stop on a decisive artifact or two unchanged moves. Keep at most two verified examples in active context, deduplicate equivalent rules, and retire routes whose only support is a heuristic score.
+
+The promotion gate is strict. An explicit derivation, source-checked and assumption-matched theorem application, replayable counterexample or certificate, or formal check may change status. No-small-counterexample results, default labels, leaderboard rank, statement similarity, character overlap, sampled assignments, and majority votes may schedule work but have `proof_effect=none`.
+
+Audit semantic range before symbolic substitution. A compound term cannot be replaced by an arbitrary domain element unless its image is proved to cover that element. A diagonal or square law does not automatically control the full binary operation, a term-valued witness may depend on the quantified variable, and an invariant refutes a claim only after its preservation is proved or realized by a fully checked witness model.
+
+A failed attempt may donate a verified prefix, helper lemma, useful intermediate term, or obstruction fingerprint. A trick may seed future search only after its source and assumptions are checked, it replays exactly on the current problem, and it passes an independent route or held-out case. Until then, keep it `candidate`; this prevents a plausible but false trick from poisoning later searches.
+
 ## Construction And Algebra Move Search
 
 Use this only when the proof kernel needs a clever object or a non-obvious manipulation. The goal is to synthesize one local move, not to brainstorm indefinitely.

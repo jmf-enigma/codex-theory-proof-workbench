@@ -96,6 +96,7 @@ STATE_ACTIONS = {
     ],
     "S2b-idea-map": [
         "Fill failure world, central object candidates, one proof kernel, candidate central lemma, and verification hook in IDEA_MAP.md.",
+        "If candidate rules are noisy, add one compact evidence-layered packet: sound shortcuts, executable falsifiers, scheduler-only priors, and checked near-misses; only replayable artifacts can change status.",
         "If the kernel needs invention, guess from small cases: formula, threshold, invariant, active set, tight instance, or potential; use pattern_miner.py for exact sequences and keep one holdout check.",
         "If an answer, construction, threshold, potential, hard instance, or coefficient is unknown, treat discovery as a separate step before proof.",
         "Review the current missing lemma as a good gap or bad gap before promoting it.",
@@ -144,6 +145,7 @@ STATE_ACTIONS = {
     ],
     "S9-stuck": [
         "Name the exact obstruction in LEDGER.md.",
+        "Recycle only the verified prefix, checked helper lemmas, and useful intermediate objects from failed routes; heuristics and near-misses remain proof_effect=none until independently replayed.",
         "Check the Attempt Fingerprint Index in WORKSTREAMS.md; run check_attempt.py only if several fingerprints or an ambiguous match make this hard.",
         "Fill Proof-State Equivalence if the new idea has the same goal, assumptions, central object, and failure witness as a prior route.",
         "Shrink the obstruction to one proof kernel before trying another long proof route.",

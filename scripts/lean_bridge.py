@@ -299,6 +299,54 @@ def owner_for(stage: str, eligible: bool) -> str:
     return "lean-theorem-formalizer"
 
 
+def formal_failure_surgery_contract(
+    *,
+    eligible: bool,
+    failure_class: str,
+    failure_stage: str,
+    site: str,
+    fingerprint: str,
+    previous_same_failures: int,
+) -> dict[str, Any]:
+    """Return a bounded repair contract for a rejected local Lean proof."""
+    if eligible:
+        return {
+            "activation": "not-needed",
+            "reason": "the exact target gate passed",
+        }
+    if failure_stage not in {"auto", "local-proof"}:
+        return {
+            "activation": "not-applicable",
+            "reason": f"the declared failure stage is {failure_stage}; repair that layer before local proof surgery",
+        }
+    if failure_class != "LOCAL_PROOF":
+        return {
+            "activation": "not-applicable",
+            "reason": "repair the classified parse, import, type, premise, fidelity, or assembly layer first",
+        }
+    if previous_same_failures >= 1:
+        return {
+            "activation": "return-to-theory",
+            "reason": "the same local proof state already failed after one bounded repair",
+            "stop_rule": "do not sorrify or regenerate the same parent state again without a new premise, decomposition, or statement repair",
+        }
+    return {
+        "activation": "candidate",
+        "reported_site": site,
+        "diagnostic_fingerprint": fingerprint,
+        "repair_scope": "replace only the innermost failing structured proof block, then recompile immediately before interpreting later diagnostics",
+        "skeleton_status": "compiling only when sorry is allowed preserves a candidate skeleton; it proves neither the extracted child nor the parent theorem",
+        "required_subgoal_gates": [
+            "well-formed Lean statement with the exact local context",
+            "semantic entailment from the frozen parent context without dropped hypotheses",
+            "counterexample or missing-premise attack",
+            "exact reassembly interface into the frozen parent target",
+        ],
+        "recursion_stop": "stop when the extracted child is equivalent to its parent or a bounded retry creates no proof-state delta",
+        "promotion_gate": "reassemble the verified child, replay the frozen target, scan sorry and axioms, and rerun fidelity and assembly checks",
+    }
+
+
 def read_acceptance(project: Path, packet: dict[str, Any]) -> dict[str, Any] | None:
     raw = packet.get("acceptance_report")
     if not isinstance(raw, str) or not raw:
@@ -537,6 +585,14 @@ def verify(args: argparse.Namespace) -> int:
         and stage in {"auto", "local-proof"}
         and previous_same_failures >= 1
     )
+    surgery_contract = formal_failure_surgery_contract(
+        eligible=eligible,
+        failure_class=failure_class,
+        failure_stage=stage,
+        site=site,
+        fingerprint=fingerprint,
+        previous_same_failures=previous_same_failures,
+    )
     if owner == "theory-proof-workbench" and not repeated_local_failure:
         repair = args.repair.strip() if args.repair else (
             "return the exact Lean diagnostic to Theory Workbench for statement, mathematical, or assembly repair"
@@ -592,6 +648,7 @@ def verify(args: argparse.Namespace) -> int:
         "failure_stage": stage,
         "prior_same_failure_count": previous_same_failures,
         "recommended_owner": owner,
+        "formal_failure_surgery": surgery_contract,
         "acceptance_report": acceptance,
         "eligible_for_formalized_complete": final_ready,
         "promotion_requested": bool(args.promote_final),
