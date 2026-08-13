@@ -1877,6 +1877,7 @@ print("mock referee completed")
             SCRIPTS / "lean_bridge.py",
             SCRIPTS / "computation_artifact.py",
             SCRIPTS / "run_referee.py",
+            SCRIPTS / "proof_loop.py",
         ]
     )
     checks.append(
@@ -1916,21 +1917,96 @@ print("mock referee completed")
     skill_text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
     template_text = (SCRIPTS / "start_proof.py").read_text(encoding="utf-8")
     trick_template_text = (SCRIPTS / "new_trick_card.py").read_text(encoding="utf-8")
+    audited_arxiv_ids = {
+        "2411.00566",
+        "2502.00212",
+        "2502.17925",
+        "2503.24036",
+        "2504.21801",
+        "2505.04528",
+        "2506.11085",
+        "2506.13131",
+        "2506.19923",
+        "2507.06804",
+        "2507.15225",
+        "2508.03613",
+        "2509.06493",
+        "2509.22819",
+        "2510.01346",
+        "2510.15940",
+        "2511.13027",
+        "2602.02285",
+        "2602.02990",
+        "2602.05216",
+        "2602.10177",
+        "2602.20629",
+        "2603.02668",
+        "2603.04735",
+        "2603.19514",
+        "2603.24465",
+        "2604.07240",
+        "2604.15839",
+        "2604.17484",
+        "2604.18897",
+        "2604.24021",
+        "2605.06651",
+        "2605.09018",
+        "2605.13137",
+        "2605.13171",
+        "2605.17283",
+        "2605.19338",
+        "2605.22763",
+        "2605.26959",
+        "2606.03303",
+        "2606.05400",
+        "2606.06473",
+        "2606.09450",
+        "2606.10479",
+        "2606.13925",
+        "2606.20068",
+        "2606.20642",
+        "2606.26442",
+        "2606.28747",
+        "2606.28841",
+        "2606.29493",
+        "2606.31134",
+        "2607.04394",
+        "2607.07779",
+        "2607.09217",
+        "2607.17352",
+        "2607.27259",
+    }
     checks.append(
         {
-            "name": "research-control-rules",
+            "name": "research-control-map-and-source-coverage",
             "ok": all(
                 phrase in research_text
                 for phrase in [
-                    "Frontier choice",
-                    "First-error and stage pass",
-                    "Decomposition admission",
-                    "Independent-route seeding lesson",
-                    "LeanSearch v2",
-                    "Goedel-Prover-V2",
-                    "Aletheia",
-                    "QEDBench",
-                    "SorryDB",
+                    "Decision Lanes",
+                    "Paper Admission Gate",
+                    "Stage attribution",
+                    "A paper name in a prompt is never a capability",
+                    "The controller, not the model's renamed route label",
+                    "Training algorithms and benchmark designs are not additional runtime lanes",
+                    "search a diverse frontier",
+                    "artifact roles, not votes",
+                    "The 57-paper audit",
+                ]
+            )
+            and all(
+                f"arxiv.org/abs/{paper_id}" in research_text
+                for paper_id in audited_arxiv_ids
+            )
+            and all(
+                f"arxiv.org/abs/{paper_id}" in research_text
+                for paper_id in [
+                    "2210.12283",
+                    "2505.05758",
+                    "2601.22554",
+                    "2604.03789",
+                    "2605.25143",
+                    "2606.06468",
+                    "2607.20525",
                 ]
             )
             and "Decomposition Admission Gate" in template_text
@@ -1964,7 +2040,7 @@ print("mock referee completed")
     checks.append(
         {
             "name": "peppy-conditional-proof-bridge",
-            "ok": "peppy-proof-bridge.md" in portable_text
+            "ok": "peppy-proof-bridge.md" in skill_text
             and "PEP Eligibility Gate" in peppy_text
             and "Stop after the first block" in peppy_text
             and "A small floating residual is not an exact certificate" in peppy_text
@@ -2008,12 +2084,11 @@ print("mock referee completed")
                     "Audit semantic range",
                 ]
             )
-            and "EvE matched-baseline guidance lesson" in research_text
-            and "SAIR Stage 1 evidence-layer lesson" in research_text
-            and "SAIR Stage 2 structural-context lesson" in research_text
-            and "SAIR Stage 2 public-source synthesis" in research_text
-            and "Search-compilation lesson" in research_text
-            and "Dynamic-context lesson" in research_text
+            and "EvE's reported paper ablation concerns ICON code search" in research_text
+            and "SAIR strategies are competition artifacts" in research_text
+            and "Deterministic reductions, replayable witnesses" in research_text
+            and "A notation change is not a new route" in research_text
+            and "Do not load it during an ordinary first proof attempt" in research_text
             and "An idea is an executable hypothesis" in proof_idea_text
             and "creates a new proof obligation" in proof_idea_text
             and "Promotion And Reuse Gate" in trick_template_text
@@ -2026,10 +2101,12 @@ print("mock referee completed")
             "ok": all(
                 phrase in skill_text
                 for phrase in [
-                    "Specialist Return Contract",
+                    "Specialist Returns",
                     "lean-theorem-formalizer",
-                    "lean_multi_attempt",
-                    "return-to",
+                    "status-preserving return",
+                    "proof_loop.py",
+                    "Hard exploration",
+                    "key_original_step",
                 ]
             )
             and "Interactive Fast Lane" in lean_bridge_text
@@ -2038,8 +2115,17 @@ print("mock referee completed")
             and "equivalent to its parent" in lean_bridge_text
             and "scratch and repair, not promotion" in lean_bridge_text
             and "exact bridge verifier" in lean_bridge_text
-            and "MechMath/Mechanic surgery lesson" in research_text
-            and "MMAT harness lesson" in research_text,
+            and "isolate it with exact context" in research_text
+            and "One integrator owns theorem fidelity" in research_text,
+        }
+    )
+
+    loop_smoke = json.loads(run(str(SCRIPTS / "smoke_proof_loop.py")).stdout)
+    checks.append(
+        {
+            "name": "bounded-natural-proof-loop",
+            "ok": bool(loop_smoke.get("ok"))
+            and len(loop_smoke.get("checks", [])) == 12,
         }
     )
 

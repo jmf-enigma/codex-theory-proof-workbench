@@ -6,13 +6,14 @@ Use this file before presenting a hard proof as correct.
 
 - `conjecture`: intuition or pattern match only.
 - `counterexample-tested`: no counterexample found in toy/numeric/finite searches.
+- `refuted`: an explicit witness has been checked against every assumption and the negated conclusion.
 - `lemma-conditional`: final theorem follows if named missing lemmas hold.
 - `human-proof`: every nontrivial step is justified in prose by a theorem, lemma, or derivation.
 - `tool-checked`: fragile algebra/optimization/discrete constraints were checked by Wolfram, Python, Z3, CVXPy, Sage, or similar.
 - `formalized-local`: key local lemmas were checked in Lean.
 - `formalized-complete`: full theorem is Lean-checked or otherwise machine-formalized.
 
-Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`, or `lemma-conditional`.
+Never call a proof "proved" if it is only `conjecture`, `counterexample-tested`, or `lemma-conditional`. Report `refuted` as a disposition of the original claim, not as a proof-confidence level.
 
 ## Required Gates
 

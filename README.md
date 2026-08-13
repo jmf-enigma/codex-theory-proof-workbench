@@ -5,28 +5,26 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-2EA44F.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/jmf-enigma/codex-theory-proof-workbench?style=social)](https://github.com/jmf-enigma/codex-theory-proof-workbench/stargazers)
 
-[Quick start](#quick-start) · [Controls](#proof-controls) · [Evidence](#tools-and-evidence) · [中文](#codex-理论证明工作台)
+[Quick start](#quick-start) · [Design](#design) · [Research](#research-basis) · [Evidence](#evidence-boundary) · [中文](#codex-理论证明工作台)
 
-**A lightweight, auditable controller for hard, stuck, or unknown-answer mathematical proofs.**
+**A mathematics-first Codex skill and bounded proof runner for hard, stuck, or unknown-answer theoretical problems.**
 
-Theory Proof Workbench is an open Codex skill for proof discovery and recovery. It is designed for problems where the key lemma, construction, certificate, or answer is unclear. Its main domains are OR/MS, dynamic programming, mechanism design, economics, learning theory, bandits, optimization, games, lower bounds, and probabilistic methods.
+Theory Proof Workbench targets OR/MS, dynamic programming, mechanism design, economics, optimization, learning theory, bandits, games, lower bounds, and probabilistic constructions. It helps Codex find a proof idea, test a claim, use retrieval or mathematical tools, recover from a failed route, and report the strongest status actually supported by evidence.
 
-The skill helps Codex do six things reliably.
+The default behavior is deliberately small:
 
-- Freeze the exact claim before proof search drifts.
-- Try direct closure, small cases, and counterexamples before long prose.
-- Compare mathematically distinct routes and remember failed states.
-- Admit only decompositions whose children really feed the parent proof.
-- Route local obligations to literature, computation, Lean, or specialist skills.
-- Report only the proof status supported by replayable evidence.
+1. preserve the exact theorem;
+2. find one central object and one nonroutine proof kernel;
+3. carry one motivated route end to end;
+4. escalate only the first exact obstruction;
+5. send complete candidates to a fresh-context referee;
+6. repair once, replan, or stop honestly.
 
-It does not guarantee a solution to every true or open problem. When the mathematics is already complete and only exposition remains, use `math-proof-writing`.
+Complex route portfolios, lemma graphs, literature-frontier audits, Lean handoffs, and durable ledgers remain available in project mode. They are not the default way to think about a theorem.
 
 ## Quick Start
 
-### Install
-
-Ask Codex to install the repository-root skill.
+Ask Codex to install the repository-root skill:
 
 ```text
 Use $skill-installer to install
@@ -34,119 +32,140 @@ https://github.com/jmf-enigma/codex-theory-proof-workbench
 as theory-proof-workbench.
 ```
 
-Or install it manually.
+Or clone it manually:
 
 ```bash
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
 git clone https://github.com/jmf-enigma/codex-theory-proof-workbench.git \
   "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench"
 ```
 
-Restart Codex or refresh skill discovery. The core uses Python 3.10+ and the standard library. Mathematical backends are optional.
+Restart Codex or refresh skill discovery. The controller uses Python 3.10+ and the standard library. Wolfram, Lean, Sage, Z3, Peppy, Matlas, and TheoremSearch are optional backends.
 
-### Invoke
+Invoke it explicitly for a hard proof:
 
 ```text
-Use $theory-proof-workbench to prove this theorem. Preserve the exact statement,
-test the smallest counterexamples, and find the proof kernel before drafting.
-
-Use $theory-proof-workbench in recovery mode. Read the existing proof state and
-do not retry an equivalent construction.
-
-Use $theory-proof-workbench in discovery mode. Verify the literature frontier,
-freeze one admissible candidate, and then prove it.
+Use $theory-proof-workbench. First look for one natural proof mechanism. Do not
+open a full proof project unless the direct route reaches a precise obstruction.
 ```
 
-Explicit invocation is the most predictable route. Clearly hard or previously failed proof requests may also trigger the skill implicitly. It starts no resident agent or Wolfram process.
+## Design
 
-## Proof Controls
+### Natural lane
 
-The default loop is small.
+The active proof context asks three questions: why the claim may be true, what object controls it, and what the first nonroutine implication is. Auxiliary lemmas must be motivated, consumed by the route, and simplify the parent target.
 
-1. Freeze variables, domains, assumptions, quantifiers, and the conclusion.
-2. Attempt a direct theorem, contradiction, certificate, or known decomposition.
-3. Stress-test the negation on the smallest informative cases.
-4. Identify one proof kernel and compare genuinely different route families.
-5. Build an AND/OR lemma graph only when the proof needs durable decomposition.
-6. Check fragile local claims with the cheapest decisive backend.
-7. Assemble the exact parent theorem and run an adversarial review.
+### Adaptive escalation
 
-Hard problems activate additional controls only when needed.
+Only a named obstruction activates a specialist capability.
 
-| Control | What it prevents |
+| Obstruction | Capability |
 | --- | --- |
-| Answer-hole contract | A construction or find-all answer that merely restates the target |
-| Decomposition admission | Circular, non-simplifying, or unassemblable child lemmas |
-| Lemma consumption and replay | Counting a true but unused lemma as parent progress |
-| Failed-state fingerprints | Repeating the same route under new notation or wording |
-| Phase-adaptive workstreams | Broad parallel search after the real bottleneck is already known |
-| Statement and completion gates | Formally checking an encoding that does not match the intended theorem |
+| Suspect claim | Small counterexample or boundary search |
+| Missing central object | Tight-case, failure-world, representation, or retrieval lens |
+| Local algebra | Wolfram or SymPy exact check |
+| Finite leaf | Python, Z3, Sage, NetworkX, or optimization certificate |
+| Missing premise | Matlas or TheoremSearch, followed by source verification |
+| Stable fragile lemma | Focused Lean handoff |
+| Complete proof | Fresh-context natural-language referee |
 
-`proof_doctor.py` now enforces the decomposition controls. Every required child needs an exact use site in a conditional parent assembly. Once a required child is proved, the parent assembly must be replayed and recorded as passed or failed before that child counts as progress.
+### Executable loop
 
-## Tools And Evidence
+For an authorized, self-contained problem, `proof_loop.py` creates a minimal project and runs a bounded generator-referee loop:
 
-| Backend | Expected artifact |
-| --- | --- |
-| Wolfram or SymPy | Exact identity, sign region, quantified condition, symbolic witness |
-| Python, Z3, CVXPy, Sage, NetworkX | Finite witness, unsat core, optimization certificate, discrete structure |
-| Lean | Checked local lemma or complete formal assembly |
-| Peppy and PEPFlow | Exact PEP certificate or verified Lyapunov structure |
-| Matlas and TheoremSearch | Statement candidate that still requires source verification |
-| Scholar, arXiv, OpenAlex, DOI records | Literature coverage, theorem identity, assumptions, and proof anchors |
+```bash
+python3 scripts/proof_loop.py path/to/project \
+  --claim "EXACT CLAIM" \
+  --max-iterations 3 \
+  --reasoning-effort high
+```
 
-Experiments can refute a claim or suggest a formula, but they do not prove a universal statement. A CAS result supports only the encoded local claim and assumptions. A checked lemma supports its parent only after the dependency path is assembled. A Lean kernel verifies the formal statement it receives, so semantic fidelity and final assembly remain separate obligations.
+The generator receives a compact packet and works on one route. A complete proof or explicit counterexample is checked in a separate ephemeral Codex context. One local repair is allowed per route. Repeated routes are retired. The loop stops on referee acceptance, a precise request for external evidence, or its iteration/wall-time budget.
 
-Remote statement search requires `--remote-ok` and an abstracted, non-sensitive query. Retrieval scores and model rankings have `proof_effect=none` until the source and proof are checked.
+Use `--prepare-only` to inspect the first packet without invoking another model. Use `--allow-search` only for public or safely abstracted mathematics; it permits one search turn only after the generator names retrieval as the current obstruction. Add checked project-local evidence with `--reference path/to/artifact` and resume the same project.
 
-## Persistent Projects
+The default reasoning effort is `high`. Reserve `--reasoning-effort max` for a genuinely hard kernel. Iteration and wall-time limits still bound the run.
 
-Codex normally runs these helpers automatically.
+### Hard exploration after failure
+
+Use this only after two genuinely different routes fail, or after a serious attempt still cannot identify a central object or conditional assembly:
+
+```bash
+python3 scripts/proof_loop.py path/to/project \
+  --hard-exploration \
+  --max-iterations 3 \
+  --max-wall-seconds 3600 \
+  --reasoning-effort high
+```
+
+This adds at most two independent route scouts and one fresh plan selector before the ordinary loop. Scouts do not see one another. The selector can choose only a supplied route and marks the key original step that deserves the proof budget. It schedules work and never counts as proof verification.
+
+Unselected but viable routes remain in a three-item history. Selected, refuted, or structurally invalid routes are not rediscovered under new wording. The hard pass stops before proof generation when no route clears the assembly gate or when one named external capability is required.
+
+### Durable project mode
+
+Use the larger project harness only for multi-session, multi-lemma, tool-heavy, or repeatedly failed work:
 
 ```bash
 python3 scripts/start_proof.py --title "short-name" --claim "EXACT CLAIM"
-python3 scripts/proof_doctor.py path/to/proof_project
-python3 scripts/proof_runtime.py brief path/to/proof_project --markdown
+python3 scripts/proof_doctor.py path/to/project
+python3 scripts/proof_runtime.py brief path/to/project --markdown
 ```
 
-The active project stores the exact claim, route portfolio, lemma graph, failed-attempt fingerprints, tool artifacts, and proof status. Detailed rules live in [SKILL.md](SKILL.md). Source-to-rule mappings and benchmark boundaries live in [Research-Backed Proof Loop](references/research-backed-proof-loop.md).
+It preserves failed-state fingerprints, decomposition and parent-replay evidence, computation artifacts, verifier reports, Lean handoffs, and honest proof status.
+
+## Research Basis
+
+The runtime is a conservative synthesis, not a reproduction of any one proof system. [Rethlas](https://arxiv.org/abs/2604.03789) informs adaptive stage choice. [QED](https://arxiv.org/abs/2604.24021) informs stable planning, key-step attention, and proof-versus-plan failure diagnosis. [Aletheia](https://arxiv.org/abs/2602.10177) and verifier studies inform bounded generation, abstention, and cold review. The [sum-product agent](https://arxiv.org/abs/2607.20525) motivates developing a precise plan before long construction. [Beyond the Frontier](https://arxiv.org/abs/2605.25143) motivates preserving plausible historical routes.
+
+Each mechanism passes a stage, evidence, dependency, transfer, and regression-test audit before entering the skill. The workbench does not claim those papers' private models, learned verifiers, process reward models, token-prefix search, hardware, or reported success rates. See the full [source-to-control audit](references/research-backed-proof-loop.md).
+
+## Evidence Boundary
+
+- Retrieval returns theorem candidates, not authority. Check the source, definitions, and assumptions.
+- Simulation and bounded search guide or refute; absence of a witness is not proof.
+- CAS and solver outputs support only their exact encoded claim and assumptions.
+- A natural-language referee reduces anchoring but is not formal verification.
+- A Lean kernel checks the formal statement it receives; fidelity and final assembly still matter.
+
+The workbench reports `refuted`, `human-proof`, `counterexample-tested`, `tool-checked`, `formalized-local`, `formalized-complete`, `lemma-conditional`, or `still open` rather than collapsing these states. Here `counterexample-tested` means that a bounded search found no witness; a checked witness is `refuted`.
 
 ## Development
 
 ```bash
 python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py .
 PYTHONPYCACHEPREFIX=/tmp/codex-pycache python3 -m py_compile scripts/*.py
+python3 scripts/smoke_proof_loop.py
 python3 scripts/smoke_workbench.py
 ```
 
-Contributions should address a named proof bottleneck and include a reproducible check. Use anonymized examples and never upload confidential mathematics. Released under the [MIT License](LICENSE).
+The smoke suite checks infrastructure and control behavior. It is not evidence that the system solves unseen research problems. Meaningful capability claims require held-out, same-model, same-budget proof evaluations.
+
+Released under the [MIT License](LICENSE).
 
 ---
 
 # Codex 理论证明工作台
 
-[快速开始](#快速开始) · [证明控制](#证明控制) · [工具与证据](#工具与证据) · [English](#codex-theory-proof-workbench)
+[快速开始](#快速开始) · [设计](#设计) · [研究依据](#研究依据) · [证据边界](#证据边界) · [English](#codex-theory-proof-workbench)
 
-**一个面向困难、卡住或答案尚不明确数学问题的轻量、可审计证明控制器。**
+**一个以数学思考为默认入口、带有有界证明运行器的 Codex skill，面向困难、卡住或答案尚不明确的理论问题。**
 
-Theory Proof Workbench 是一个开源 Codex skill，用来发现证明思路并恢复失败证明。它适合关键 lemma、构造、certificate 或答案仍不清楚的问题，重点覆盖 OR/MS、动态规划、机制设计、经济理论、learning theory、bandits、优化、博弈、lower bounds 和概率方法。
+Theory Proof Workbench 主要覆盖 OR/MS、动态规划、机制设计、经济理论、优化、learning theory、bandits、博弈、lower bounds 和概率构造。它帮助 Codex 寻找证明机制、检验命题、调用检索或数学工具、恢复失败路线，并只报告证据真正支持的结论。
 
-它帮助 Codex 稳定完成六件事。
+默认流程只有六步：
 
-- 在搜索漂移前冻结准确命题。
-- 在写长证明前尝试直接闭合、小规模情形和反例。
-- 比较数学机制真正不同的路线，并记住已经失败的 proof state。
-- 只接受确实能够进入 parent proof 的分解。
-- 把局部义务交给文献、计算、Lean 或相应 specialist skill。
-- 只报告可重放证据支持的证明状态。
+1. 保持原命题准确不变；
+2. 找到一个中心对象和一个关键 proof kernel；
+3. 沿一条有数学动机的路线走到底；
+4. 只升级第一个准确障碍；
+5. 把完整候选交给独立新上下文 referee；
+6. 局部修复一次，然后重新规划或诚实停止。
 
-它不保证解决每个真命题或开放问题。数学已经完整、只需要整理表达时，应使用 `math-proof-writing`。
+路线组合、lemma graph、文献 frontier、Lean handoff 和完整 ledger 都保留在项目模式中，但不再侵入普通证明的第一轮思考。
 
 ## 快速开始
 
-### 安装
-
-让 Codex 安装仓库根目录中的 skill。
+让 Codex 安装仓库根目录中的 skill：
 
 ```text
 使用 $skill-installer 安装
@@ -154,83 +173,76 @@ https://github.com/jmf-enigma/codex-theory-proof-workbench
 安装名称使用 theory-proof-workbench。
 ```
 
-也可以手动安装。
-
-```bash
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-git clone https://github.com/jmf-enigma/codex-theory-proof-workbench.git \
-  "${CODEX_HOME:-$HOME/.codex}/skills/theory-proof-workbench"
-```
-
-重启 Codex 或刷新 skill discovery。核心需要 Python 3.10+，只依赖标准库。Wolfram、Lean、Peppy 等数学后端都是可选项。
-
-### 调用
+显式调用：
 
 ```text
-使用 $theory-proof-workbench 证明这个 theorem。保持原命题不变，
-先检查最小反例，并在写长证明前找出 proof kernel。
-
-使用 $theory-proof-workbench 的 recovery mode。读取已有 proof state，
-不要重试等价构造。
-
-使用 $theory-proof-workbench 的 discovery mode。先核查文献 frontier，
-固定一个满足约束的 candidate，然后证明它。
+使用 $theory-proof-workbench。先寻找一条自然的证明机制，只有直接路线
+出现准确障碍时才启动复杂项目模式。
 ```
 
-显式调用最稳定。明显困难或已经失败过的证明请求也可能自动触发。skill 不会启动常驻 Agent 或 Wolfram 进程。
+核心只依赖 Python 3.10+ 标准库。Wolfram、Lean、Sage、Z3、Peppy、Matlas 和 TheoremSearch 都是按需后端。
 
-## 证明控制
+## 设计
 
-默认循环保持简洁。
+### 自然证明通道
 
-1. 冻结变量、定义域、假设、量词和结论。
-2. 尝试直接定理、反证、certificate 或已知分解。
-3. 在最小且有信息量的情形上检查命题的否定。
-4. 找到一个 proof kernel，并比较机制不同的路线。
-5. 只有确实需要持久分解时才建立 AND/OR lemma graph。
-6. 用成本最低且有决定性的工具检查脆弱局部命题。
-7. 组装准确 parent theorem，并进行对抗审查。
+第一轮只问三个数学问题：命题为什么可能为真，什么对象控制结论，以及第一个真正不平凡的推理是什么。辅助引理必须有明确来源、会被后续路线使用，并使 parent target 严格变简单。
 
-困难问题才会按需启用以下控制。
+### 按障碍升级
 
-| 控制 | 防止的问题 |
-| --- | --- |
-| Answer-hole contract | 构造题或 find-all 任务用目标本身充当答案 |
-| Decomposition admission | 循环、不更简单或无法组装的 child lemma |
-| Lemma consumption and replay | 把真实但没有用于 parent 的 lemma 当成进展 |
-| Failed-state fingerprints | 换一种记号或说法后重复同一条失败路线 |
-| Phase-adaptive workstreams | 已找到瓶颈后仍然进行无边界的宽搜索 |
-| Statement and completion gates | 形式化通过，但编码的并不是原 theorem |
+命题可疑时寻找最小反例；中心对象缺失时使用紧例、失败世界、表示变换或定理检索；局部代数交给 Wolfram/SymPy；有限结构交给 Python、Z3 或 Sage；稳定但脆弱的 lemma 才交给 Lean；完整候选才进入独立 referee。
 
-`proof_doctor.py` 现在会执行分解门槛。每个 required child 必须在 conditional parent assembly 中有准确使用位置。required child 证明完成后，还要重放 parent assembly，并记录通过或失败，才可以把它计入 parent 的证明进展。
-
-## 工具与证据
-
-| 后端 | 应返回的 artifact |
-| --- | --- |
-| Wolfram 或 SymPy | 精确恒等式、符号区域、量化条件、symbolic witness |
-| Python、Z3、CVXPy、Sage、NetworkX | finite witness、unsat core、optimization certificate、离散结构 |
-| Lean | 通过检查的 local lemma 或完整 formal assembly |
-| Peppy 与 PEPFlow | 精确 PEP certificate 或经过核验的 Lyapunov 结构 |
-| Matlas 与 TheoremSearch | 仍需核查原文的命题候选 |
-| Scholar、arXiv、OpenAlex、DOI 记录 | 文献覆盖、定理身份、假设和 proof anchor |
-
-实验可以反驳命题或提示公式，但不能证明 universal statement。CAS 结果只支持实际编码的局部命题和假设。局部 lemma 只有沿 dependency path 完成组装后，才能支持 parent。Lean kernel 检查它收到的 formal statement，因此语义一致性和最终组装仍是独立义务。
-
-远程命题检索必须显式传入 `--remote-ok`，并且只能发送抽象化后的非敏感 query。检索分数和模型排名的 `proof_effect=none`，直到来源和原文证明完成核查。
-
-## 持久证明项目
-
-多数情况下由 Codex 自动调用。
+### 可执行闭环
 
 ```bash
-python3 scripts/start_proof.py --title "short-name" --claim "EXACT CLAIM"
-python3 scripts/proof_doctor.py path/to/proof_project
-python3 scripts/proof_runtime.py brief path/to/proof_project --markdown
+python3 scripts/proof_loop.py path/to/project \
+  --claim "准确命题" \
+  --max-iterations 3 \
+  --reasoning-effort high
 ```
 
-项目会保存准确命题、路线组合、lemma graph、失败尝试指纹、工具证据和证明状态。完整规则见 [SKILL.md](SKILL.md)。来源与具体控制规则的对应关系，以及 benchmark 能力边界，见 [Research-Backed Proof Loop](references/research-backed-proof-loop.md)。
+runner 会创建最小项目，每轮只向 generator 提供紧凑 packet。完整证明或显式反例由新的临时 Codex 上下文检查。每条路线最多局部修复一次，重复路线会被退役。达到验证接受、明确需要外部证据、迭代上限或时间上限时停止。
 
-## 开发与许可
+`--prepare-only` 只准备 packet，不调用另一个模型。只有公开或安全抽象后的数学问题才使用 `--allow-search`；它不会预先打开搜索，只有 generator 明确把 retrieval 识别为当前障碍后，才允许下一轮检索一次。外部工具产生的证据保存在项目内，再通过 `--reference` 送入下一轮。
 
-运行 `python3 scripts/smoke_workbench.py` 可以执行完整回归检查。贡献应解决一个明确的证明瓶颈，并提供可复现检查。请使用匿名例子，不要上传保密数学内容。本仓库使用 [MIT License](LICENSE)。
+默认 reasoning effort 为 `high`。只有确认遇到困难 proof kernel 时才升到 `--reasoning-effort max`。迭代和时间上限仍然生效。
+
+### 失败后的困难探索
+
+只有两条实质不同的路线都失败，或者认真尝试后仍找不到中心对象或完整组装关系时，才使用：
+
+```bash
+python3 scripts/proof_loop.py path/to/project \
+  --hard-exploration \
+  --max-iterations 3 \
+  --max-wall-seconds 3600 \
+  --reasoning-effort high
+```
+
+困难探索最多让两个互不读取彼此答案的 scout 提出路线，再由一个新上下文只从现有候选中锁定计划，并标出真正值得投入证明预算的关键原创步骤。selector 只负责调度，不构成证明验证。
+
+未选中但仍合理的路线最多保留三条。已经选过、证伪或结构不合格的路线不会被换一种说法重新提交。没有路线通过 assembly gate，或者需要一种明确外部能力时，困难探索会在生成长证明前停止。
+
+### 长期项目模式
+
+跨对话、多 lemma、多工具或已经反复失败的问题，可以使用 `start_proof.py`、`proof_doctor.py` 和 `proof_runtime.py`。复杂状态机只在这里启用，用来保存失败指纹、parent replay、计算证据、referee 报告和 Lean handoff。
+
+## 研究依据
+
+当前运行逻辑是多项研究的克制组合，并不是对某个系统的复刻。[Rethlas](https://arxiv.org/abs/2604.03789) 主要支持按障碍选择阶段。[QED](https://arxiv.org/abs/2604.24021) 支持先稳定计划、明确关键原创步骤，并区分证明执行失败与计划失败。[Aletheia](https://arxiv.org/abs/2602.10177) 及 verifier 研究支持有界生成、允许不确定和独立冷审查。[sum-product agent](https://arxiv.org/abs/2607.20525) 支持先把计划与缺口想清楚，再投入长证明。[Beyond the Frontier](https://arxiv.org/abs/2605.25143) 支持保留尚未证伪的历史路线。
+
+每项机制进入 skill 前都要检查它改善的是哪个阶段、证据强度如何、依赖哪些不可用系统、能够迁移成什么动作，以及怎样做回归测试。本项目不声称拥有这些论文的私有模型、learned verifier、process reward model、逐 token 搜索、硬件或论文报告的成功率。完整记录见 [source-to-control audit](references/research-backed-proof-loop.md)。
+
+## 证据边界
+
+- 检索结果只是候选，必须核查原文、定义和假设。
+- 模拟和有限搜索可以提示或反驳，找不到反例不能证明命题。
+- CAS 与 solver 只支持实际编码的局部命题。
+- 自然语言 referee 可以减少锚定，但不是形式证明。
+- Lean 检查收到的形式命题，仍需核查语义一致性与最终组装。
+
+因此 workbench 会区分 `refuted`、`human-proof`、`counterexample-tested`、`tool-checked`、`formalized-local`、`formalized-complete`、`lemma-conditional` 和 `still open`。其中 `counterexample-tested` 只表示有限搜索未找到反例，已经核验的反例应记为 `refuted`。
+
+回归测试验证基础设施和控制逻辑，并不证明系统已经更擅长解决未见研究难题。真正的能力提升需要在相同模型和预算下进行 held-out 对照测试。
+
+本仓库使用 [MIT License](LICENSE)。
